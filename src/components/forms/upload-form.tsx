@@ -31,6 +31,14 @@ export function UploadForm({ drills }: UploadFormProps) {
     const selected = drills.find((drill) => drill.id === formData.get("drillDefinitionId"));
     formData.set("drillType", selected?.slug || "sprint-20m");
 
+    const recordingDate = formData.get("recordingDate");
+    if (typeof recordingDate === "string" && recordingDate.length > 0) {
+      const parsedRecordingDate = new Date(recordingDate);
+      if (!Number.isNaN(parsedRecordingDate.getTime())) {
+        formData.set("recordingDate", parsedRecordingDate.toISOString());
+      }
+    }
+
     const request = new XMLHttpRequest();
     request.open("POST", "/api/submissions");
 

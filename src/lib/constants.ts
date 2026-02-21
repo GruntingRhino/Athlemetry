@@ -18,7 +18,8 @@ export const STANDARD_DRILLS = [
     description: "Linear sprint across 20 meters.",
     guidelines:
       "Camera 90° side angle, full body in frame, fixed tripod, clear start/finish markers.",
-    instructionVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    instructionVideoUrl:
+      "https://www.youtube.com/results?search_query=20+meter+sprint+soccer+drill+instruction",
     metricPrimaryKey: "sprintTime",
     lowerIsBetter: true,
   },
@@ -29,7 +30,7 @@ export const STANDARD_DRILLS = [
     description: "Change-of-direction shuttle using 5m and 10m splits.",
     guidelines:
       "Wide angle showing all cones, synchronized start cue, visible line touches.",
-    instructionVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    instructionVideoUrl: "https://www.youtube.com/watch?v=B-hsX94VsF8",
     metricPrimaryKey: "changeOfDirectionMeasurement",
     lowerIsBetter: true,
   },
@@ -40,7 +41,8 @@ export const STANDARD_DRILLS = [
     description: "Timed shot cycle and target-hit tracking.",
     guidelines:
       "Behind-goal camera, visible target zones, fixed distance to goal.",
-    instructionVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    instructionVideoUrl:
+      "https://www.youtube.com/results?search_query=soccer+shooting+accuracy+drill+instruction",
     metricPrimaryKey: "shotTiming",
     lowerIsBetter: true,
   },
@@ -51,7 +53,8 @@ export const STANDARD_DRILLS = [
     description: "Dribble through fixed cone layout and return.",
     guidelines:
       "Top-side view preferred, consistent cone spacing, full path visible.",
-    instructionVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    instructionVideoUrl:
+      "https://www.youtube.com/results?search_query=soccer+cone+dribbling+drill+instruction",
     metricPrimaryKey: "consistencyScore",
     lowerIsBetter: false,
   },
@@ -62,13 +65,15 @@ export const STANDARD_DRILLS = [
     description: "Multi-repetition shuttle workload test.",
     guidelines:
       "Field-length framing, clear rep markers, uninterrupted recording.",
-    instructionVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    instructionVideoUrl:
+      "https://www.youtube.com/results?search_query=soccer+shuttle+endurance+test+instruction",
     metricPrimaryKey: "repetitionCount",
     lowerIsBetter: false,
   },
 ] as const;
 
 export const ROLE_OPTIONS = ["ATHLETE", "PARENT", "COACH", "ADMIN"] as const;
+export const SELF_REGISTRATION_ROLE_OPTIONS = ["ATHLETE", "PARENT", "COACH"] as const;
 
 export const POSITION_OPTIONS = [
   "GK",

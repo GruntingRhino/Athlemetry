@@ -20,6 +20,9 @@ export async function POST() {
         name: "Deleted User",
       },
     }),
+    prisma.session.deleteMany({
+      where: { userId: session.user.id },
+    }),
     prisma.consentLog.create({
       data: {
         userId: session.user.id,
@@ -31,5 +34,22 @@ export async function POST() {
     }),
   ]);
 
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  for (const cookieName of [
+    "next-auth.session-token",
+    "__Secure-next-auth.session-token",
+    "next-auth.callback-url",
+    "__Secure-next-auth.callback-url",
+    "next-auth.csrf-token",
+    "__Host-next-auth.csrf-token",
+  ]) {
+    response.cookies.set({
+      name: cookieName,
+      value: "",
+      expires: new Date(0),
+      path: "/",
+    });
+  }
+
+  return response;
 }

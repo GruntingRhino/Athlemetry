@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { registerSchema, validateVideoFile } from "@/lib/validators";
+import {
+  registerSchema,
+  submissionMetadataSchema,
+  validateVideoFile,
+} from "@/lib/validators";
 
 describe("registerSchema", () => {
   it("requires parent email for minors", () => {
@@ -26,15 +30,72 @@ describe("registerSchema", () => {
       email: "coach@example.com",
       password: "supersecure",
       role: "COACH",
-      age: 28,
-      position: "UTIL",
-      team: "FC North",
-      competitionLevel: "elite",
       gender: "male",
       parentEmail: "",
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("requires athlete profile fields only for ATHLETE role", () => {
+    const result = registerSchema.safeParse({
+      name: "Athlete Two",
+      email: "athlete2@example.com",
+      password: "supersecure",
+      role: "ATHLETE",
+      age: 16,
+      parentEmail: "parent@example.com",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects ADMIN in public registration schema", () => {
+    const result = registerSchema.safeParse({
+      name: "Admin One",
+      email: "admin-one@example.com",
+      password: "supersecure",
+      role: "ADMIN",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("submissionMetadataSchema", () => {
+  it("accepts datetime-local recordingDate values", () => {
+    const result = submissionMetadataSchema.safeParse({
+      drillDefinitionId: "drill-1",
+      recordingDate: "2026-02-20T10:00",
+      location: "Training Ground A",
+      drillType: "sprint-20m",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recordingDate).toMatch(/Z$/);
+    }
+  });
+
+  it("treats empty optional numeric metadata fields as undefined", () => {
+    const result = submissionMetadataSchema.safeParse({
+      drillDefinitionId: "drill-1",
+      recordingDate: "2026-02-20T10:00",
+      location: "Training Ground A",
+      drillType: "sprint-20m",
+      frameRate: "",
+      startFrame: "",
+      finishFrame: "",
+      repetitionHint: "",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.frameRate).toBeUndefined();
+      expect(result.data.startFrame).toBeUndefined();
+      expect(result.data.finishFrame).toBeUndefined();
+      expect(result.data.repetitionHint).toBeUndefined();
+    }
   });
 });
 

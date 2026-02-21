@@ -42,7 +42,8 @@ export function PrivacyActions() {
       return;
     }
 
-    setMessage("Account marked as deleted. You should log out now.");
+    setMessage("Account deleted. Redirecting to login.");
+    window.location.assign("/login?deleted=1");
   }
 
   return (

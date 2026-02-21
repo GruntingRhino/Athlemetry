@@ -12,3 +12,4 @@
 10. Benchmark anonymization exposes only anonymized benchmark payloads through `/api/v1/benchmarks`; raw peer identity is not returned.
 11. Data backup is implemented via `scripts/backup.sh` (`pg_dump`) and assumes runtime/CI environment can access PostgreSQL CLI tools.
 12. Seeded admin credentials are development defaults and must be rotated in any non-development environment.
+13. Drill instruction links use drill-specific public YouTube resources/search URLs unless a canonical source video is explicitly provided.

@@ -2,7 +2,7 @@
 
 ## Product Overview
 
-The Soccer Performance Intelligence Engine is a structured athletic measurement and benchmarking platform designed for youth soccer players. It transforms training drill footage into objective performance data, longitudinal tracking, and comparative benchmarks.
+Athlemitry is a structured athletic measurement and benchmarking platform designed for youth soccer players. It transforms training drill footage into objective performance data, longitudinal tracking, and comparative benchmarks.
 
 The system standardizes performance evaluation in youth soccer by quantifying speed, agility, shooting accuracy, and ball control metrics through video-based analysis.
 

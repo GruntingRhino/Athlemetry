@@ -16,6 +16,11 @@ body {
   font-family: "Segoe UI", "Inter", "Avenir Next", sans-serif;
 }
 
-a {
+a:not([class]) {
   color: inherit;
+}
+
+a.bg-slate-900,
+button.bg-slate-900 {
+  color: var(--color-white) !important;
 }

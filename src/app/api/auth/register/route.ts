@@ -7,6 +7,10 @@ import { registerSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   const payload = await request.json();
+  if (payload?.role === "ADMIN") {
+    return NextResponse.json({ error: "Admin accounts are owner-managed only." }, { status: 403 });
+  }
+
   const parsed = registerSchema.safeParse(payload);
 
   if (!parsed.success) {
@@ -20,6 +24,7 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data;
+  const isAthlete = data.role === "ATHLETE";
   const existing = await prisma.user.findUnique({ where: { email: data.email.toLowerCase() } });
 
   if (existing && !existing.deletedAt) {
@@ -34,13 +39,13 @@ export async function POST(request: Request) {
       passwordHash,
       role: data.role as Role,
       name: data.name,
-      age: data.age,
-      position: data.position,
-      team: data.team || null,
-      competitionLevel: data.competitionLevel,
+      age: isAthlete ? (data.age ?? null) : null,
+      position: isAthlete ? (data.position ?? null) : null,
+      team: isAthlete ? (data.team || null) : null,
+      competitionLevel: isAthlete ? (data.competitionLevel ?? null) : null,
       gender: data.gender || null,
-      parentEmail: data.parentEmail || null,
-      parentConsentVerified: data.age >= 18,
+      parentEmail: isAthlete ? (data.parentEmail || null) : null,
+      parentConsentVerified: isAthlete ? data.age !== undefined && data.age >= 18 : true,
       shareInBenchmarks: data.shareInBenchmarks,
       anonymizeForBenchmark: data.anonymizeForBenchmark,
     },
@@ -61,7 +66,7 @@ export async function POST(request: Request) {
     },
   });
 
-  if (data.age < 18) {
+  if (isAthlete && data.age !== undefined && data.age < 18) {
     await prisma.consentLog.create({
       data: {
         userId: user.id,

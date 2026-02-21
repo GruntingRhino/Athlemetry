@@ -5,26 +5,54 @@ import {
   COMPETITION_LEVEL_OPTIONS,
   MAX_VIDEO_SIZE_BYTES,
   POSITION_OPTIONS,
-  ROLE_OPTIONS,
+  SELF_REGISTRATION_ROLE_OPTIONS,
 } from "@/lib/constants";
+
+function emptyToUndefined(value: unknown) {
+  return value === "" || value === null ? undefined : value;
+}
 
 export const registerSchema = z
   .object({
     name: z.string().min(2).max(80),
     email: z.email().max(120),
     password: z.string().min(8).max(128),
-    role: z.enum(ROLE_OPTIONS).default("ATHLETE"),
-    age: z.coerce.number().int().min(6).max(80),
-    position: z.enum(POSITION_OPTIONS),
+    role: z.enum(SELF_REGISTRATION_ROLE_OPTIONS).default("ATHLETE"),
+    age: z.coerce.number().int().min(6).max(80).optional(),
+    position: z.enum(POSITION_OPTIONS).optional(),
     team: z.string().max(80).optional().default(""),
-    competitionLevel: z.enum(COMPETITION_LEVEL_OPTIONS),
+    competitionLevel: z.enum(COMPETITION_LEVEL_OPTIONS).optional(),
     gender: z.string().max(30).optional().default(""),
     parentEmail: z.email().optional().or(z.literal("")),
     shareInBenchmarks: z.coerce.boolean().optional().default(true),
     anonymizeForBenchmark: z.coerce.boolean().optional().default(true),
   })
   .superRefine((value, ctx) => {
-    if (value.age < 18 && !value.parentEmail) {
+    if (value.role === "ATHLETE" && typeof value.age !== "number") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["age"],
+        message: "Age is required for athletes.",
+      });
+    }
+
+    if (value.role === "ATHLETE" && !value.position) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["position"],
+        message: "Position is required for athletes.",
+      });
+    }
+
+    if (value.role === "ATHLETE" && !value.competitionLevel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["competitionLevel"],
+        message: "Competition level is required for athletes.",
+      });
+    }
+
+    if (value.role === "ATHLETE" && value.age !== undefined && value.age < 18 && !value.parentEmail) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["parentEmail"],
@@ -49,16 +77,49 @@ export const profileSchema = z
 export const submissionMetadataSchema = z
   .object({
     drillDefinitionId: z.string().min(1),
-    recordingDate: z.iso.datetime(),
+    recordingDate: z
+      .string()
+      .trim()
+      .min(1)
+      .transform((value, ctx) => {
+        const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) ? `${value}:00` : value;
+        const parsed = new Date(normalized);
+
+        if (Number.isNaN(parsed.getTime())) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Invalid recording date.",
+          });
+          return z.NEVER;
+        }
+
+        return parsed.toISOString();
+      }),
     location: z.string().min(2).max(80),
     drillType: z.string().min(2).max(80),
-    frameRate: z.coerce.number().min(10).max(240).optional(),
-    startFrame: z.coerce.number().int().min(0).optional(),
-    finishFrame: z.coerce.number().int().min(1).optional(),
-    repetitionHint: z.coerce.number().int().min(0).max(500).optional(),
+    frameRate: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().min(10).max(240).optional(),
+    ),
+    startFrame: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(0).optional(),
+    ),
+    finishFrame: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).optional(),
+    ),
+    repetitionHint: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(0).max(500).optional(),
+    ),
   })
   .superRefine((value, ctx) => {
-    if (value.startFrame && value.finishFrame && value.finishFrame <= value.startFrame) {
+    if (
+      value.startFrame !== undefined
+      && value.finishFrame !== undefined
+      && value.finishFrame <= value.startFrame
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["finishFrame"],

@@ -31,13 +31,27 @@ interface VideoStorageProvider {
 class LocalStorageProvider implements VideoStorageProvider {
   readonly provider: StorageProviderName = "local";
 
+  private getUploadsDir() {
+    const configuredDir = process.env.LOCAL_STORAGE_DIR?.trim();
+    if (configuredDir) {
+      return configuredDir;
+    }
+
+    const isServerlessRuntime = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    if (isServerlessRuntime) {
+      return "/tmp/athlemetry-uploads";
+    }
+
+    return path.join(process.cwd(), "uploads");
+  }
+
   private getAbsolutePath(storageKey: string) {
-    const uploadsDir = path.join(process.cwd(), "uploads");
+    const uploadsDir = this.getUploadsDir();
     return path.join(uploadsDir, storageKey.replaceAll("/", "_"));
   }
 
   async upload(input: UploadInput): Promise<StoredAsset> {
-    const uploadsDir = path.join(process.cwd(), "uploads");
+    const uploadsDir = this.getUploadsDir();
     await mkdir(uploadsDir, { recursive: true });
 
     const absolutePath = this.getAbsolutePath(input.key);
