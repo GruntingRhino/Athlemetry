@@ -1,0 +1,60 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Athlemetry" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation [ref=e6]:
+          - link "Drills" [ref=e7] [cursor=pointer]:
+            - /url: /drills
+          - link "Submissions" [ref=e8] [cursor=pointer]:
+            - /url: /submissions
+          - link "Dashboard" [ref=e9] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Benchmarking" [active] [ref=e10] [cursor=pointer]:
+            - /url: /benchmarking
+          - link "Privacy" [ref=e11] [cursor=pointer]:
+            - /url: /privacy
+      - generic [ref=e12]:
+        - generic [ref=e83]: ATHLETE
+        - link "QA Athlete" [ref=e84] [cursor=pointer]:
+          - /url: /profile
+        - button "Log out" [ref=e85]
+  - main [ref=e15]:
+    - generic [ref=e355]:
+      - generic [ref=e356]:
+        - heading "Position-based benchmarking" [level=1] [ref=e357]
+        - paragraph [ref=e358]: Cohorts are grouped by age, position, competition level, and gender. Benchmarks are anonymized.
+      - generic [ref=e359]:
+        - article [ref=e360]:
+          - generic [ref=e361]:
+            - generic [ref=e362]:
+              - paragraph [ref=e363]: 20-meter sprint
+              - paragraph [ref=e364]: sprint-20m|22-23|MID|academy|male
+            - generic [ref=e365]: 100.0%
+          - generic [ref=e366]:
+            - paragraph [ref=e367]: "Relative rank: #1"
+            - paragraph [ref=e368]: "Normalized score: -1.225"
+            - paragraph [ref=e369]: "Anonymized: Yes"
+        - article [ref=e370]:
+          - generic [ref=e371]:
+            - generic [ref=e372]:
+              - paragraph [ref=e373]: 20-meter sprint
+              - paragraph [ref=e374]: sprint-20m|22-23|MID|academy|male
+            - generic [ref=e375]: 100.0%
+          - generic [ref=e376]:
+            - paragraph [ref=e377]: "Relative rank: #1"
+            - paragraph [ref=e378]: "Normalized score: -1.000"
+            - paragraph [ref=e379]: "Anonymized: Yes"
+        - article [ref=e380]:
+          - generic [ref=e381]:
+            - generic [ref=e382]:
+              - paragraph [ref=e383]: 20-meter sprint
+              - paragraph [ref=e384]: sprint-20m|22-23|MID|academy|male
+            - generic [ref=e385]: 50.0%
+          - generic [ref=e386]:
+            - paragraph [ref=e387]: "Relative rank: #1"
+            - paragraph [ref=e388]: "Normalized score: 0.000"
+            - paragraph [ref=e389]: "Anonymized: Yes"
+  - alert [ref=e34]
+  - generic [ref=e354]: "0.75"

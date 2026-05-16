@@ -8,71 +8,35 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum Role {
-  ATHLETE
-  PARENT
-  COACH
-  ADMIN
-}
-
-enum ProcessingStatus {
-  QUEUED
-  PROCESSING
-  COMPLETED
-  FAILED
-  RETRYING
-}
-
-enum CompressionStatus {
-  NOT_REQUIRED
-  PENDING
-  COMPRESSED
-  FAILED
-}
-
-enum ReportStatus {
-  OPEN
-  IN_REVIEW
-  RESOLVED
-  DISMISSED
-}
-
-enum ExportStatus {
-  REQUESTED
-  READY
-  FAILED
-}
-
 model User {
-  id                    String    @id @default(cuid())
+  id                    String              @id @default(cuid())
   name                  String?
-  email                 String    @unique
+  email                 String              @unique
   emailVerified         DateTime?
   passwordHash          String
-  role                  Role      @default(ATHLETE)
+  role                  Role                @default(ATHLETE)
   age                   Int?
   position              String?
   team                  String?
   competitionLevel      String?
   gender                String?
   parentEmail           String?
-  parentConsentVerified Boolean   @default(false)
-  shareInBenchmarks     Boolean   @default(true)
-  anonymizeForBenchmark Boolean   @default(true)
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  parentConsentVerified Boolean             @default(false)
+  shareInBenchmarks     Boolean             @default(true)
+  anonymizeForBenchmark Boolean             @default(true)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
   deletedAt             DateTime?
-
-  accounts           Account[]
-  sessions           Session[]
-  submissions        DrillSubmission[]
-  benchmarkSnapshots BenchmarkSnapshot[]
-  consentLogs        ConsentLog[]        @relation("ConsentTarget")
-  consentActions     ConsentLog[]        @relation("ConsentActor")
-  reportsFiled       UserReport[]        @relation("ReportReporter")
-  reportsReviewed    UserReport[]        @relation("ReportReviewer")
-  manualOverrides    ManualOverride[]    @relation("OverrideAdmin")
-  exportRequests     DataExportRequest[]
+  accounts              Account[]
+  benchmarkSnapshots    BenchmarkSnapshot[]
+  consentActions        ConsentLog[]        @relation("ConsentActor")
+  consentLogs           ConsentLog[]        @relation("ConsentTarget")
+  exportRequests        DataExportRequest[]
+  submissions           DrillSubmission[]
+  manualOverrides       ManualOverride[]    @relation("OverrideAdmin")
+  sessions              Session[]
+  reportsFiled          UserReport[]        @relation("ReportReporter")
+  reportsReviewed       UserReport[]        @relation("ReportReviewer")
 
   @@index([role])
   @@index([age, position, competitionLevel])
@@ -84,15 +48,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -102,8 +65,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -115,30 +77,29 @@ model VerificationToken {
 }
 
 model DrillDefinition {
-  id                  String   @id @default(cuid())
-  slug                String   @unique
-  sport               String   @default("soccer")
+  id                  String               @id @default(cuid())
+  slug                String               @unique
+  sport               String               @default("soccer")
   name                String
   description         String
   guidelines          String
   instructionVideoUrl String?
-  metricPrimaryKey    String   @default("sprintTime")
-  lowerIsBetter       Boolean  @default(true)
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  submissions DrillSubmission[]
-  aggregates  BenchmarkAggregate[]
+  metricPrimaryKey    String               @default("sprintTime")
+  lowerIsBetter       Boolean              @default(true)
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  aggregates          BenchmarkAggregate[]
+  submissions         DrillSubmission[]
 
   @@index([sport, isActive])
 }
 
 model DrillSubmission {
-  id                  String            @id @default(cuid())
+  id                  String             @id @default(cuid())
   athleteId           String
   drillDefinitionId   String
-  submittedAt         DateTime          @default(now())
+  submittedAt         DateTime           @default(now())
   recordingDate       DateTime
   location            String
   drillType           String
@@ -146,34 +107,33 @@ model DrillSubmission {
   fileName            String
   fileSize            Int
   mimeType            String
-  storageProvider     String?
-  storageKey          String?
-  videoHash           String?
-  videoExpiresAt      DateTime?
-  videoDeletedAt      DateTime?
-  videoPurgeError     String?
-  retainVideoForAudit Boolean           @default(false)
-  compressionStatus   CompressionStatus @default(NOT_REQUIRED)
-  uploadProgress      Int               @default(0)
-  processingStatus    ProcessingStatus  @default(QUEUED)
-  processingAttempts  Int               @default(0)
+  compressionStatus   CompressionStatus  @default(NOT_REQUIRED)
+  uploadProgress      Int                @default(0)
+  processingStatus    ProcessingStatus   @default(QUEUED)
+  processingAttempts  Int                @default(0)
   lastError           String?
   frameRate           Float?
   startFrame          Int?
   finishFrame         Int?
   repetitionHint      Int?
   metadata            Json?
-  queuedAt            DateTime          @default(now())
+  queuedAt            DateTime           @default(now())
   startedAt           DateTime?
   completedAt         DateTime?
-
-  athlete            User                @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  drillDefinition    DrillDefinition     @relation(fields: [drillDefinitionId], references: [id])
-  metricResult       MetricResult?
-  benchmarkSnapshots BenchmarkSnapshot[]
-  processingLogs     ProcessingLog[]
-  manualOverrides    ManualOverride[]
-  userReports        UserReport[]
+  storageProvider     String?
+  storageKey          String?
+  videoHash           String?
+  videoExpiresAt      DateTime?
+  videoDeletedAt      DateTime?
+  videoPurgeError     String?
+  retainVideoForAudit Boolean            @default(false)
+  benchmarkSnapshots  BenchmarkSnapshot?
+  athlete             User               @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  drillDefinition     DrillDefinition    @relation(fields: [drillDefinitionId], references: [id])
+  manualOverrides     ManualOverride[]
+  metricResult        MetricResult?
+  processingLogs      ProcessingLog[]
+  userReports         UserReport[]
 
   @@index([athleteId, submittedAt])
   @@index([processingStatus, queuedAt])
@@ -182,8 +142,8 @@ model DrillSubmission {
 }
 
 model MetricResult {
-  id                           String   @id @default(cuid())
-  submissionId                 String   @unique
+  id                           String          @id @default(cuid())
+  submissionId                 String          @unique
   metricVersion                String
   sprintTime                   Float?
   accelerationTiming           Float?
@@ -197,35 +157,32 @@ model MetricResult {
   consistencyScore             Float?
   normalizedScore              Float?
   reliabilityScore             Float?
-  createdAt                    DateTime @default(now())
-
-  submission DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  createdAt                    DateTime        @default(now())
+  submission                   DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
 }
 
 model BenchmarkSnapshot {
-  id              String   @id @default(cuid())
+  id              String          @id @default(cuid())
   athleteId       String
-  submissionId    String
+  submissionId    String          @unique
   cohortKey       String
   percentile      Float
   relativeRank    Int
   normalizedScore Float
   distribution    Json
-  isAnonymized    Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  isAnonymized    Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  athlete         User            @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  submission      DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  athlete    User            @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  submission DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  @@unique([submissionId])
   @@index([cohortKey, createdAt])
   @@index([athleteId, createdAt])
 }
 
 model BenchmarkAggregate {
-  id                String   @id @default(cuid())
+  id                String          @id @default(cuid())
   cohortKey         String
   drillDefinitionId String
   metricName        String
@@ -234,9 +191,8 @@ model BenchmarkAggregate {
   stdDev            Float
   p50               Float
   p90               Float
-  lastRecalculated  DateTime @default(now())
-
-  drillDefinition DrillDefinition @relation(fields: [drillDefinitionId], references: [id], onDelete: Cascade)
+  lastRecalculated  DateTime        @default(now())
+  drillDefinition   DrillDefinition @relation(fields: [drillDefinitionId], references: [id], onDelete: Cascade)
 
   @@unique([cohortKey, drillDefinitionId, metricName])
   @@index([cohortKey, lastRecalculated])
@@ -250,42 +206,39 @@ model ConsentLog {
   granted     Boolean
   notes       String?
   createdAt   DateTime @default(now())
-
-  user  User  @relation("ConsentTarget", fields: [userId], references: [id], onDelete: Cascade)
-  actor User? @relation("ConsentActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor       User?    @relation("ConsentActor", fields: [actorUserId], references: [id])
+  user        User     @relation("ConsentTarget", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
 }
 
 model UserReport {
-  id           String       @id @default(cuid())
+  id           String           @id @default(cuid())
   reporterId   String
   submissionId String?
   reason       String
   details      String?
-  status       ReportStatus @default(OPEN)
+  status       ReportStatus     @default(OPEN)
   reviewedById String?
   reviewedAt   DateTime?
-  createdAt    DateTime     @default(now())
-
-  reporter   User             @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  reviewedBy User?            @relation("ReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-  submission DrillSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+  reporter     User             @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy   User?            @relation("ReportReviewer", fields: [reviewedById], references: [id])
+  submission   DrillSubmission? @relation(fields: [submissionId], references: [id])
 
   @@index([status, createdAt])
 }
 
 model ManualOverride {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   submissionId String
   adminId      String
   action       String
   notes        String?
   payload      Json?
-  createdAt    DateTime @default(now())
-
-  submission DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  admin      User            @relation("OverrideAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  createdAt    DateTime        @default(now())
+  admin        User            @relation("OverrideAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  submission   DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
   @@index([submissionId, createdAt])
 }
@@ -298,8 +251,7 @@ model ProcessingLog {
   attempt      Int
   durationMs   Int?
   createdAt    DateTime         @default(now())
-
-  submission DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submission   DrillSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
   @@index([submissionId, createdAt])
 }
@@ -359,8 +311,42 @@ model DataExportRequest {
   requestedAt DateTime     @default(now())
   completedAt DateTime?
   exportUrl   String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, requestedAt])
+}
+
+enum Role {
+  ATHLETE
+  PARENT
+  COACH
+  ADMIN
+}
+
+enum ProcessingStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+}
+
+enum CompressionStatus {
+  NOT_REQUIRED
+  PENDING
+  COMPRESSED
+  FAILED
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ExportStatus {
+  REQUESTED
+  READY
+  FAILED
 }

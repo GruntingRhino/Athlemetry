@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { PrismaClient, Role } from "@prisma/client";
+import "dotenv/config";
 
 const prisma = new PrismaClient();
 
@@ -21,7 +22,7 @@ const drillSeed = [
     description: "Change-of-direction shuttle using 5m and 10m splits.",
     guidelines:
       "Wide angle showing all cones, synchronized start cue, visible line touches.",
-    instructionVideoUrl: "https://www.youtube.com/watch?v=B-hsX94VsF8",
+    instructionVideoUrl: "https://www.youtube.com/results?search_query=5+10+5+agility+drill",
     metricPrimaryKey: "changeOfDirectionMeasurement",
     lowerIsBetter: true,
   },

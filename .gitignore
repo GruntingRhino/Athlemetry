@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Large model/data files
+*.dylib
+*.so
+*.abi3.so

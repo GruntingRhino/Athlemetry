@@ -1,0 +1,96 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Athlemetry" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation [ref=e6]:
+          - link "Drills" [ref=e7] [cursor=pointer]:
+            - /url: /drills
+          - link "Submissions" [ref=e8] [cursor=pointer]:
+            - /url: /submissions
+          - link "Dashboard" [active] [ref=e9] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Benchmarking" [ref=e10] [cursor=pointer]:
+            - /url: /benchmarking
+          - link "Privacy" [ref=e11] [cursor=pointer]:
+            - /url: /privacy
+      - generic [ref=e12]:
+        - generic [ref=e83]: ATHLETE
+        - link "QA Athlete" [ref=e84] [cursor=pointer]:
+          - /url: /profile
+        - button "Log out" [ref=e85]
+  - main [ref=e15]:
+    - generic [ref=e214]:
+      - generic [ref=e215]:
+        - article [ref=e216]:
+          - paragraph [ref=e217]: Completed drills
+          - paragraph [ref=e218]: "3"
+        - article [ref=e219]:
+          - paragraph [ref=e220]: Current percentile
+          - paragraph [ref=e221]: 100.0%
+        - article [ref=e222]:
+          - paragraph [ref=e223]: Consistency score
+          - paragraph [ref=e224]: "97.3"
+        - article [ref=e225]:
+          - paragraph [ref=e226]: Trend slope
+          - paragraph [ref=e227]: "-0.6670"
+      - generic [ref=e228]:
+        - generic [ref=e229]:
+          - heading "Performance trend timeline" [level=2] [ref=e230]
+          - link "Submit new drill" [ref=e231] [cursor=pointer]:
+            - /url: /submissions/new
+        - generic [ref=e234]:
+          - list [ref=e236]:
+            - listitem [ref=e237]:
+              - img "Percentile legend icon" [ref=e238]
+              - text: Percentile
+            - listitem [ref=e240]:
+              - img "Primary Metric legend icon" [ref=e241]
+              - text: Primary Metric
+          - application [ref=e243]:
+            - generic [ref=e272]:
+              - generic [ref=e273]:
+                - generic [ref=e275]: 2026-02-25
+                - generic [ref=e277]: 2026-02-25
+                - generic [ref=e279]: 2026-02-25
+              - generic [ref=e280]:
+                - generic [ref=e282]: "0"
+                - generic [ref=e284]: "2"
+                - generic [ref=e286]: "4"
+                - generic [ref=e288]: "6"
+                - generic [ref=e290]: "8"
+              - generic [ref=e291]:
+                - generic [ref=e293]: "0"
+                - generic [ref=e295]: "25"
+                - generic [ref=e297]: "50"
+                - generic [ref=e299]: "75"
+                - generic [ref=e301]: "100"
+      - generic [ref=e302]:
+        - article [ref=e303]:
+          - heading "Drill frequency summary" [level=2] [ref=e304]
+          - paragraph [ref=e305]: Frequency by drill type across historical submissions.
+          - application [ref=e310]:
+            - generic [ref=e326]:
+              - generic [ref=e329]: sprint-20m
+              - generic [ref=e330]:
+                - generic [ref=e332]: "0"
+                - generic [ref=e334]: "0.75"
+                - generic [ref=e336]: "1.5"
+                - generic [ref=e338]: "2.25"
+                - generic [ref=e340]: "3"
+        - article [ref=e341]:
+          - heading "Strengths and focus areas" [level=2] [ref=e342]
+          - generic [ref=e343]:
+            - generic [ref=e344]:
+              - heading "Strength indicators" [level=3] [ref=e345]
+              - list [ref=e346]:
+                - listitem [ref=e347]: High repeatability across drill sessions
+                - listitem [ref=e348]: Sufficient historical dataset for trend analysis
+            - generic [ref=e349]:
+              - heading "Suggested focus areas" [level=3] [ref=e350]
+              - list [ref=e351]:
+                - listitem [ref=e352]: Maintain current warmup and execution routine.
+                - listitem [ref=e353]: Percentiles are trending up; preserve progression plan.
+  - alert [ref=e34]
+  - generic [ref=e354]: "0.75"

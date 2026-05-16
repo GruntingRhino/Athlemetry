@@ -1,0 +1,39 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Athlemetry" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation [ref=e6]:
+          - link "Drills" [ref=e7] [cursor=pointer]:
+            - /url: /drills
+          - link "Submissions" [ref=e8] [cursor=pointer]:
+            - /url: /submissions
+          - link "Dashboard" [ref=e9] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Benchmarking" [ref=e10] [cursor=pointer]:
+            - /url: /benchmarking
+          - link "Privacy" [ref=e11] [cursor=pointer]:
+            - /url: /privacy
+      - generic [ref=e12]:
+        - link "Login" [ref=e13] [cursor=pointer]:
+          - /url: /login
+        - link "Register" [ref=e14] [cursor=pointer]:
+          - /url: /register
+  - main [ref=e15]:
+    - generic [ref=e69]:
+      - heading "Sign in" [level=1] [ref=e70]
+      - paragraph [ref=e71]: Use your Athlemetry account credentials.
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]: Email
+          - textbox "Email" [ref=e76]
+        - generic [ref=e77]:
+          - generic [ref=e78]: Password
+          - textbox "Password" [ref=e79]
+        - button "Sign in" [ref=e80]
+      - paragraph [ref=e81]:
+        - text: New user?
+        - link "Create an account" [ref=e82] [cursor=pointer]:
+          - /url: /register
+  - alert [ref=e34]
