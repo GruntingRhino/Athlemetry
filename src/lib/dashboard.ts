@@ -1,4 +1,5 @@
 import { differenceInDays } from "date-fns";
+import { type MetricResult } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -6,7 +7,75 @@ type TrendPoint = {
   date: string;
   value: number;
   percentile: number;
+  score: number | null;
 };
+
+const SCORE_FIELDS = [
+  "motionTrackingScore",
+  "errorToleranceScore",
+  "drillCompletionRate",
+  "consistencyScore",
+  "normalizedScore",
+  "reliabilityScore",
+] as const satisfies readonly (keyof MetricResult)[];
+
+function clampScore(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
+export function normalizeScoreToHundred(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  if (value >= 0 && value <= 1) {
+    return clampScore(value * 100);
+  }
+
+  // Treat small negative standardized scores as centered around 50.
+  if (value < 0 && value >= -5) {
+    return clampScore(50 + value * 10);
+  }
+
+  return clampScore(value);
+}
+
+function collectNormalizedScores(metricResult?: Pick<MetricResult, (typeof SCORE_FIELDS)[number]> | null) {
+  if (!metricResult) {
+    return [] as number[];
+  }
+
+  return SCORE_FIELDS
+    .map((field) => metricResult[field])
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value))
+    .map(normalizeScoreToHundred);
+}
+
+export function calculateSubmissionScore(
+  metricResult?: Pick<MetricResult, (typeof SCORE_FIELDS)[number]> | null,
+) {
+  const normalizedScores = collectNormalizedScores(metricResult);
+
+  if (!normalizedScores.length) {
+    return null;
+  }
+
+  const average = normalizedScores.reduce((sum, value) => sum + value, 0) / normalizedScores.length;
+  return Math.round(average * 10) / 10;
+}
+
+export function calculateAverageUserScore(
+  metricResults: Array<Pick<MetricResult, (typeof SCORE_FIELDS)[number]> | null | undefined>,
+) {
+  const scores = metricResults.flatMap((metricResult) => collectNormalizedScores(metricResult ?? null));
+
+  if (!scores.length) {
+    return 0;
+  }
+
+  const average = scores.reduce((sum, value) => sum + value, 0) / scores.length;
+  return Math.round(average * 10) / 10;
+}
 
 function toTimelineDelta(points: TrendPoint[]) {
   if (points.length < 2) {
@@ -49,7 +118,8 @@ export async function getAthleteDashboardData(userId: string) {
         item.metricResult?.changeOfDirectionMeasurement ??
         item.metricResult?.shotTiming ??
         Number(item.metricResult?.repetitionCount ?? 0),
-      percentile: item.benchmarkSnapshots[0]?.percentile ?? 50,
+      percentile: item.benchmarkSnapshots?.percentile ?? 50,
+      score: calculateSubmissionScore(item.metricResult),
     }));
 
   const values = timeline.map((point) => point.value);
@@ -59,10 +129,14 @@ export async function getAthleteDashboardData(userId: string) {
       ? values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length
       : 0;
   const consistencyScore = values.length ? Math.max(0, 100 - Math.sqrt(variance) * 10) : 0;
+  const averageScore = calculateAverageUserScore(submissions.map((item) => item.metricResult));
 
   const strengths = [
     consistencyScore > 75 ? "High repeatability across drill sessions" : "Consistency needs work",
     timeline.length >= 3 ? "Sufficient historical dataset for trend analysis" : "Collect more sessions for stronger trends",
+    averageScore >= 80
+      ? "Strong overall composite score across completed sessions"
+      : "Composite score can improve with more consistent outputs",
   ];
 
   const suggestions = [
@@ -79,6 +153,7 @@ export async function getAthleteDashboardData(userId: string) {
     timeline,
     trendSlope: toTimelineDelta(timeline),
     consistencyScore,
+    averageScore,
     drillFrequency,
     strengths,
     suggestions,

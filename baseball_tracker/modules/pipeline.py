@@ -66,6 +66,11 @@ def _import_metrics():
     return metrics
 
 
+def _import_pitching():
+    from modules import pitching
+    return pitching
+
+
 def _import_scoring():
     from modules import scoring
     return scoring
@@ -367,6 +372,36 @@ def stage_metrics(
         _mark_failed(result, "metrics", str(exc))
 
 
+def stage_pitch_analysis(
+    result: AnalysisResult,
+    config: AnalysisConfig,
+) -> None:
+    """Stage 7b: Pitch movement analysis from ball trajectory."""
+    if not result.ball_trajectory:
+        _mark_skipped(result, "pitch_analysis", "No ball trajectory available for pitch analysis")
+        return
+    if not result.video_metadata:
+        _mark_skipped(result, "pitch_analysis", "No video metadata available for pitch analysis")
+        return
+    logger.info("[pitch_analysis] Estimating pitch movement and spin proxy…")
+    try:
+        pitch = _import_pitching()
+        analysis = pitch.analyze_pitch_trajectory(result.ball_trajectory, result.video_metadata)
+        result.pitch_analysis = analysis
+        logger.info(
+            "[pitch_analysis] Spin proxy: %s rpm (confidence=%.2f, assessment=%s)",
+            f"{analysis.estimated_spin_rpm:.1f}" if analysis.estimated_spin_rpm is not None else "N/A",
+            analysis.confidence,
+            analysis.capture_assessment,
+        )
+        if analysis.confidence < 0.2:
+            _mark_partial(result, "pitch_analysis", "Low trajectory confidence — pitch estimates are approximate")
+        else:
+            _mark_ok(result, "pitch_analysis")
+    except Exception as exc:
+        _mark_failed(result, "pitch_analysis", str(exc))
+
+
 def stage_scoring(
     result: AnalysisResult,
     config: AnalysisConfig,
@@ -589,6 +624,11 @@ def run_analysis(
     # Stage 7: Metric computation
     # ------------------------------------------------------------------ #
     stage_metrics(result, config, poses, detections)
+
+    # ------------------------------------------------------------------ #
+    # Stage 7b: Pitch movement analysis
+    # ------------------------------------------------------------------ #
+    stage_pitch_analysis(result, config)
 
     # ------------------------------------------------------------------ #
     # Stage 8: Form scoring

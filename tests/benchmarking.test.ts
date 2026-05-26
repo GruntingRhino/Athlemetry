@@ -15,6 +15,13 @@ describe("benchmarking math", () => {
     expect(percentile).toBeCloseTo(75);
   });
 
+  it("computes higher-is-better percentile correctly", () => {
+    const values = [4.8, 5.1, 5.2, 5.4, 5.9];
+    const percentile = computePercentile([...values].reverse(), 5.4, false);
+
+    expect(percentile).toBeCloseTo(75);
+  });
+
   it("computes quantiles and stddev", () => {
     const values = [1, 2, 3, 4, 5];
 
@@ -36,5 +43,19 @@ describe("benchmarking math", () => {
     expect(key).toContain("12-13");
     expect(key).toContain("MID");
     expect(key).toContain("academy");
+  });
+
+  it("marks unknown age as unspecified", () => {
+    const key = buildCohortKey({
+      drillType: "sprint-20m",
+      athlete: {
+        age: null,
+        position: "MID",
+        competitionLevel: "academy",
+        gender: "female",
+      },
+    } as never);
+
+    expect(key).toContain("UNSPECIFIED");
   });
 });

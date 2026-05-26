@@ -15,6 +15,7 @@ type Point = {
   date: string;
   value: number;
   percentile: number;
+  score: number | null;
 };
 
 type PerformanceChartProps = {
@@ -33,7 +34,7 @@ export function PerformanceChart({ points }: PerformanceChartProps) {
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="date" />
           <YAxis yAxisId="left" />
-          <YAxis yAxisId="right" orientation="right" />
+          <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
           <Tooltip />
           <Legend />
           <Line
@@ -43,7 +44,7 @@ export function PerformanceChart({ points }: PerformanceChartProps) {
             stroke="#2563eb"
             strokeWidth={2}
             dot={{ r: 2 }}
-            name="Primary Metric"
+            name="Primary metric"
           />
           <Line
             yAxisId="right"
@@ -53,6 +54,15 @@ export function PerformanceChart({ points }: PerformanceChartProps) {
             strokeWidth={2}
             dot={{ r: 2 }}
             name="Percentile"
+          />
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="score"
+            stroke="#f59e0b"
+            strokeWidth={2}
+            dot={{ r: 2 }}
+            name="Composite score"
           />
         </LineChart>
       </ResponsiveContainer>

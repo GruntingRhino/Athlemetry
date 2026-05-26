@@ -2,20 +2,46 @@ import { type DrillSubmission, type MetricResult } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
+function sortAscending(values: number[]) {
+  return [...values].sort((a, b) => a - b);
+}
+
+function getAgeBand(age: number | null | undefined) {
+  if (typeof age !== "number" || !Number.isFinite(age)) {
+    return { label: "UNSPECIFIED", min: null as number | null, max: null as number | null };
+  }
+
+  const ageBandBase = Math.floor(age / 2) * 2;
+  return {
+    label: `${ageBandBase}-${ageBandBase + 1}`,
+    min: ageBandBase,
+    max: ageBandBase + 1,
+  };
+}
+
 export function computePercentile(sortedValues: number[], value: number, lowerIsBetter: boolean) {
   if (sortedValues.length <= 1) {
     return 50;
   }
 
+  const values = sortAscending(sortedValues);
+  const first = values.findIndex((candidate) => candidate === value);
+  const last = values.length - 1 - [...values].reverse().findIndex((candidate) => candidate === value);
+  const lowerBound = first === -1 ? values.findIndex((candidate) => candidate > value) : first;
+  const upperBound = last === values.length ? values.findIndex((candidate) => candidate > value) - 1 : last;
+
+  const avgIndex =
+    lowerBound === -1
+      ? values.length - 1
+      : upperBound === -1
+        ? 0
+        : (lowerBound + upperBound) / 2;
+
   if (lowerIsBetter) {
-    const rank = sortedValues.findIndex((candidate) => candidate >= value);
-    const effectiveRank = rank === -1 ? sortedValues.length - 1 : rank;
-    return ((sortedValues.length - effectiveRank - 1) / (sortedValues.length - 1)) * 100;
+    return ((values.length - 1 - avgIndex) / (values.length - 1)) * 100;
   }
 
-  const rank = sortedValues.findIndex((candidate) => candidate <= value);
-  const effectiveRank = rank === -1 ? sortedValues.length - 1 : rank;
-  return ((sortedValues.length - effectiveRank - 1) / (sortedValues.length - 1)) * 100;
+  return (avgIndex / (values.length - 1)) * 100;
 }
 
 export function computeStdDev(values: number[], mean: number) {
@@ -33,14 +59,15 @@ export function computeQuantile(values: number[], q: number) {
     return 0;
   }
 
-  const index = (values.length - 1) * q;
+  const sorted = sortAscending(values);
+  const index = (sorted.length - 1) * q;
   const low = Math.floor(index);
   const high = Math.ceil(index);
   if (low === high) {
-    return values[low];
+    return sorted[low];
   }
 
-  return values[low] + (values[high] - values[low]) * (index - low);
+  return sorted[low] + (sorted[high] - sorted[low]) * (index - low);
 }
 
 function valueFromMetric(metric: MetricResult, metricKey: string): number {
@@ -62,8 +89,7 @@ export function buildCohortKey(
     };
   },
 ) {
-  const ageBandBase = Math.floor((submission.athlete.age ?? 0) / 2) * 2;
-  const ageBand = `${ageBandBase}-${ageBandBase + 1}`;
+  const ageBand = getAgeBand(submission.athlete.age).label;
   const position = submission.athlete.position ?? "UNSPECIFIED";
   const level = submission.athlete.competitionLevel ?? "UNSPECIFIED";
   const gender = submission.athlete.gender ?? "UNSPECIFIED";
@@ -98,6 +124,7 @@ export async function recalculateBenchmarksForSubmission(submissionId: string) {
   const ownValue = valueFromMetric(submission.metricResult, metricKey);
 
   const key = buildCohortKey(submission);
+  const ageBand = getAgeBand(submission.athlete.age);
 
   const cohort = await prisma.drillSubmission.findMany({
     where: {
@@ -105,7 +132,9 @@ export async function recalculateBenchmarksForSubmission(submissionId: string) {
       processingStatus: "COMPLETED",
       athlete: {
         deletedAt: null,
-        age: submission.athlete.age,
+        ...(ageBand.min === null || ageBand.max === null
+          ? { age: null }
+          : { age: { gte: ageBand.min, lte: ageBand.max } }),
         position: submission.athlete.position,
         competitionLevel: submission.athlete.competitionLevel,
         gender: submission.athlete.gender,
@@ -134,7 +163,8 @@ export async function recalculateBenchmarksForSubmission(submissionId: string) {
   const pct = computePercentile(sorted, ownValue, lowerIsBetter);
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
   const sd = computeStdDev(values, mean);
-  const normalizedScore = sd === 0 ? 0 : (ownValue - mean) / sd;
+  const normalizedScore =
+    sd === 0 ? 0 : lowerIsBetter ? (mean - ownValue) / sd : (ownValue - mean) / sd;
 
   const relativeRank = lowerIsBetter
     ? sorted.findIndex((value) => value >= ownValue) + 1

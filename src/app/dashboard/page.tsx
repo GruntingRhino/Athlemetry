@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-5">
         <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-slate-500">Completed drills</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{data.submissions.length}</p>
@@ -29,6 +29,11 @@ export default async function DashboardPage() {
         <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-slate-500">Current percentile</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{formatPercent(currentPercentile)}</p>
+        </article>
+        <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Average score</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">{data.averageScore.toFixed(1)}/100</p>
+          <p className="mt-1 text-xs text-slate-500">Average of scored fields across completed sessions</p>
         </article>
         <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-slate-500">Consistency score</p>
@@ -41,8 +46,11 @@ export default async function DashboardPage() {
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Performance trend timeline</h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Performance trend timeline</h2>
+            <p className="text-sm text-slate-600">Primary metric, benchmark percentile, and composite score progression.</p>
+          </div>
           <Link href="/submissions/new" className="text-sm font-medium text-slate-700 underline">
             Submit new drill
           </Link>

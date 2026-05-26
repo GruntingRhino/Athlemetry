@@ -78,6 +78,49 @@ def _print_result_summary(result) -> None:
             f"[cal={sp.calibration_mode}]"
         )
 
+    pitch_table = None
+    if result.pitch_analysis:
+        pa = result.pitch_analysis
+        pitch_table = Table(title="Pitch Metrics", show_header=True, header_style="bold magenta")
+        pitch_table.add_column("Metric", style="cyan")
+        pitch_table.add_column("Value", style="white")
+
+        pitch_table.add_row("Capture assessment", pa.capture_assessment)
+        pitch_table.add_row("Confidence", f"{pa.confidence:.2f}")
+        pitch_table.add_row("Pitch type hint", pa.pitch_type_hint or "N/A")
+        pitch_table.add_row("Estimated spin", f"{pa.estimated_spin_rpm:.1f} rpm" if pa.estimated_spin_rpm else "N/A")
+        pitch_table.add_row(
+            "Spin band",
+            f"{pa.spin_rpm_band[0]:.1f}–{pa.spin_rpm_band[1]:.1f} rpm" if pa.spin_rpm_band else "N/A",
+        )
+        pitch_table.add_row(
+            "Movement break",
+            (
+                f"{pa.horizontal_break_px:+.1f}px horiz, {pa.vertical_break_px:+.1f}px vert"
+                if pa.horizontal_break_px is not None and pa.vertical_break_px is not None
+                else "N/A"
+            ),
+        )
+        pitch_table.add_row(
+            "Approach angle",
+            f"{pa.approach_angle_deg:.2f}°" if pa.approach_angle_deg is not None else "N/A",
+        )
+        pitch_table.add_row(
+            "Total movement",
+            f"{pa.total_movement_px:.1f}px" if pa.total_movement_px is not None else "N/A",
+        )
+        if pa.notes:
+            pitch_table.add_row("Notes", "\n".join(pa.notes[:3]))
+        if pa.limitations:
+            pitch_table.add_row("Limitations", "\n".join(pa.limitations[:3]))
+
+        lines.append(
+            f"Pitch Movement: {pa.estimated_spin_rpm:.1f} rpm" if pa.estimated_spin_rpm else "Pitch Movement: N/A"
+        )
+        lines.append(
+            f"  [confidence={pa.confidence:.2f}] [assessment={pa.capture_assessment}] [hint={pa.pitch_type_hint}]"
+        )
+
     if result.form_scores:
         fs = result.form_scores
         score_str = f"{fs.overall_score:.2f}" if fs.overall_score is not None else "N/A"
@@ -102,6 +145,9 @@ def _print_result_summary(result) -> None:
 
     if lines:
         console.print(Panel("\n".join(lines), title="Results", border_style="cyan"))
+
+    if pitch_table:
+        console.print(pitch_table)
 
     # Artifacts
     arts = result.artifacts

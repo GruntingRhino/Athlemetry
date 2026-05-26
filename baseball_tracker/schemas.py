@@ -149,6 +149,30 @@ class BallTrajectory(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Pitch analysis
+# ---------------------------------------------------------------------------
+
+class PitchAnalysis(BaseModel):
+    """Conservative pitcher/pitch movement analysis from smartphone footage."""
+
+    estimated_release_frame: Optional[int] = None
+    estimated_release_point: Optional[TrackPoint] = None
+    release_speed_px_per_frame: Optional[float] = None
+    horizontal_break_px: Optional[float] = None
+    vertical_break_px: Optional[float] = None
+    total_movement_px: Optional[float] = None
+    max_curve_px: Optional[float] = None
+    approach_angle_deg: Optional[float] = None
+    estimated_spin_rpm: Optional[float] = None
+    spin_rpm_band: Optional[Tuple[float, float]] = None
+    capture_assessment: str = "unknown"
+    confidence: float = 0.0
+    pitch_type_hint: Optional[str] = None
+    notes: List[str] = Field(default_factory=list)
+    limitations: List[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
 # Swing event segmentation
 # ---------------------------------------------------------------------------
 
@@ -285,6 +309,7 @@ class AnalysisResult(BaseModel):
     detections_summary: Optional[DetectionSummary] = None
     swing_phases: Optional[SwingEventSegmentation] = None
     ball_trajectory: Optional[BallTrajectory] = None
+    pitch_analysis: Optional[PitchAnalysis] = None
     swing_speed: Optional[SwingSpeed] = None
     form_scores: Optional[FormScores] = None
     ollama_feedback: Optional[OllamaFeedback] = None

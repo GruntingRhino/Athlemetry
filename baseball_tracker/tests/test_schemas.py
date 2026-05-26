@@ -15,6 +15,7 @@ from schemas import (
     DetectionSummary,
     TrackPoint,
     BallTrajectory,
+    PitchAnalysis,
     SwingPhase,
     SwingEventSegmentation,
     SwingSpeed,
@@ -164,6 +165,27 @@ class TestBallTrajectory:
         )
         interpolated_count = sum(1 for p in traj.points if p.interpolated)
         assert interpolated_count == 3  # frames 0, 3, 6
+
+
+# ---------------------------------------------------------------------------
+# PitchAnalysis
+# ---------------------------------------------------------------------------
+
+class TestPitchAnalysis:
+    def test_schema_serializes(self):
+        point = TrackPoint(frame_idx=0, timestamp_sec=0.0, x=100.0, y=200.0, confidence=0.9)
+        pitch = PitchAnalysis(
+            estimated_release_frame=0,
+            estimated_release_point=point,
+            estimated_spin_rpm=2200.0,
+            spin_rpm_band=(1900.0, 2500.0),
+            confidence=0.72,
+            capture_assessment="smartphone_moderate",
+        )
+        dumped = pitch.model_dump()
+        assert dumped["estimated_release_frame"] == 0
+        assert dumped["estimated_spin_rpm"] == 2200.0
+        assert dumped["spin_rpm_band"] == (1900.0, 2500.0)
 
 
 # ---------------------------------------------------------------------------
