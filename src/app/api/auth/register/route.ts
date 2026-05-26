@@ -57,24 +57,28 @@ export async function POST(request: Request) {
     },
   });
 
-  await prisma.consentLog.create({
-    data: {
-      userId: user.id,
-      consentType: "ACCOUNT_REGISTRATION",
-      granted: true,
-      notes: `Initial registration via role=${user.role}`,
-    },
-  });
-
-  if (isAthlete && data.age !== undefined && data.age < 18) {
+  try {
     await prisma.consentLog.create({
       data: {
         userId: user.id,
-        consentType: "PARENTAL_APPROVAL_REQUIRED",
-        granted: false,
-        notes: `Awaiting approval from ${data.parentEmail}`,
+        consentType: "ACCOUNT_REGISTRATION",
+        granted: true,
+        notes: `Initial registration via role=${user.role}`,
       },
     });
+
+    if (isAthlete && data.age !== undefined && data.age < 18) {
+      await prisma.consentLog.create({
+        data: {
+          userId: user.id,
+          consentType: "PARENTAL_APPROVAL_REQUIRED",
+          granted: false,
+          notes: `Awaiting approval from ${data.parentEmail}`,
+        },
+      });
+    }
+  } catch (error) {
+    console.warn("Registration consent log write failed; continuing signup.", error);
   }
 
   return NextResponse.json({
