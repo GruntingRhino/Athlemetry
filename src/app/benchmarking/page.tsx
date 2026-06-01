@@ -1,15 +1,25 @@
+import { BackToSports } from "@/components/layout/back-to-sports";
 import { requireUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { formatPercent } from "@/lib/utils";
+import { normalizeSport } from "@/lib/drills";
+import { SPORT_LABELS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
-export default async function BenchmarkingPage() {
+export default async function BenchmarkingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ sport?: string }> | { sport?: string };
+}) {
   const user = await requireUser();
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const sport = typeof resolvedSearchParams.sport === "string" && resolvedSearchParams.sport.trim() ? normalizeSport(resolvedSearchParams.sport) : null;
 
   const snapshots = await prisma.benchmarkSnapshot.findMany({
     where: {
       athleteId: user.id,
+      ...(sport ? { submission: { drillDefinition: { sport } } } : {}),
     },
     include: {
       submission: {
@@ -25,10 +35,16 @@ export default async function BenchmarkingPage() {
 
   return (
     <div className="space-y-5">
+      <BackToSports />
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Position-based benchmarking</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">{sport ? `${SPORT_LABELS[sport]} benchmarking` : "Position-based benchmarking"}</p>
+        <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+          {sport ? `${SPORT_LABELS[sport]} cohort comparisons` : "Position-based benchmarking"}
+        </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Cohorts are grouped by age, position, competition level, and gender. Benchmarks are anonymized.
+          {sport
+            ? `Benchmarks are filtered to ${SPORT_LABELS[sport].toLowerCase()} so the cohort view stays sport-specific.`
+            : "Cohorts are grouped by age, position, competition level, and gender. Benchmarks are anonymized."}
         </p>
       </section>
 

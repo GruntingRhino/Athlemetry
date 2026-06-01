@@ -1,4 +1,5 @@
 import { PrivacyActions } from "@/components/forms/privacy-actions";
+import { BackToSports } from "@/components/layout/back-to-sports";
 import { requireUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 
@@ -15,8 +16,10 @@ export default async function PrivacyPage() {
 
   return (
     <div className="space-y-5">
+      <BackToSports />
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Privacy and compliance</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">Settings</p>
+        <h1 className="mt-2 text-2xl font-semibold text-slate-900">Privacy and compliance</h1>
         <p className="mt-1 text-sm text-slate-600">
           Manage consent state, export personal data, and request account deletion.
         </p>

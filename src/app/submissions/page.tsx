@@ -1,10 +1,13 @@
 import Link from "next/link";
 
 import { ReportForm } from "@/components/forms/report-form";
+import { BackToSports } from "@/components/layout/back-to-sports";
 import { requireUser } from "@/lib/authz";
 import { calculateSubmissionScore } from "@/lib/dashboard";
 import { prisma } from "@/lib/prisma";
 import { formatPercent, formatSeconds } from "@/lib/utils";
+import { normalizeSport } from "@/lib/drills";
+import { SPORT_LABELS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +35,25 @@ function readAnalysisSummary(metadata: unknown): AnalysisSummary | null {
   return summary as AnalysisSummary;
 }
 
-export default async function SubmissionsPage() {
+export default async function SubmissionsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ sport?: string }> | { sport?: string };
+}) {
   const user = await requireUser();
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const sport = typeof resolvedSearchParams.sport === "string" && resolvedSearchParams.sport.trim() ? normalizeSport(resolvedSearchParams.sport) : null;
 
   const submissions = await prisma.drillSubmission.findMany({
-    where: user.role === "ADMIN" ? {} : { athleteId: user.id },
+    where:
+      user.role === "ADMIN"
+        ? sport
+          ? { drillDefinition: { sport } }
+          : {}
+        : {
+            athleteId: user.id,
+            ...(sport ? { drillDefinition: { sport } } : {}),
+          },
     include: {
       metricResult: true,
       benchmarkSnapshots: true,
@@ -49,16 +66,26 @@ export default async function SubmissionsPage() {
 
   return (
     <div className="space-y-5">
+      <BackToSports />
       <section className="rounded-[32px] border border-emerald-100 bg-white p-6 shadow-sm md:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Submission archive</p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950">Uploads, processing status, and analysis notes.</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+              {sport ? `${SPORT_LABELS[sport]} submissions` : "Submission archive"}
+            </p>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950">
+              {sport ? `${SPORT_LABELS[sport]} uploads, processing status, and analysis notes.` : "Uploads, processing status, and analysis notes."}
+            </h1>
             <p className="mt-3 text-base leading-7 text-slate-600">
-              Baseball uploads now surface explicit clarity notes instead of silently hiding what the model cannot support.
+              {sport
+                ? `${SPORT_LABELS[sport]} submissions stay in one lane so you can jump from upload to dashboard without mixing sports.`
+                : "Baseball uploads now surface explicit clarity notes instead of silently hiding what the model cannot support."}
             </p>
           </div>
-          <Link href="/submissions/new" className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700">
+          <Link
+            href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"}
+            className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
+          >
             New submission
           </Link>
         </div>

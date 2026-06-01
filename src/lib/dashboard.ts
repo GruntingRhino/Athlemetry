@@ -2,6 +2,7 @@ import { differenceInDays } from "date-fns";
 import { type MetricResult } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { normalizeSport } from "@/lib/drills";
 
 type TrendPoint = {
   date: string;
@@ -88,11 +89,13 @@ function toTimelineDelta(points: TrendPoint[]) {
   return (last.value - first.value) / days;
 }
 
-export async function getAthleteDashboardData(userId: string) {
+export async function getAthleteDashboardData(userId: string, sport?: string | null) {
+  const normalizedSport = sport ? normalizeSport(sport) : null;
   const submissions = await prisma.drillSubmission.findMany({
     where: {
       athleteId: userId,
       processingStatus: "COMPLETED",
+      ...(normalizedSport ? { drillDefinition: { sport: normalizedSport } } : {}),
     },
     include: {
       drillDefinition: true,

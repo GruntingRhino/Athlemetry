@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { buildSportHref } from "@/lib/sport-navigation";
+
 const sports = [
   {
     id: "soccer",
@@ -26,10 +28,17 @@ const sports = [
   },
 ] as const;
 
+const sportActions = [
+  { key: "uploads", label: "Uploads" },
+  { key: "submissions", label: "Submissions" },
+  { key: "dashboard", label: "Dashboard" },
+  { key: "benchmarking", label: "Benchmarking" },
+] as const;
+
 export default function Home() {
   return (
     <div className="space-y-8">
-      <section className="overflow-hidden rounded-[32px] border border-emerald-100 bg-white shadow-[0_30px_80px_-40px_rgba(16,24,16,0.35)]">
+      <section id="sports" className="overflow-hidden rounded-[32px] border border-emerald-100 bg-white shadow-[0_30px_80px_-40px_rgba(16,24,16,0.35)]">
         <div className="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="p-8 md:p-12">
             <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
@@ -43,10 +52,10 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/submissions/new"
+                href={buildSportHref("uploads", "soccer")}
                 className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
               >
-                Upload a drill
+                Start with Soccer
               </Link>
               <Link
                 href="/drills"
@@ -58,8 +67,8 @@ export default function Home() {
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {[
                 ["Honest confidence", "If the video is not clear enough for RPM or contact-quality interpretation, the product should say that instead of guessing."],
-                ["Upload-first workflow", "Athletes can submit clips from multiple angles with drill-specific guidance before any deeper tracking stack exists."],
-                ["Revenue-ready polish", "Sport-specific surfaces, richer visuals, and coach-readable reporting make the product easier to demo and sell."],
+                ["Sport-specific surfaces", "Soccer, baseball, and basketball each get their own uploads, submissions, dashboards, and benchmarking entry points."],
+                ["Settings in one place", "Privacy and related account controls live under settings instead of cluttering the sport workflows."],
               ].map(([title, body]) => (
                 <article key={title} className="rounded-3xl border border-slate-100 bg-slate-50/80 p-4">
                   <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
@@ -92,7 +101,7 @@ export default function Home() {
 
       <section className="grid gap-5 lg:grid-cols-3">
         {sports.map((sport) => (
-          <article key={sport.id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+          <article key={sport.id} id={sport.id} className="scroll-mt-28 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
             <div className="h-52 bg-slate-200 bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(6, 78, 59, 0.18), rgba(15, 23, 42, 0.45)), url('${sport.image}')` }} />
             <div className="p-6">
               <div className="flex items-center justify-between gap-3">
@@ -102,13 +111,16 @@ export default function Home() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">{sport.description}</p>
-              <div className="mt-5 flex gap-3">
-                <Link href={`/drills#${sport.id}`} className="text-sm font-semibold text-emerald-700 hover:text-emerald-800">
-                  Open section
-                </Link>
-                <Link href="/submissions/new" className="text-sm font-semibold text-slate-700 hover:text-slate-950">
-                  Upload flow
-                </Link>
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                {sportActions.map((action) => (
+                  <Link
+                    key={action.key}
+                    href={buildSportHref(action.key, sport.id)}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800"
+                  >
+                    {action.label}
+                  </Link>
+                ))}
               </div>
             </div>
           </article>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BackToSports } from "@/components/layout/back-to-sports";
 import { getAvailableDrills, groupDrillsBySport } from "@/lib/drills";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export default async function DrillsPage() {
 
   return (
     <div className="space-y-6">
+      <BackToSports />
       <section className="rounded-[32px] border border-emerald-100 bg-white p-8 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
