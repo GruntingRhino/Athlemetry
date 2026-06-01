@@ -5,6 +5,9 @@ export type ExtractionInput = {
   finishFrame?: number | null;
   repetitionHint?: number | null;
   fileSize: number;
+  cameraAngle?: string | null;
+  clipQuality?: string | null;
+  measurementDistanceFeet?: number | null;
 };
 
 export type ExtractedMetrics = {

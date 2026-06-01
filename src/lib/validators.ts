@@ -113,6 +113,23 @@ export const submissionMetadataSchema = z
       emptyToUndefined,
       z.coerce.number().int().min(0).max(500).optional(),
     ),
+    cameraAngle: z.preprocess(
+      emptyToUndefined,
+      z.enum(["side", "open-side", "behind-pitcher", "behind-catcher", "front-on", "overhead", "unknown"]).optional(),
+    ),
+    athleteHandedness: z.preprocess(
+      emptyToUndefined,
+      z.enum(["right", "left", "switch", "unknown"]).optional(),
+    ),
+    clipQuality: z.preprocess(
+      emptyToUndefined,
+      z.enum(["excellent", "good", "fair", "poor"]).optional(),
+    ),
+    measurementDistanceFeet: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().positive().max(200).optional(),
+    ),
+    notes: z.preprocess(emptyToUndefined, z.string().trim().max(500).optional()),
   })
   .superRefine((value, ctx) => {
     if (

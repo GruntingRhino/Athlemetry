@@ -75,6 +75,11 @@ export async function POST(request: Request) {
     startFrame: formData.get("startFrame"),
     finishFrame: formData.get("finishFrame"),
     repetitionHint: formData.get("repetitionHint"),
+    cameraAngle: formData.get("cameraAngle"),
+    athleteHandedness: formData.get("athleteHandedness"),
+    clipQuality: formData.get("clipQuality"),
+    measurementDistanceFeet: formData.get("measurementDistanceFeet"),
+    notes: formData.get("notes"),
   });
 
   if (!parsed.success) {
@@ -121,6 +126,12 @@ export async function POST(request: Request) {
           originalName: file.name,
           storagePolicy: "metrics-first",
           videoRetentionHours: Number.parseInt(process.env.VIDEO_RETENTION_HOURS ?? "24", 10),
+          sport: drill.sport,
+          cameraAngle: parsed.data.cameraAngle ?? "unknown",
+          athleteHandedness: parsed.data.athleteHandedness ?? "unknown",
+          clipQuality: parsed.data.clipQuality ?? "good",
+          measurementDistanceFeet: parsed.data.measurementDistanceFeet ?? null,
+          notes: parsed.data.notes ?? null,
         },
       },
     });

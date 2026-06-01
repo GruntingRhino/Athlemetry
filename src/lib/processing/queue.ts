@@ -1,5 +1,6 @@
 import { ProcessingStatus } from "@prisma/client";
 
+import { buildAnalysisSummary } from "@/lib/analysis-summary";
 import { recalculateBenchmarksForSubmission } from "@/lib/benchmarking";
 import { extractMetrics } from "@/lib/metrics/engine";
 import { prisma } from "@/lib/prisma";
@@ -121,6 +122,11 @@ export async function processSubmission(submissionId: string) {
   });
 
   try {
+    const metadata =
+      submission.metadata && typeof submission.metadata === "object" && !Array.isArray(submission.metadata)
+        ? (submission.metadata as Record<string, unknown>)
+        : {};
+
     const metrics = extractMetrics({
       drillSlug: submission.drillDefinition.slug,
       frameRate: submission.frameRate,
@@ -128,11 +134,15 @@ export async function processSubmission(submissionId: string) {
       finishFrame: submission.finishFrame,
       repetitionHint: submission.repetitionHint,
       fileSize: submission.fileSize,
+      cameraAngle: typeof metadata.cameraAngle === "string" ? metadata.cameraAngle : null,
+      clipQuality: typeof metadata.clipQuality === "string" ? metadata.clipQuality : null,
+      measurementDistanceFeet:
+        typeof metadata.measurementDistanceFeet === "number" ? metadata.measurementDistanceFeet : null,
     });
 
     const modelVersion = await activeModelVersion();
 
-    await prisma.metricResult.upsert({
+    const persistedMetrics = await prisma.metricResult.upsert({
       where: { submissionId },
       update: {
         ...metrics,
@@ -147,6 +157,17 @@ export async function processSubmission(submissionId: string) {
       },
     });
 
+    const analysisSummary = buildAnalysisSummary(
+      {
+        drillType: submission.drillDefinition.slug,
+        metadata: {
+          ...metadata,
+          sport: submission.drillDefinition.sport,
+        },
+      },
+      persistedMetrics,
+    );
+
     await prisma.drillSubmission.update({
       where: { id: submissionId },
       data: {
@@ -154,6 +175,12 @@ export async function processSubmission(submissionId: string) {
         completedAt: new Date(),
         uploadProgress: 100,
         lastError: null,
+        metadata: {
+          ...metadata,
+          sport: submission.drillDefinition.sport,
+          analysisSummary,
+          analyzedAt: new Date().toISOString(),
+        },
       },
     });
 

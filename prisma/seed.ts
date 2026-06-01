@@ -2,64 +2,9 @@ import bcrypt from "bcryptjs";
 import { PrismaClient, Role } from "@prisma/client";
 import "dotenv/config";
 
-const prisma = new PrismaClient();
+import { STANDARD_DRILLS } from "../src/lib/constants";
 
-const drillSeed = [
-  {
-    slug: "sprint-20m",
-    name: "20-meter sprint",
-    description: "Linear sprint across 20 meters.",
-    guidelines:
-      "Camera 90° side angle, full body in frame, fixed tripod, clear start/finish markers.",
-    instructionVideoUrl:
-      "https://www.youtube.com/results?search_query=20+meter+sprint+soccer+drill+instruction",
-    metricPrimaryKey: "sprintTime",
-    lowerIsBetter: true,
-  },
-  {
-    slug: "agility-5-10-5",
-    name: "5-10-5 agility drill",
-    description: "Change-of-direction shuttle using 5m and 10m splits.",
-    guidelines:
-      "Wide angle showing all cones, synchronized start cue, visible line touches.",
-    instructionVideoUrl: "https://www.youtube.com/results?search_query=5+10+5+agility+drill",
-    metricPrimaryKey: "changeOfDirectionMeasurement",
-    lowerIsBetter: true,
-  },
-  {
-    slug: "shooting-accuracy",
-    name: "Shooting accuracy drill",
-    description: "Timed shot cycle and target-hit tracking.",
-    guidelines:
-      "Behind-goal camera, visible target zones, fixed distance to goal.",
-    instructionVideoUrl:
-      "https://www.youtube.com/results?search_query=soccer+shooting+accuracy+drill+instruction",
-    metricPrimaryKey: "shotTiming",
-    lowerIsBetter: true,
-  },
-  {
-    slug: "cone-dribble",
-    name: "Cone dribble drill",
-    description: "Dribble through fixed cone layout and return.",
-    guidelines:
-      "Top-side view preferred, consistent cone spacing, full path visible.",
-    instructionVideoUrl:
-      "https://www.youtube.com/results?search_query=soccer+cone+dribbling+drill+instruction",
-    metricPrimaryKey: "consistencyScore",
-    lowerIsBetter: false,
-  },
-  {
-    slug: "shuttle-endurance",
-    name: "Shuttle endurance test",
-    description: "Multi-repetition shuttle workload test.",
-    guidelines:
-      "Field-length framing, clear rep markers, uninterrupted recording.",
-    instructionVideoUrl:
-      "https://www.youtube.com/results?search_query=soccer+shuttle+endurance+test+instruction",
-    metricPrimaryKey: "repetitionCount",
-    lowerIsBetter: false,
-  },
-];
+const prisma = new PrismaClient();
 
 const positions = [
   { code: "GK", label: "Goalkeeper" },
@@ -87,7 +32,7 @@ async function main() {
     },
   });
 
-  for (const drill of drillSeed) {
+  for (const drill of STANDARD_DRILLS) {
     await prisma.drillDefinition.upsert({
       where: { slug: drill.slug },
       update: drill,
@@ -104,11 +49,11 @@ async function main() {
   }
 
   await prisma.modelVersion.upsert({
-    where: { version: "v1.0.0" },
-    update: { isActive: true, notes: "Initial deterministic rule-based extractor." },
+    where: { version: "v1.1.0" },
+    update: { isActive: true, notes: "Expanded sport-aware deterministic extractor with conservative baseball notes." },
     create: {
-      version: "v1.0.0",
-      notes: "Initial deterministic rule-based extractor.",
+      version: "v1.1.0",
+      notes: "Expanded sport-aware deterministic extractor with conservative baseball notes.",
       isActive: true,
     },
   });

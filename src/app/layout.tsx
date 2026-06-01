@@ -4,9 +4,9 @@ import { Navigation } from "@/components/layout/navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Athlemetry - Soccer Performance Intelligence Engine",
+  title: "Athlemetry - Multi-sport video performance intelligence",
   description:
-    "Structured drill-based athletic measurement, benchmarking, and longitudinal analytics for youth soccer.",
+    "Structured multi-sport drill uploads, conservative metric extraction, and benchmark-ready athlete reporting for soccer, baseball, and the next sports coming online.",
 };
 
 export default function RootLayout({
@@ -16,9 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900 antialiased">
+      <body className="bg-[var(--background)] text-slate-900 antialiased">
         <Navigation />
-        <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
+        <main className="mx-auto w-full max-w-7xl px-4 py-8">{children}</main>
       </body>
     </html>
   );
