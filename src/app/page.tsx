@@ -20,7 +20,7 @@ const sports = [
     id: "basketball",
     label: "Basketball",
     description:
-      "Navigation and product surface are live now so expansion is visible. Full basketball drill logic is intentionally next.",
+      "Navigation and product surface are live now, and basketball now has baseline court-line calibration instead of a placeholder label.",
     image:
       "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80",
   },
@@ -98,7 +98,7 @@ export default function Home() {
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-bold text-slate-950">{sport.label}</h2>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                  {sport.id === "basketball" ? "Staged" : "Live"}
+                  {sport.id === "basketball" ? "Baseline" : "Live"}
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">{sport.description}</p>

@@ -20,11 +20,11 @@ export const SPORT_LABELS: Record<SportOption, string> = {
 };
 
 export const SPORT_DESCRIPTIONS: Record<SportOption, string> = {
-  soccer: "Linear speed, change of direction, striking, and repeatability drills for players and coaches.",
+  soccer: "Linear speed, change of direction, striking, and repeatability drills with field-line aware defaults.",
   baseball:
     "Pitching and batting workflows with angle-aware upload guidance, conservative video interpretation, and honest confidence notes.",
   basketball:
-    "Basketball is staged in the navigation now so the product surface is ready when the drill pipeline ships.",
+    "Shot-form capture and court-line calibration with free-throw and three-point defaults that stay editable.",
 };
 
 export const STANDARD_DRILLS = [
@@ -32,9 +32,9 @@ export const STANDARD_DRILLS = [
     slug: "sprint-20m",
     name: "20-meter sprint",
     sport: "soccer",
-    description: "Linear sprint across 20 meters.",
+    description: "Linear sprint across 20 meters with line-aware timing defaults.",
     guidelines:
-      "Camera 90° side angle, full body in frame, fixed tripod, clear start/finish markers.",
+      "Side or diagonal view, fixed tripod, full 20m lane visible, and clean start/finish markers.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=20+meter+sprint+soccer+drill+instruction",
     metricPrimaryKey: "sprintTime",
@@ -46,7 +46,7 @@ export const STANDARD_DRILLS = [
     sport: "soccer",
     description: "Change-of-direction shuttle using 5m and 10m splits.",
     guidelines:
-      "Wide angle showing all cones, synchronized start cue, visible line touches.",
+      "Wide side or diagonal shot showing all cones, synchronized start cue, and visible line touches.",
     instructionVideoUrl: "https://www.youtube.com/watch?v=B-hsX94VsF8",
     metricPrimaryKey: "changeOfDirectionMeasurement",
     lowerIsBetter: true,
@@ -55,9 +55,9 @@ export const STANDARD_DRILLS = [
     slug: "shooting-accuracy",
     name: "Shooting accuracy drill",
     sport: "soccer",
-    description: "Timed shot cycle and target-hit tracking.",
+    description: "Timed shot cycle and target-hit tracking anchored to visible goal markings.",
     guidelines:
-      "Behind-goal camera, visible target zones, fixed distance to goal.",
+      "Behind-goal or diagonal view, visible target zones, and a fixed distance to goal.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=soccer+shooting+accuracy+drill+instruction",
     metricPrimaryKey: "shotTiming",
@@ -69,7 +69,7 @@ export const STANDARD_DRILLS = [
     sport: "soccer",
     description: "Dribble through fixed cone layout and return.",
     guidelines:
-      "Top-side view preferred, consistent cone spacing, full path visible.",
+      "Top-side, side, or diagonal view with consistent cone spacing and the full route visible.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=soccer+cone+dribbling+drill+instruction",
     metricPrimaryKey: "consistencyScore",
@@ -79,9 +79,9 @@ export const STANDARD_DRILLS = [
     slug: "shuttle-endurance",
     name: "Shuttle endurance test",
     sport: "soccer",
-    description: "Multi-repetition shuttle workload test.",
+    description: "Multi-repetition shuttle workload test with clear route markers.",
     guidelines:
-      "Field-length framing, clear rep markers, uninterrupted recording.",
+      "Field-length framing, clear rep markers, and uninterrupted recording.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=soccer+shuttle+endurance+test+instruction",
     metricPrimaryKey: "repetitionCount",
@@ -93,7 +93,7 @@ export const STANDARD_DRILLS = [
     sport: "baseball",
     description: "Estimate pitch travel time and velocity from release-to-catch frames when the clip is usable.",
     guidelines:
-      "Preferred angle: open-side or center-field/catcher view with release and catch both visible. If the ball path is blurred or occluded, spin/RPM should be marked unavailable.",
+      "Preferred angle: open-side or behind-catcher view with release and catch both visible. If the ball path is blurred or occluded, spin/RPM should be marked unavailable.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=baseball+pitch+velocity+video+mechanics",
     metricPrimaryKey: "frameBasedDuration",
@@ -117,7 +117,7 @@ export const STANDARD_DRILLS = [
     sport: "baseball",
     description: "Measure load-to-contact timing and mark whether the clip is good enough for conservative batting feedback.",
     guidelines:
-      "Preferred angle: open-side batting view with hands, hips, and contact point in frame. If contact is hidden or blurred, the system should surface an unclear-video note.",
+      "Preferred angle: open-side batting view with hands, hips, and contact point in frame. Use the 60.5 ft default unless the cage or bullpen setup is different. If contact is hidden or blurred, the system should surface an unclear-video note.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=baseball+swing+mechanics+camera+angle",
     metricPrimaryKey: "frameBasedDuration",
@@ -127,8 +127,8 @@ export const STANDARD_DRILLS = [
     slug: "basketball-form-capture",
     name: "Basketball form capture",
     sport: "basketball",
-    description: "Placeholder navigation surface while basketball workflows are queued next.",
-    guidelines: "Basketball workflows are coming next after soccer and baseball stabilization.",
+    description: "Shot-form capture and release timing anchored to visible free-throw or three-point markings.",
+    guidelines: "Use a side or diagonal view, keep the free-throw or three-point line visible, and move the distance slider if the court setup is nonstandard.",
     instructionVideoUrl:
       "https://www.youtube.com/results?search_query=basketball+shooting+form+camera+angle",
     metricPrimaryKey: "consistencyScore",

@@ -19,7 +19,7 @@ export default async function DrillsPage() {
               Visible sport sections, clear recording rules, and upload-ready drill cards.
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-              Soccer and baseball are live in the product surface now. Basketball is visible in the navigation so expansion feels intentional instead of hidden.
+              Soccer, baseball, and basketball now share the same product surface with explicit calibration defaults instead of hidden placeholders.
             </p>
           </div>
           <Link href="/submissions/new" className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700">

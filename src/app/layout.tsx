@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Athlemetry - Multi-sport video performance intelligence",
   description:
-    "Structured multi-sport drill uploads, conservative metric extraction, and benchmark-ready athlete reporting for soccer, baseball, and the next sports coming online.",
+    "Structured multi-sport drill uploads, conservative metric extraction, and benchmark-ready athlete reporting for soccer, baseball, and basketball.",
 };
 
 export default function RootLayout({

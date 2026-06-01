@@ -24,7 +24,7 @@ export const DRILL_GUIDANCE: Record<string, { frameStartLabel: string; frameFini
   "sprint-20m": {
     frameStartLabel: "Start frame",
     frameFinishLabel: "Finish frame",
-    helper: "Use the first movement frame and the frame where the torso crosses the finish marker.",
+    helper: "Keep the full sprint lane visible and use the 20m default unless your field setup differs.",
   },
   "agility-5-10-5": {
     frameStartLabel: "Start frame",
@@ -49,7 +49,7 @@ export const DRILL_GUIDANCE: Record<string, { frameStartLabel: string; frameFini
   "baseball-pitch-velocity": {
     frameStartLabel: "Release frame",
     frameFinishLabel: "Catch / plate frame",
-    helper: "For best accuracy, mark release and the moment the catcher receives the ball or the ball crosses the plate. Use measured distance if it differs from regulation.",
+    helper: "For best accuracy, mark release and the moment the catcher receives the ball or the ball crosses the plate. Use the 60.5 ft default unless the setup differs.",
   },
   "baseball-pitch-command": {
     frameStartLabel: "Release frame",
@@ -64,7 +64,7 @@ export const DRILL_GUIDANCE: Record<string, { frameStartLabel: string; frameFini
   "basketball-form-capture": {
     frameStartLabel: "Shot gather frame",
     frameFinishLabel: "Release frame",
-    helper: "Basketball capture surfaces are staged, but full basketball analysis is intentionally queued next.",
+    helper: "Mark visible free-throw or three-point markings and use the distance slider if the court is nonstandard.",
   },
 };
 

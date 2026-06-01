@@ -115,7 +115,7 @@ export const submissionMetadataSchema = z
     ),
     cameraAngle: z.preprocess(
       emptyToUndefined,
-      z.enum(["side", "open-side", "behind-pitcher", "behind-catcher", "front-on", "overhead", "unknown"]).optional(),
+      z.enum(["side", "open-side", "diagonal", "behind-goal", "behind-pitcher", "behind-catcher", "front-on", "overhead", "unknown"]).optional(),
     ),
     athleteHandedness: z.preprocess(
       emptyToUndefined,
