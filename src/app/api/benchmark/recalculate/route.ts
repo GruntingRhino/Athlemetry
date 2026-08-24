@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 import { authOptions } from "@/lib/auth";
-import { recalculateBenchmarksForSubmission } from "@/lib/benchmarking";
+import { enqueueBenchmarkRebuilds, findBenchmarkRebuildTargets } from "@/lib/benchmark-rebuild";
 import { prisma } from "@/lib/prisma";
 
 export async function POST() {
@@ -11,18 +11,27 @@ export async function POST() {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  const submissions = await prisma.drillSubmission.findMany({
-    where: {
-      processingStatus: "COMPLETED",
-      metricResult: { isNot: null },
-    },
-    select: { id: true },
-    take: 500,
-  });
-
-  for (const submission of submissions) {
-    await recalculateBenchmarksForSubmission(submission.id);
+  let queued: number;
+  try {
+    queued = await prisma.$transaction(async (tx) => {
+      const targets = await findBenchmarkRebuildTargets(tx);
+      await enqueueBenchmarkRebuilds(tx, targets);
+      await tx.systemLog.create({
+        data: {
+          level: "INFO",
+          category: "SECURITY_AUDIT",
+          message: "Benchmark rebuilds queued",
+          metadata: {
+            action: "BENCHMARK_REBUILDS_QUEUED",
+            actorUserId: session.user.id,
+            queued: targets.length,
+          },
+        },
+      });
+      return targets.length;
+    });
+  } catch {
+    return NextResponse.json({ error: "Benchmark rebuild scheduling could not be recorded safely." }, { status: 503 });
   }
-
-  return NextResponse.json({ ok: true, recalculated: submissions.length });
+  return NextResponse.json({ ok: true, queued }, { status: 202 });
 }

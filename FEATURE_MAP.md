@@ -2,6 +2,8 @@
 
 Status legend: `NOT STARTED`, `IN PROGRESS`, `DONE`.
 
+> Historical implementation inventory only. `DONE` in this file means code was once mapped to the item; it is not evidence of production operation, scientific validation, customer accessibility, or end-to-end completion. The final evidence matrix must classify capabilities using exercised, implemented-but-unexercised, externally blocked, or missing status.
+
 ## User Account System
 
 | Functionality Item | Status | Implementation Location(s) | Route / API | Minimal Verification |
@@ -40,14 +42,14 @@ Status legend: `NOT STARTED`, `IN PROGRESS`, `DONE`.
 
 | Functionality Item | Status | Implementation Location(s) | Route / API | Minimal Verification |
 |---|---|---|---|---|
-| Sprint time detection | DONE | `src/lib/metrics/engine.ts` (`sprint-20m` case), `src/lib/processing/queue.ts` | `POST /api/submissions`, `POST /api/processing/run` | `tests/metrics.test.ts` frame-based sprint timing assertion |
-| Acceleration timing | DONE | `src/lib/metrics/engine.ts` | Processing pipeline endpoints | `tests/metrics.test.ts` acceleration value assertion |
-| Change-of-direction measurement | DONE | `src/lib/metrics/engine.ts` (`agility-5-10-5`, `cone-dribble`) | Processing pipeline endpoints | Manual submit agility drill and inspect stored metric |
-| Shot timing extraction | DONE | `src/lib/metrics/engine.ts` (`shooting-accuracy`) | Processing pipeline endpoints | Manual submit shooting drill and inspect shot metric |
-| Repetition count detection | DONE | `src/lib/metrics/engine.ts` (`repetitionHint` handling) | Processing pipeline endpoints | Manual submit repetition hint and verify output |
-| Motion tracking logic | DONE | `src/lib/metrics/engine.ts` (`motionTrackingScore` generation) | Processing pipeline endpoints | Manual verify non-null motion tracking score |
-| Frame-based time measurement | DONE | `src/lib/metrics/engine.ts` (`frameDuration`) | Processing pipeline endpoints | `tests/metrics.test.ts` confirms frame duration is used |
-| Error tolerance calibration | DONE | `src/lib/metrics/engine.ts` (`errorToleranceScore`) | Processing pipeline endpoints | `tests/metrics.test.ts` confirms calibrated tolerance output |
+| Sprint time detection | IN PROGRESS | `vision_core/calibration.py`, `src/lib/vision-analysis.ts`, `src/lib/processing/queue.ts` | Processing pipeline endpoints | Controlled ArUco timing path exercised; synchronized timing-gate validation remains blocked |
+| Acceleration timing | IN PROGRESS | `vision_core/metrics.py`, `src/lib/vision-analysis.ts` | Processing pipeline endpoints | Withheld without calibrated analyzer evidence and formal validation |
+| Change-of-direction measurement | IN PROGRESS | `vision_core/metrics.py`, `src/lib/vision-analysis.ts` | Processing pipeline endpoints | Withheld pending protocol-compliant calibrated footage and ground truth |
+| Shot timing extraction | IN PROGRESS | `vision_core/metrics.py`, `src/lib/vision-analysis.ts` | Processing pipeline endpoints | Withheld pending synchronized high-speed ground truth |
+| Repetition count detection | IN PROGRESS | `vision_core/video.py`, `src/lib/vision-analysis.ts` | Processing pipeline endpoints | Basketball attempt mapping exercised technically; representative validation remains blocked |
+| Motion tracking logic | IN PROGRESS | `vision_core/video.py`, `src/lib/vision-analysis.ts` | Processing pipeline endpoints | Runtime detection exercised; customer technique claims remain gated |
+| Frame-based time measurement | IN PROGRESS | `vision_core/calibration.py`, `src/lib/vision-analysis.ts` | Processing pipeline endpoints | Accepted only from controlled marker crossings; generic action spans are rejected |
+| Confidence/error calibration | IN PROGRESS | `src/lib/drill-protocols.ts`, `src/lib/customer-metrics.ts` | Validation-gated customer surfaces | Release gate implemented; measured calibration-error study remains externally blocked |
 
 ## Benchmarking Engine
 
@@ -124,7 +126,7 @@ Status legend: `NOT STARTED`, `IN PROGRESS`, `DONE`.
 | Functionality Item | Status | Implementation Location(s) | Route / API | Minimal Verification |
 |---|---|---|---|---|
 | Scalable cloud processing architecture | DONE | `src/lib/processing/queue.ts`, `src/app/api/processing/run/route.ts` | `POST /api/processing/run` | Run batched processing with configurable limit |
-| Modular metric extraction engine | DONE | `src/lib/metrics/engine.ts`, `src/lib/metrics/types.ts` | Processing pipeline | Unit-test extractors and verify drill-based switch behavior |
+| Modular metric extraction engine | IN PROGRESS | `vision_core/`, `src/lib/vision-analysis.ts`, `src/lib/metrics/types.ts` | Processing pipeline | Production adapter exercised; sport-wide scientific validation and sustained-load operation remain incomplete |
 | Position-expansion framework | DONE | `prisma/schema.prisma` (`PositionTaxonomy`), `prisma/seed.ts` | DB + profile flow | Verify taxonomy seeds and profile uses position codes |
 | Multi-sport drill support foundation | DONE | `prisma/schema.prisma` (`DrillDefinition.sport`), `src/app/drills/page.tsx` | `/drills`, `/api/v1/drills` | Verify drill records carry sport attribute |
 | API architecture for future integration | DONE | Versioned endpoints: `src/app/api/v1/*` | `/api/v1/drills`, `/api/v1/submissions`, `/api/v1/benchmarks` | Query all v1 endpoints and validate payload metadata |

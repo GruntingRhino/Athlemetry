@@ -59,6 +59,42 @@ Optional S3-compatible provider:
 - `S3_ACCESS_KEY_ID`
 - `S3_SECRET_ACCESS_KEY`
 - `S3_FORCE_PATH_STYLE` (set `true` for MinIO/localstack style)
+- `UPLOAD_CLAIM_SECRET` (at least 32 random characters; binds each presigned object to the authenticated athlete and exact size/type/hash for 15 minutes)
+
+The AWS SDK hoists `x-amz-meta-sha256` into the signed URL. Browser uploads must send the signed `Content-Type` but must not add a second `x-amz-meta-sha256` request header. Configure bucket lifecycle expiry for abandoned presigned objects in addition to application-driven deletion.
+
+Configure the local computer-vision worker:
+- Install `baseball_tracker/requirements.txt` in a Python environment.
+- `VISION_PYTHON=./baseball_tracker/.venv/bin/python`
+- `VISION_PERSON_MODEL=./baseball_tracker/yolov8n.pt`
+- `VISION_POSE_MODEL=./yolov8n-pose.pt`
+- `VISION_TIMEOUT_MS=120000`
+- `WORKER_BATCH_SIZE=10` (bounded to 1–100)
+- `WORKER_POLL_MS=5000` (bounded to 250–60000 ms)
+- `WORKER_ID` (stable, unique deployment-instance identifier used for heartbeat and log correlation)
+- `METRICS_TOKEN` (distinct random bearer token of at least 32 characters for Prometheus scraping)
+
+Run the independently scalable worker with `npm run worker`. Use `npm run worker:once` for a scheduler-driven single batch. Workers use atomic conditional claims, recover work abandoned for 15 minutes, materialize S3 objects into isolated temporary files, and remove those files after analysis.
+
+Production containers are built from separate targets:
+```bash
+docker build --target web -t athlemetry-web .
+docker build --target worker -t athlemetry-worker .
+```
+The worker image uses pinned CPU-only PyTorch wheels and does not embed model artifacts. Mount the person and pose models read-only at the configured `VISION_PERSON_MODEL` and `VISION_POSE_MODEL` paths, and set `VISION_PERSON_MODEL_SHA256` and `VISION_POSE_MODEL_SHA256` to their lowercase SHA-256 digests. The worker exits with configuration status `78` before polling PostgreSQL when either model is missing, unreadable, empty, or does not match its configured digest. Run `npx prisma migrate deploy` as a separate release step before starting web and worker containers.
+
+For direct browser-to-S3 uploads, allow `PUT` from the application origin in the bucket CORS policy and expose the `ETag` response header. Athlemetry verifies object size, MIME type, and the signed SHA-256 metadata before accepting the submission.
+
+Configure hosted billing:
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_MONTHLY`
+- `STRIPE_PRICE_ANNUAL`
+- `BILLING_ENFORCEMENT_ENABLED=true` only after the complete Stripe test-mode lifecycle has passed
+
+Configure a separate random `PROCESSING_WORKER_TOKEN` of at least 32 characters when invoking `/api/processing/run` or worker-authorized maintenance endpoints. The standalone worker does not use the HTTP endpoint and connects to PostgreSQL directly.
+
+Production monitoring can scrape `GET /api/metrics` with `Authorization: Bearer <METRICS_TOKEN>`. The response includes bounded queue depth/age and aggregate worker health/counter metrics without athlete or submission identifiers. Also restrict this endpoint at the network layer.
 
 ### 4) Run migrations
 ```bash
@@ -71,9 +107,7 @@ npx prisma generate
 npm run prisma:seed
 ```
 
-Default seeded admin:
-- Email: `admin@athlemetry.dev`
-- Password: `admin1234`
+Administrator provisioning is opt-in. Set both `SEED_ADMIN_EMAIL` and a unique `SEED_ADMIN_PASSWORD` of at least 16 characters before running the seed. If neither is present, no administrator account is created.
 
 ### 6) Run locally
 ```bash

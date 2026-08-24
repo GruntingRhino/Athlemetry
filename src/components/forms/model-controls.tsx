@@ -51,18 +51,18 @@ export function ModelControls() {
     <div className="space-y-4">
       <form className="space-y-3" onSubmit={activateVersion}>
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="text-sm text-slate-700">
+          <label className="athlemetry-label">
             Version
-            <input name="version" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" placeholder="v1.1.0" required />
+            <input name="version" className="athlemetry-control" placeholder="v1.1.0" required />
           </label>
-          <label className="text-sm text-slate-700">
+          <label className="athlemetry-label">
             Notes
-            <input name="notes" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" placeholder="Summary of model changes" />
+            <input name="notes" className="athlemetry-control" placeholder="Summary of model changes" />
           </label>
         </div>
         <button
           type="submit"
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+          className="athlemetry-button athlemetry-button-secondary"
         >
           Activate version
         </button>
@@ -71,12 +71,12 @@ export function ModelControls() {
       <button
         type="button"
         onClick={queueRetrain}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+        className="athlemetry-button athlemetry-button-primary"
       >
         Queue retraining job
       </button>
 
-      {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="athlemetry-message">{message}</p> : null}
     </div>
   );
 }

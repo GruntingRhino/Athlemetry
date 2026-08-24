@@ -1,0 +1,75 @@
+========================================================================
+  ATHLEMETRY — BASEBALL SWING ANALYSIS REPORT
+========================================================================
+
+  Run ID    : 1b7b2a7f
+  Player ID : N/A
+  Generated : 2026-07-25 15:55:49 UTC
+  Video     : /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv
+
+  *** IMPORTANT DISCLAIMER ***
+  All speed, angle, and trajectory values marked [ESTIMATE] are
+  derived from computer-vision pixel analysis.  They are NOT
+  certified measurements and should NOT be used as substitutes for
+  radar guns, bat sensors, or other calibrated instruments.  Treat
+  all numeric estimates as approximate guides only.
+
+------------------------------------------------------------------------
+  1. VIDEO INFORMATION
+
+  Resolution  : 400 × 300 px
+  Frame Rate  : 29.97 fps
+  Duration    : 141.41 sec  (4238 frames)
+  Codec       : theo
+
+  Camera View  : unknown
+  Handedness   : not specified
+  Player Height: not provided inches
+  Bat Length   : not provided inches
+
+------------------------------------------------------------------------
+  2. SWING METRICS
+
+  [ SWING SPEED — ALL VALUES ARE ESTIMATES ]
+    Swing speed not computed.
+
+  [ BALL TRAJECTORY ]
+    Ball trajectory not available.
+
+  [ SWING PHASE TIMING ]
+    Contact Frame   : N/A
+    Contact Time    : N/A sec
+    Method          : heuristic
+    Confidence      : 0%  [LOW]
+
+    Phase breakdown:
+
+------------------------------------------------------------------------
+  3. FORM ANALYSIS  [CV-derived, rule-based — no LLM]
+
+  Form scores not available.
+
+------------------------------------------------------------------------
+  4. LLM COACHING FEEDBACK  (Ollama)
+
+  LLM feedback not generated (Ollama disabled or unavailable).
+
+------------------------------------------------------------------------
+  5. MODULE STATUS
+
+    video_ingest                        OK
+    extract_frames                      OK
+    preprocess                          OK
+    detect                              OK
+    pose                                FAILED  ['AnalysisConfig' object has no attribute 'min_detection_conf]
+    track_ball                          FAILED  ['AnalysisConfig' object has no attribute 'ball_process_noise]
+    events                              OK
+    metrics                             SKIPPED  [No pose data available for metric computation]
+    pitch_analysis                      SKIPPED  [No ball trajectory available for pitch analysis]
+    scoring                             SKIPPED  [No pose data available for form scoring]
+    llm_feedback                        SKIPPED  [Ollama disabled via --no-ollama flag]
+    visualization                       SKIPPED  [Video export disabled]
+
+========================================================================
+  End of Report
+========================================================================

@@ -45,18 +45,19 @@ export function ManualOverrideForm() {
 
   return (
     <form className="space-y-3" onSubmit={onSubmit}>
-      <label className="block text-sm text-slate-700">
+      <p className="text-sm text-amber-800">Metric corrections are administrative evidence only. Editing a metric revokes capture verification, removes its benchmark snapshot, archives its coaching plan, and withholds the corrected value until protocol reverification.</p>
+      <label className="athlemetry-label">
         Submission ID
-        <input name="submissionId" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required />
+        <input name="submissionId" className="athlemetry-control" required />
       </label>
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Action
-          <input name="action" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue="MANUAL_CORRECTION" required />
+          <input name="action" className="athlemetry-control" defaultValue="MANUAL_CORRECTION" required />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Processing status
-          <select name="processingStatus" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+          <select name="processingStatus" className="athlemetry-control">
             <option value="">No change</option>
             <option value="QUEUED">QUEUED</option>
             <option value="PROCESSING">PROCESSING</option>
@@ -67,42 +68,42 @@ export function ManualOverrideForm() {
         </label>
       </div>
       <div className="grid gap-3 md:grid-cols-3">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Sprint time
-          <input type="number" step="0.01" name="sprintTime" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          <input type="number" step="0.01" name="sprintTime" className="athlemetry-control" />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Acceleration
-          <input type="number" step="0.01" name="accelerationTiming" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          <input type="number" step="0.01" name="accelerationTiming" className="athlemetry-control" />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           COD
-          <input type="number" step="0.01" name="changeOfDirectionMeasurement" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          <input type="number" step="0.01" name="changeOfDirectionMeasurement" className="athlemetry-control" />
         </label>
       </div>
       <div className="grid gap-3 md:grid-cols-3">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Shot timing
-          <input type="number" step="0.01" name="shotTiming" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          <input type="number" step="0.01" name="shotTiming" className="athlemetry-control" />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Repetition count
-          <input type="number" name="repetitionCount" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          <input type="number" name="repetitionCount" className="athlemetry-control" />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Consistency score
-          <input type="number" step="0.1" name="consistencyScore" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
+          <input type="number" step="0.1" name="consistencyScore" className="athlemetry-control" />
         </label>
       </div>
-      <label className="block text-sm text-slate-700">
+      <label className="athlemetry-label">
         Notes
-        <textarea name="notes" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" rows={3} />
+        <textarea name="notes" className="athlemetry-control" rows={3} />
       </label>
-      {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="athlemetry-message">{message}</p> : null}
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+        className="athlemetry-button athlemetry-button-primary disabled:opacity-60"
       >
         {pending ? "Applying..." : "Apply override"}
       </button>

@@ -1,0 +1,54 @@
+rule_files:
+  - alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="athlemetry-web"}'
+        values: '0x4'
+      - series: 'athlemetry_queue_jobs{status="queued"}'
+        values: '1x4'
+      - series: 'athlemetry_queue_jobs{status="retrying"}'
+        values: '0x4'
+      - series: 'athlemetry_workers{health="active"}'
+        values: '0x4'
+      - series: 'athlemetry_workers{health="stale"}'
+        values: '1x4'
+      - series: 'athlemetry_queue_jobs{status="dead_lettered"}'
+        values: '1x4'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: AthlemetryMetricsUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: athlemetry-web
+            exp_annotations:
+              summary: Athlemetry metrics endpoint is unavailable
+              description: The production metrics scrape has failed continuously for two minutes.
+      - eval_time: 2m
+        alertname: AthlemetryQueuedWithoutActiveWorkers
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: Processing backlog has no active workers
+              description: Ready or retryable work exists, but no worker has reported an active heartbeat.
+      - eval_time: 2m
+        alertname: AthlemetryStaleWorker
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: A processing worker heartbeat is stale
+              description: At least one running worker has exceeded the heartbeat freshness window.
+      - eval_time: 2m
+        alertname: AthlemetryDeadLetteredSubmission
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: Processing work entered the dead-letter queue
+              description: Inspect the administrator queue panel and correct the root cause before requeueing.

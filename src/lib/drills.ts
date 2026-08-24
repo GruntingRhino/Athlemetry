@@ -36,6 +36,26 @@ export const DRILL_GUIDANCE: Record<string, { frameStartLabel: string; frameFini
     frameFinishLabel: "Strike frame",
     helper: "Mark the plant step or backswing start and the instant of ball strike.",
   },
+  "shooting-mechanics": {
+    frameStartLabel: "Plant frame",
+    frameFinishLabel: "Strike frame",
+    helper: "Mark the foot plant beside the visible cone reference and the first ball-strike frame; this records protocol evidence, not a coaching or shot-quality result.",
+  },
+  "movement-efficiency": {
+    frameStartLabel: "Route start frame",
+    frameFinishLabel: "Finish-target frame",
+    helper: "Mark the first route movement and the first crossing of the visible finish target; this records protocol evidence, not an efficiency, coaching, or scientific result.",
+  },
+  "passing-accuracy": {
+    frameStartLabel: "Pass start frame",
+    frameFinishLabel: "Target contact frame",
+    helper: "Mark the first movement from the stationary ball and the first visible contact with the numbered target.",
+  },
+  "first-touch-control": {
+    frameStartLabel: "Service release frame",
+    frameFinishLabel: "First control-touch frame",
+    helper: "Mark the incoming ground-service release and the first athlete contact that brings the ball into the marked control square.",
+  },
   "cone-dribble": {
     frameStartLabel: "Start frame",
     frameFinishLabel: "Finish frame",
@@ -121,6 +141,11 @@ export function groupDrillsBySport<T extends { sport: string }>(drills: T[]) {
     description: SPORT_DESCRIPTIONS[sport],
     drills: drills.filter((drill) => drill.sport === sport),
   }));
+}
+
+export function resolveSelectedDrillSlug<T extends { slug: string }>(drills: T[], requestedSlug?: string | null) {
+  const normalizedSlug = typeof requestedSlug === "string" ? requestedSlug.trim() : "";
+  return drills.some((drill) => drill.slug === normalizedSlug) ? normalizedSlug : undefined;
 }
 
 export function normalizeSport(value: string | null | undefined): SportOption {

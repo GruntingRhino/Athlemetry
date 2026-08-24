@@ -1,0 +1,132 @@
+========================================================================
+  ATHLEMETRY — BASEBALL SWING ANALYSIS REPORT
+========================================================================
+
+  Run ID    : bdaea370
+  Player ID : N/A
+  Generated : 2026-07-25 15:57:57 UTC
+  Video     : /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv
+
+  *** IMPORTANT DISCLAIMER ***
+  All speed, angle, and trajectory values marked [ESTIMATE] are
+  derived from computer-vision pixel analysis.  They are NOT
+  certified measurements and should NOT be used as substitutes for
+  radar guns, bat sensors, or other calibrated instruments.  Treat
+  all numeric estimates as approximate guides only.
+
+------------------------------------------------------------------------
+  1. VIDEO INFORMATION
+
+  Resolution  : 400 × 300 px
+  Frame Rate  : 29.97 fps
+  Duration    : 141.41 sec  (4238 frames)
+  Codec       : theo
+
+  Camera View  : unknown
+  Handedness   : not specified
+  Player Height: not provided inches
+  Bat Length   : not provided inches
+
+------------------------------------------------------------------------
+  2. SWING METRICS
+
+  [ SWING SPEED — ALL VALUES ARE ESTIMATES ]
+    Swing speed not computed.
+
+  [ BALL TRAJECTORY ]
+    Tracking Method : fallback
+    Confidence      : 0%  [LOW]
+    Points Detected : 0
+    Notes           :
+      • No ball detections found; trajectory is empty.
+
+  [ SWING PHASE TIMING ]
+    Contact Frame   : N/A
+    Contact Time    : N/A sec
+    Method          : heuristic
+    Confidence      : 30%  [LOW]
+
+    Phase breakdown:
+      stance                frames    0–423   (14114 ms)  conf 30%
+      load                  frames  424–635   (7040 ms)  conf 30%
+      stride                frames  636–953   (10577 ms)  conf 30%
+      initiation            frames  954–1164  (7007 ms)  conf 30%
+      contact_zone          frames 1165–1376  (7040 ms)  conf 30%
+      follow_through        frames 1377–1800  (14114 ms)  conf 30%
+      finish                frames 1801–2118  (10577 ms)  conf 30%
+
+------------------------------------------------------------------------
+  3. FORM ANALYSIS  [CV-derived, rule-based — no LLM]
+
+  Overall Score      : N/A
+  Overall Confidence : 0%  [LOW]
+
+  Head Stability
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Stance Balance
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Hip Rotation Timing
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Stride Control
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Hand Path Efficiency
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Follow-Through Balance
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Coaching Suggestions (aggregated):
+    → Improve video quality or coverage for this metric
+
+------------------------------------------------------------------------
+  4. LLM COACHING FEEDBACK  (Ollama)
+
+  LLM feedback not generated (Ollama disabled or unavailable).
+
+------------------------------------------------------------------------
+  5. MODULE STATUS
+
+    video_ingest                        OK
+    extract_frames                      OK
+    preprocess                          OK
+    detect                              OK
+    pose                                OK
+    track_ball                          PARTIAL  [Low overall tracking confidence]
+    events                              OK
+    metrics                             FAILED  ['NoneType' object has no attribute 'frame_idx']
+    pitch_analysis                      PARTIAL  [Low trajectory confidence — pitch estimates are approximate]
+    scoring                             PARTIAL  [Low pose coverage — form scores are approximate]
+    llm_feedback                        SKIPPED  [Ollama disabled via --no-ollama flag]
+    visualization                       SKIPPED  [Video export disabled]
+
+========================================================================
+  End of Report
+========================================================================

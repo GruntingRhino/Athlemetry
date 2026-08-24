@@ -37,58 +37,54 @@ const sportActions = [
 
 export default function Home() {
   return (
-    <div className="space-y-8">
-      <section id="sports" className="overflow-hidden rounded-[32px] border border-emerald-100 bg-white shadow-[0_30px_80px_-40px_rgba(16,24,16,0.35)]">
-        <div className="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="p-8 md:p-12">
-            <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
-              Multi-sport performance intelligence
-            </div>
-            <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
+    <div className="space-y-8 lg:space-y-10">
+      <section id="sports" className="athlemetry-hero">
+        <div className="relative grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="relative p-8 md:p-12 lg:p-14">
+            <div className="athlemetry-kicker">Multi-sport performance intelligence</div>
+            <h1 className="mt-6 max-w-3xl athlemetry-title">
               Clear video-based feedback for athletes, coaches, and parents.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
-              Athlemetry is built to feel premium, trustworthy, and coach-usable — not like a generic vibe-coded toy. Upload structured drill footage, get angle-aware analysis, and surface confidence notes whenever a clip is not good enough for a reliable call.
+            <p className="mt-6 max-w-2xl text-base md:text-lg athlemetry-body">
+              Athlemetry is built to feel premium, trustworthy, and coach-usable — not like a generic vibe-coded toy.
+              Upload structured drill footage, get angle-aware analysis, and surface confidence notes whenever a clip is
+              not good enough for a reliable call.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={buildSportHref("uploads", "soccer")}
-                className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
-              >
+              <Link href={buildSportHref("uploads", "soccer")} className="athlemetry-button athlemetry-button-primary">
                 Start with Soccer
               </Link>
-              <Link
-                href="/drills"
-                className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-emerald-200 hover:bg-emerald-50"
-              >
+              <Link href="/drills" className="athlemetry-button athlemetry-button-secondary">
                 Explore sports library
               </Link>
             </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
               {[
                 ["Honest confidence", "If the video is not clear enough for RPM or contact-quality interpretation, the product should say that instead of guessing."],
                 ["Sport-specific surfaces", "Soccer, baseball, and basketball each get their own uploads, submissions, dashboards, and benchmarking entry points."],
                 ["Settings in one place", "Privacy and related account controls live under settings instead of cluttering the sport workflows."],
               ].map(([title, body]) => (
-                <article key={title} className="rounded-3xl border border-slate-100 bg-slate-50/80 p-4">
+                <article key={title} className="athlemetry-stat">
                   <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
                 </article>
               ))}
             </div>
           </div>
-          <div className="relative min-h-[340px] bg-slate-900">
+
+          <div className="relative min-h-[360px] overflow-hidden bg-slate-900 lg:min-h-full">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, rgba(6, 78, 59, 0.72), rgba(15, 23, 42, 0.58)), url('https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1400&q=80')",
+                  "linear-gradient(135deg, rgba(6, 78, 59, 0.74), rgba(15, 23, 42, 0.58)), url('https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1400&q=80')",
               }}
             />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%)]" />
-            <div className="relative flex h-full flex-col justify-end p-8 text-white">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_35%)]" />
+            <div className="relative flex h-full flex-col justify-end p-8 text-white md:p-10">
               <div className="max-w-md rounded-[28px] border border-white/15 bg-white/10 p-5 backdrop-blur-md">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Coach-grade product posture</p>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-100">Coach-grade product posture</p>
                 <p className="mt-3 text-lg font-semibold">Premium visual system. Clear sports segmentation. Conservative analysis notes.</p>
                 <p className="mt-3 text-sm leading-6 text-emerald-50/90">
                   The product surface should make a parent or coach trust the output before they trust the algorithm.
@@ -99,14 +95,31 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-4">
+        {[
+          ["3 sports", "Dedicated surfaces for Soccer, Baseball, and Basketball."],
+          ["Conservative analysis", "Clear uncertainty when the clip is too weak to trust."],
+          ["Live benchmarks", "Trends, cohorts, and percentile movement in one place."],
+          ["Account controls", "Privacy, consent, and profile settings stay reachable."],
+        ].map(([value, label]) => (
+          <article key={value} className="athlemetry-stat">
+            <p className="athlemetry-stat-label">{label}</p>
+            <p className="athlemetry-stat-value text-3xl">{value}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-3">
         {sports.map((sport) => (
-          <article key={sport.id} id={sport.id} className="scroll-mt-28 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-            <div className="h-52 bg-slate-200 bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(6, 78, 59, 0.18), rgba(15, 23, 42, 0.45)), url('${sport.image}')` }} />
-            <div className="p-6">
+          <article key={sport.id} id={sport.id} className="athlemetry-card overflow-hidden scroll-mt-28">
+            <div
+              className="h-56 bg-cover bg-center"
+              style={{ backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.14), rgba(15, 23, 42, 0.56)), url('${sport.image}')` }}
+            />
+            <div className="p-6 md:p-7">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xl font-bold text-slate-950">{sport.label}</h2>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                <h2 className="text-xl font-bold tracking-tight text-slate-950">{sport.label}</h2>
+                <span className="athlemetry-chip border-teal-200 bg-teal-50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-teal-800">
                   {sport.id === "basketball" ? "Baseline" : "Live"}
                 </span>
               </div>
@@ -116,7 +129,7 @@ export default function Home() {
                   <Link
                     key={action.key}
                     href={buildSportHref(action.key, sport.id)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800"
+                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900"
                   >
                     {action.label}
                   </Link>

@@ -1,0 +1,74 @@
+{
+  "run_id": "53afab6c",
+  "input": {
+    "video_path": "/Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv",
+    "player_height_inches": null,
+    "bat_length_inches": null,
+    "handedness": null,
+    "camera_view": "unknown",
+    "calibration_reference": null,
+    "analysis_mode": "fast",
+    "player_id": null
+  },
+  "video_metadata": {
+    "fps": 29.97002997002997,
+    "width": 400,
+    "height": 300,
+    "total_frames": 4238,
+    "duration_seconds": 141.40793333333335,
+    "codec": "theo",
+    "orientation": null,
+    "source_path": "/Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv"
+  },
+  "detections_summary": null,
+  "swing_phases": {
+    "phases": [],
+    "likely_contact_frame": null,
+    "likely_contact_time_sec": null,
+    "segmentation_method": "heuristic",
+    "confidence": 0.0,
+    "notes": [
+      "No frames available for segmentation."
+    ]
+  },
+  "ball_trajectory": null,
+  "pitch_analysis": null,
+  "swing_speed": null,
+  "form_scores": null,
+  "ollama_feedback": null,
+  "artifacts": {
+    "annotated_video_path": null,
+    "trajectory_plot_path": null,
+    "speed_chart_path": null,
+    "json_report_path": null,
+    "csv_summary_path": null,
+    "debug_dir": null
+  },
+  "module_status": {
+    "video_ingest": "ok",
+    "extract_frames": "ok",
+    "preprocess": "ok",
+    "detect": "failed",
+    "pose": "failed",
+    "track_ball": "skipped",
+    "events": "ok",
+    "metrics": "skipped",
+    "pitch_analysis": "skipped",
+    "scoring": "skipped",
+    "llm_feedback": "skipped",
+    "visualization": "skipped"
+  },
+  "module_errors": {
+    "detect": "'tuple' object has no attribute 'frame_idx'",
+    "pose": "module 'mediapipe' has no attribute 'solutions'",
+    "track_ball": "No detections to track",
+    "metrics": "No pose data available for metric computation",
+    "pitch_analysis": "No ball trajectory available for pitch analysis",
+    "scoring": "No pose data available for form scoring",
+    "llm_feedback": "Ollama disabled via --no-ollama flag",
+    "visualization": "Video export disabled"
+  },
+  "pipeline_duration_sec": null,
+  "_disclaimer": "Speed, angle, and trajectory values marked as ESTIMATE are derived from computer-vision pixel analysis and are NOT certified measurements.  Do not use as substitutes for radar guns, bat sensors, or other calibrated instruments.",
+  "_exported_at": "2026-07-25T15:53:47.100695+00:00"
+}

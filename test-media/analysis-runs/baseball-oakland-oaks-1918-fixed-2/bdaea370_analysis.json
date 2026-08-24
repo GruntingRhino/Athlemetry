@@ -1,0 +1,237 @@
+{
+  "run_id": "bdaea370",
+  "input": {
+    "video_path": "/Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv",
+    "player_height_inches": null,
+    "bat_length_inches": null,
+    "handedness": null,
+    "camera_view": "unknown",
+    "calibration_reference": null,
+    "analysis_mode": "fast",
+    "player_id": null
+  },
+  "video_metadata": {
+    "fps": 29.97002997002997,
+    "width": 400,
+    "height": 300,
+    "total_frames": 4238,
+    "duration_seconds": 141.40793333333335,
+    "codec": "theo",
+    "orientation": null,
+    "source_path": "/Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv"
+  },
+  "detections_summary": {
+    "baseball_detected_frames": 0,
+    "batter_detected_frames": 1939,
+    "bat_detected_frames": 7,
+    "total_frames": 2119,
+    "baseball_detection_rate": 0.0,
+    "batter_detection_rate": 0.9150542708824917,
+    "bat_detection_rate": 0.0033034450212364322,
+    "notes": []
+  },
+  "swing_phases": {
+    "phases": [
+      {
+        "label": "stance",
+        "start_frame": 0,
+        "end_frame": 423,
+        "start_time_sec": 0.0,
+        "end_time_sec": 14.1141,
+        "confidence": 0.3
+      },
+      {
+        "label": "load",
+        "start_frame": 424,
+        "end_frame": 635,
+        "start_time_sec": 14.147466666666666,
+        "end_time_sec": 21.187833333333334,
+        "confidence": 0.3
+      },
+      {
+        "label": "stride",
+        "start_frame": 636,
+        "end_frame": 953,
+        "start_time_sec": 21.2212,
+        "end_time_sec": 31.798433333333335,
+        "confidence": 0.3
+      },
+      {
+        "label": "initiation",
+        "start_frame": 954,
+        "end_frame": 1164,
+        "start_time_sec": 31.8318,
+        "end_time_sec": 38.8388,
+        "confidence": 0.3
+      },
+      {
+        "label": "contact_zone",
+        "start_frame": 1165,
+        "end_frame": 1376,
+        "start_time_sec": 38.872166666666665,
+        "end_time_sec": 45.912533333333336,
+        "confidence": 0.3
+      },
+      {
+        "label": "follow_through",
+        "start_frame": 1377,
+        "end_frame": 1800,
+        "start_time_sec": 45.9459,
+        "end_time_sec": 60.06,
+        "confidence": 0.3
+      },
+      {
+        "label": "finish",
+        "start_frame": 1801,
+        "end_frame": 2118,
+        "start_time_sec": 60.09336666666667,
+        "end_time_sec": 70.67060000000001,
+        "confidence": 0.3
+      }
+    ],
+    "likely_contact_frame": null,
+    "likely_contact_time_sec": null,
+    "segmentation_method": "heuristic",
+    "confidence": 0.3,
+    "notes": [
+      "Pose coverage 23% < 40% threshold; using time-based heuristic segmentation."
+    ]
+  },
+  "ball_trajectory": {
+    "points": [],
+    "smoothed_points": [],
+    "tracking_method": "fallback",
+    "confidence": 0.0,
+    "notes": [
+      "No ball detections found; trajectory is empty."
+    ]
+  },
+  "pitch_analysis": {
+    "estimated_release_frame": null,
+    "estimated_release_point": null,
+    "release_speed_px_per_frame": null,
+    "horizontal_break_px": null,
+    "vertical_break_px": null,
+    "total_movement_px": null,
+    "max_curve_px": null,
+    "approach_angle_deg": null,
+    "estimated_spin_rpm": null,
+    "spin_rpm_band": null,
+    "capture_assessment": "unknown",
+    "confidence": 0.0,
+    "pitch_type_hint": null,
+    "notes": [
+      "No ball trajectory points available for pitch analysis"
+    ],
+    "limitations": [
+      "Cannot infer pitch movement without ball tracking"
+    ]
+  },
+  "swing_speed": null,
+  "form_scores": {
+    "head_stability": {
+      "name": "head_stability",
+      "score": 0.5,
+      "confidence": 0.0,
+      "rationale": "Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'",
+      "issues": [],
+      "suggestions": [
+        "Improve video quality or coverage for this metric"
+      ]
+    },
+    "stance_balance": {
+      "name": "stance_balance",
+      "score": 0.5,
+      "confidence": 0.0,
+      "rationale": "Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'",
+      "issues": [],
+      "suggestions": [
+        "Improve video quality or coverage for this metric"
+      ]
+    },
+    "hip_rotation_timing": {
+      "name": "hip_rotation_timing",
+      "score": 0.5,
+      "confidence": 0.0,
+      "rationale": "Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'",
+      "issues": [],
+      "suggestions": [
+        "Improve video quality or coverage for this metric"
+      ]
+    },
+    "stride_control": {
+      "name": "stride_control",
+      "score": 0.5,
+      "confidence": 0.0,
+      "rationale": "Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'",
+      "issues": [],
+      "suggestions": [
+        "Improve video quality or coverage for this metric"
+      ]
+    },
+    "hand_path_efficiency": {
+      "name": "hand_path_efficiency",
+      "score": 0.5,
+      "confidence": 0.0,
+      "rationale": "Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'",
+      "issues": [],
+      "suggestions": [
+        "Improve video quality or coverage for this metric"
+      ]
+    },
+    "rear_elbow": null,
+    "front_side_stability": null,
+    "rotational_sequencing": null,
+    "posture_maintenance": null,
+    "follow_through_balance": {
+      "name": "follow_through_balance",
+      "score": 0.5,
+      "confidence": 0.0,
+      "rationale": "Skipped: scorer raised exception: 'NoneType' object has no attribute 'frame_idx'",
+      "issues": [],
+      "suggestions": [
+        "Improve video quality or coverage for this metric"
+      ]
+    },
+    "overall_score": null,
+    "overall_confidence": 0.0,
+    "issues": [],
+    "suggestions": [
+      "Improve video quality or coverage for this metric"
+    ]
+  },
+  "ollama_feedback": null,
+  "artifacts": {
+    "annotated_video_path": null,
+    "trajectory_plot_path": null,
+    "speed_chart_path": null,
+    "json_report_path": null,
+    "csv_summary_path": null,
+    "debug_dir": null
+  },
+  "module_status": {
+    "video_ingest": "ok",
+    "extract_frames": "ok",
+    "preprocess": "ok",
+    "detect": "ok",
+    "pose": "ok",
+    "track_ball": "partial",
+    "events": "ok",
+    "metrics": "failed",
+    "pitch_analysis": "partial",
+    "scoring": "partial",
+    "llm_feedback": "skipped",
+    "visualization": "skipped"
+  },
+  "module_errors": {
+    "track_ball": "Low overall tracking confidence",
+    "metrics": "'NoneType' object has no attribute 'frame_idx'",
+    "pitch_analysis": "Low trajectory confidence \u2014 pitch estimates are approximate",
+    "scoring": "Low pose coverage \u2014 form scores are approximate",
+    "llm_feedback": "Ollama disabled via --no-ollama flag",
+    "visualization": "Video export disabled"
+  },
+  "pipeline_duration_sec": null,
+  "_disclaimer": "Speed, angle, and trajectory values marked as ESTIMATE are derived from computer-vision pixel analysis and are NOT certified measurements.  Do not use as substitutes for radar guns, bat sensors, or other calibrated instruments.",
+  "_exported_at": "2026-07-25T15:57:57.382456+00:00"
+}

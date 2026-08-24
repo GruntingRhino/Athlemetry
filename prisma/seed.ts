@@ -3,6 +3,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import "dotenv/config";
 
 import { STANDARD_DRILLS } from "../src/lib/constants";
+import { resolveSeedAdmin } from "./seed-config";
 
 const prisma = new PrismaClient();
 
@@ -15,22 +16,21 @@ const positions = [
 ];
 
 async function main() {
-  const adminPassword = await bcrypt.hash("admin1234", 12);
-
-  await prisma.user.upsert({
-    where: { email: "admin@athlemetry.dev" },
-    update: {},
-    create: {
-      email: "admin@athlemetry.dev",
-      passwordHash: adminPassword,
-      name: "System Admin",
-      role: Role.ADMIN,
-      parentConsentVerified: true,
-      competitionLevel: "academy",
-      position: "UTIL",
-      age: 30,
-    },
-  });
+  const seedAdmin = resolveSeedAdmin(process.env);
+  if (seedAdmin) {
+    const adminPassword = await bcrypt.hash(seedAdmin.password, 12);
+    await prisma.user.upsert({
+      where: { email: seedAdmin.email },
+      update: {},
+      create: {
+        email: seedAdmin.email,
+        passwordHash: adminPassword,
+        name: "System Admin",
+        role: Role.ADMIN,
+        parentConsentVerified: true,
+      },
+    });
+  }
 
   for (const drill of STANDARD_DRILLS) {
     await prisma.drillDefinition.upsert({

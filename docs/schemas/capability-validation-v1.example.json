@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "athlemetry-capability-validation-v1",
+  "independentlyReviewed": false,
+  "objectTracking": {
+    "observations": 500,
+    "precision": 0.9,
+    "recall": 0.9,
+    "hota": 0.75,
+    "perClass": {
+      "ball": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 },
+      "bat": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 },
+      "hoop": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 },
+      "goal": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 },
+      "plate": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 },
+      "cone": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 },
+      "target": { "observations": 500, "precision": 0.95, "recall": 0.95, "hota": 0.75 }
+    }
+  },
+  "athleteReid": {
+    "observations": 500,
+    "uniqueAthletes": 50,
+    "idf1": 0.9,
+    "identitySwitchRate": 0.01,
+    "occlusionRecoveryRate": 0.9
+  },
+  "sportDrillRecognition": {
+    "clips": 300,
+    "accuracy": 0.95,
+    "falseConfirmationRate": 0.01
+  },
+  "repetitionSegmentation": {
+    "attempts": 300,
+    "precision": 0.9,
+    "recall": 0.9
+  },
+  "invalidAttemptDetection": {
+    "attempts": 300,
+    "invalidAttempts": 100,
+    "sensitivity": 0.9,
+    "specificity": 0.9
+  },
+  "planarCalibration": {
+    "captures": 100,
+    "p90ErrorMeters": 0.05,
+    "failureRate": 0.05
+  },
+  "videoNormalization": {
+    "clips": 100,
+    "deviceModels": 5,
+    "decodeFailureRate": 0.01
+  }
+}

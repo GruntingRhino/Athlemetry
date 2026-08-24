@@ -1,0 +1,41 @@
+groups:
+  - name: athlemetry-production
+    rules:
+      - alert: AthlemetryMetricsUnavailable
+        expr: up{job="athlemetry-web"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Athlemetry metrics endpoint is unavailable
+          description: The production metrics scrape has failed continuously for two minutes.
+
+      - alert: AthlemetryQueuedWithoutActiveWorkers
+        expr: |
+          (sum(athlemetry_queue_jobs{status="queued"}) + sum(athlemetry_queue_jobs{status="retrying"}) > 0)
+          and
+          (sum(athlemetry_workers{health="active"}) == 0)
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Processing backlog has no active workers
+          description: Ready or retryable work exists, but no worker has reported an active heartbeat.
+
+      - alert: AthlemetryStaleWorker
+        expr: sum(athlemetry_workers{health="stale"}) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: A processing worker heartbeat is stale
+          description: At least one running worker has exceeded the heartbeat freshness window.
+
+      - alert: AthlemetryDeadLetteredSubmission
+        expr: sum(athlemetry_queue_jobs{status="dead_lettered"}) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Processing work entered the dead-letter queue
+          description: Inspect the administrator queue panel and correct the root cause before requeueing.

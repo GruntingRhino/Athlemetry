@@ -1,20 +1,27 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
   COMPETITION_LEVEL_OPTIONS,
-  POSITION_OPTIONS,
+  getDefaultPositionForSport,
+  getPositionOptionsForSport,
   SELF_REGISTRATION_ROLE_OPTIONS,
+  SPORT_LABELS,
+  SPORT_OPTIONS,
+  type SportOption,
 } from "@/lib/constants";
 
-export function RegisterForm() {
+export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [role, setRole] = useState<(typeof SELF_REGISTRATION_ROLE_OPTIONS)[number]>("ATHLETE");
   const [age, setAge] = useState(14);
+  const [primarySport, setPrimarySport] = useState<SportOption>("soccer");
+  const [position, setPosition] = useState(getDefaultPositionForSport("soccer"));
 
   const isAthlete = role === "ATHLETE";
   const requiresParentEmail = useMemo(() => isAthlete && age < 18, [age, isAthlete]);
@@ -37,7 +44,9 @@ export function RegisterForm() {
         isAthlete && typeof ageValue === "string" && ageValue.length > 0
           ? Number(ageValue)
           : undefined,
-      position: isAthlete ? formData.get("position") : undefined,
+      primarySport: isAthlete ? primarySport : undefined,
+      performanceGoal: isAthlete ? formData.get("performanceGoal") : undefined,
+      position: isAthlete ? position : undefined,
       team: isAthlete ? formData.get("team") : undefined,
       competitionLevel: isAthlete ? formData.get("competitionLevel") : undefined,
       gender: formData.get("gender"),
@@ -45,6 +54,7 @@ export function RegisterForm() {
         isAthlete && typeof parentEmailValue === "string" ? parentEmailValue : undefined,
       shareInBenchmarks: formData.get("shareInBenchmarks") === "on",
       anonymizeForBenchmark: formData.get("anonymizeForBenchmark") === "on",
+      referralCode: formData.get("referralCode"),
     };
 
     const response = await fetch("/api/auth/register", {
@@ -69,14 +79,14 @@ export function RegisterForm() {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Full name
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="name" required />
+          <input className="athlemetry-control" name="name" required />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Email
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="athlemetry-control"
             name="email"
             type="email"
             required
@@ -85,20 +95,20 @@ export function RegisterForm() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Password
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="athlemetry-control"
             name="password"
             type="password"
             minLength={8}
             required
           />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Role
           <select
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="athlemetry-control"
             name="role"
             value={role}
             onChange={(event) => setRole(event.target.value as (typeof SELF_REGISTRATION_ROLE_OPTIONS)[number])}
@@ -112,13 +122,18 @@ export function RegisterForm() {
         </label>
       </div>
 
+      <label className="athlemetry-label">
+        Referral code (optional)
+        <input className="athlemetry-control" name="referralCode" defaultValue={initialReferralCode} maxLength={24} autoCapitalize="characters" />
+      </label>
+
       {isAthlete ? (
         <>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="text-sm text-slate-700">
+            <label className="athlemetry-label">
               Age
               <input
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                className="athlemetry-control"
                 name="age"
                 type="number"
                 min={6}
@@ -128,16 +143,34 @@ export function RegisterForm() {
                 required
               />
             </label>
-            <label className="text-sm text-slate-700">
+            <label className="athlemetry-label">
+              Primary sport
+              <select
+                className="athlemetry-control"
+                name="primarySport"
+                value={primarySport}
+                onChange={(event) => {
+                  const nextSport = event.target.value as SportOption;
+                  setPrimarySport(nextSport);
+                  setPosition(getDefaultPositionForSport(nextSport));
+                }}
+              >
+                {SPORT_OPTIONS.map((sport) => (
+                  <option key={sport} value={sport}>{SPORT_LABELS[sport]}</option>
+                ))}
+              </select>
+            </label>
+            <label className="athlemetry-label">
               Position
               <select
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                className="athlemetry-control"
                 name="position"
-                defaultValue="MID"
+                value={position}
+                onChange={(event) => setPosition(event.target.value as typeof position)}
               >
-                {POSITION_OPTIONS.map((position) => (
-                  <option key={position} value={position}>
-                    {position}
+                {getPositionOptionsForSport(primarySport).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -145,14 +178,14 @@ export function RegisterForm() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <label className="text-sm text-slate-700">
+            <label className="athlemetry-label">
               Team
-              <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="team" />
+              <input className="athlemetry-control" name="team" />
             </label>
-            <label className="text-sm text-slate-700">
+            <label className="athlemetry-label">
               Competition level
               <select
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                className="athlemetry-control"
                 name="competitionLevel"
                 defaultValue="academy"
               >
@@ -163,16 +196,21 @@ export function RegisterForm() {
                 ))}
               </select>
             </label>
-            <label className="text-sm text-slate-700">
+            <label className="athlemetry-label">
               Gender
-              <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="gender" />
+              <input className="athlemetry-control" name="gender" />
             </label>
           </div>
 
-          <label className="text-sm text-slate-700">
+          <label className="athlemetry-label">
+            Performance goal (optional)
+            <textarea className="athlemetry-control min-h-24" name="performanceGoal" maxLength={500} />
+          </label>
+
+          <label className="athlemetry-label">
             Parent email (required for minors)
             <input
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              className="athlemetry-control"
               name="parentEmail"
               type="email"
               required={requiresParentEmail}
@@ -180,25 +218,31 @@ export function RegisterForm() {
           </label>
         </>
       ) : (
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Gender (optional)
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="gender" />
+          <input className="athlemetry-control" name="gender" />
         </label>
       )}
 
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="athlemetry-check">
         <input type="checkbox" name="shareInBenchmarks" defaultChecked /> Share data in cohort benchmarking
       </label>
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="athlemetry-check">
         <input type="checkbox" name="anonymizeForBenchmark" defaultChecked /> Anonymize benchmark identities
       </label>
+      <p className="text-sm leading-6 text-slate-600">
+        By creating an account, you can review the product’s{" "}
+        <Link className="font-semibold text-teal-800 transition hover:text-teal-900" href="/privacy-notice">Privacy Notice</Link>
+        {" "}and{" "}
+        <Link className="font-semibold text-teal-800 transition hover:text-teal-900" href="/terms">Terms of Use</Link>.
+      </p>
 
-      {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="athlemetry-message">{message}</p> : null}
 
       <button
         type="submit"
         disabled={loading}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+        className="athlemetry-button athlemetry-button-primary disabled:opacity-60"
       >
         {loading ? "Registering..." : "Create account"}
       </button>

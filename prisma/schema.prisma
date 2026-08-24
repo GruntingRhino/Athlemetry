@@ -16,6 +16,8 @@ model User {
   passwordHash          String
   role                  Role                @default(ATHLETE)
   age                   Int?
+  primarySport          String?
+  performanceGoal       String?
   position              String?
   team                  String?
   competitionLevel      String?
@@ -24,22 +26,48 @@ model User {
   parentConsentVerified Boolean             @default(false)
   shareInBenchmarks     Boolean             @default(true)
   anonymizeForBenchmark Boolean             @default(true)
+  referralCode          String?             @unique
+  referredByUserId      String?
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
+  engagementCheckedAt   DateTime?
   deletedAt             DateTime?
   accounts              Account[]
+  billingAccount        BillingAccount?
+  refundRequests        RefundRequest[]
+  coachingPlans         CoachingPlan[]
+  goalProgressCheckIns  GoalProgressCheckIn[]
+  validationSubmissions MetricValidation[] @relation("ValidationSubmitter")
+  validationApprovals   MetricValidation[] @relation("ValidationApprover")
   benchmarkSnapshots    BenchmarkSnapshot[]
   consentActions        ConsentLog[]        @relation("ConsentActor")
   consentLogs           ConsentLog[]        @relation("ConsentTarget")
   exportRequests        DataExportRequest[]
   submissions           DrillSubmission[]
   manualOverrides       ManualOverride[]    @relation("OverrideAdmin")
+  notifications         UserNotification[]
   sessions              Session[]
   reportsFiled          UserReport[]        @relation("ReportReporter")
   reportsReviewed       UserReport[]        @relation("ReportReviewer")
+  reportStatusEvents    UserReportStatusEvent[] @relation("ReportStatusEventActor")
+  coachingActionEvents  CoachingPlanActionEvent[] @relation("CoachingPlanActionEventActor")
+  keyMomentReviews     SubmissionKeyMoment[]     @relation("KeyMomentReviewer")
+  sharesReceived        SubmissionShare[]   @relation("ShareRecipient")
+  sharesUpdated         SubmissionShare[]   @relation("ShareUpdatedBy")
+  shareAuditActions     SubmissionShareAudit[] @relation("ShareAuditActor")
+  shareAuditRecipients  SubmissionShareAudit[] @relation("ShareAuditRecipient")
+  teamsOwned            Team[]              @relation("TeamOwner")
+  teamMemberships       TeamMembership[]
+  teamInvitationsReceived TeamInvitation[]  @relation("TeamInvitationRecipient")
+  teamInvitationsSent   TeamInvitation[]    @relation("TeamInvitationInviter")
+  monthlySubmissionUsage MonthlySubmissionUsage[]
+  referredBy            User?               @relation("UserReferrals", fields: [referredByUserId], references: [id], onDelete: SetNull)
+  referrals             User[]               @relation("UserReferrals")
 
   @@index([role])
   @@index([age, position, competitionLevel])
+  @@index([role, deletedAt, engagementCheckedAt])
+  @@index([referredByUserId])
 }
 
 model Account {
@@ -76,6 +104,20 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model WorkerHeartbeat {
+  id             String   @id @default(cuid())
+  workerId       String   @unique
+  status         String
+  startedAt      DateTime
+  lastSeenAt     DateTime
+  processedTotal Int      @default(0)
+  errorTotal     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status, lastSeenAt])
+}
+
 model DrillDefinition {
   id                  String               @id @default(cuid())
   slug                String               @unique
@@ -90,6 +132,8 @@ model DrillDefinition {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   aggregates          BenchmarkAggregate[]
+  coachingPlans       CoachingPlan[]
+  metricValidations   MetricValidation[]
   submissions         DrillSubmission[]
 
   @@index([sport, isActive])
@@ -111,6 +155,8 @@ model DrillSubmission {
   uploadProgress      Int                @default(0)
   processingStatus    ProcessingStatus   @default(QUEUED)
   processingAttempts  Int                @default(0)
+  nextAttemptAt       DateTime?
+  deadLetteredAt      DateTime?
   lastError           String?
   frameRate           Float?
   startFrame          Int?
@@ -134,9 +180,14 @@ model DrillSubmission {
   metricResult        MetricResult?
   processingLogs      ProcessingLog[]
   userReports         UserReport[]
+  coachingPlan        CoachingPlan?
+  shares              SubmissionShare[]
+  shareAudits         SubmissionShareAudit[]
+  reviewedKeyMoments  SubmissionKeyMoment[]
 
   @@index([athleteId, submittedAt])
   @@index([processingStatus, queuedAt])
+  @@index([processingStatus, nextAttemptAt, queuedAt])
   @@index([drillDefinitionId, submittedAt])
   @@index([videoDeletedAt, videoExpiresAt])
 }
@@ -157,6 +208,13 @@ model MetricResult {
   consistencyScore             Float?
   normalizedScore              Float?
   reliabilityScore             Float?
+  speed                        Float?
+  acceleration                 Float?
+  agilityScore                 Float?
+  techniqueScore               Float?
+  accuracyScore                Float?
+  powerScore                   Float?
+  overallPerformanceScore      Float?
   createdAt                    DateTime        @default(now())
   submission                   DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
@@ -198,6 +256,216 @@ model BenchmarkAggregate {
   @@index([cohortKey, lastRecalculated])
 }
 
+model BenchmarkRebuildJob {
+  id                   String   @id @default(cuid())
+  cohortKey            String
+  drillDefinitionId    String
+  metricName           String
+  status               String   @default("PENDING")
+  attempts             Int      @default(0)
+  cursorSubmissionId   String?
+  lastError            String?
+  queuedAt             DateTime @default(now())
+  claimedAt            DateTime?
+  completedAt          DateTime?
+  updatedAt            DateTime @updatedAt
+
+  @@unique([cohortKey, drillDefinitionId, metricName])
+  @@index([status, queuedAt])
+}
+
+model MetricValidation {
+  id                         String          @id @default(cuid())
+  drillDefinitionId          String
+  metricName                 String
+  protocolVersion            String
+  modelVersion               String          @default("unversioned")
+  status                     String          @default("DRAFT")
+  sampleSize                 Int             @default(0)
+  medianAbsoluteError        Float?
+  p90Error                   Float?
+  failureRate                Float?
+  confidenceCalibrationError Float?
+  expertAgreement            Float?
+  evidenceUri                String?
+  evidenceSha256             String?
+  independentlyReviewedAt    DateTime?
+  reviewedBy                 String?
+  capabilityEvidence         Json?
+  submittedByUserId          String?
+  approvedByUserId           String?
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @updatedAt
+  drillDefinition            DrillDefinition @relation(fields: [drillDefinitionId], references: [id], onDelete: Cascade)
+  submittedBy                User?           @relation("ValidationSubmitter", fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  approvedBy                 User?           @relation("ValidationApprover", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([drillDefinitionId, metricName, protocolVersion, modelVersion], map: "MetricValidation_drill_metric_protocol_model_k")
+  @@index([status, independentlyReviewedAt])
+}
+
+model BillingAccount {
+  id               String               @id @default(cuid())
+  userId           String               @unique
+  stripeCustomerId String?              @unique
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription     BillingSubscription?
+  subscriptionEvents BillingSubscriptionEvent[]
+  refundRequests   RefundRequest[]
+}
+
+model RefundRequest {
+  id               String         @id @default(cuid())
+  billingAccountId String
+  requesterId      String
+  reason           String
+  details          String?
+  status           String         @default("OPEN")
+  createdAt        DateTime       @default(now())
+  billingAccount   BillingAccount @relation(fields: [billingAccountId], references: [id], onDelete: Cascade)
+  requester        User           @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@index([billingAccountId, status, createdAt])
+  @@index([requesterId, createdAt])
+}
+
+model BillingSubscription {
+  id                    String         @id @default(cuid())
+  billingAccountId      String         @unique
+  stripeSubscriptionId  String?        @unique
+  priceId               String?
+  planKey               String?
+  seatLimit             Int?
+  status                String         @default("inactive")
+  currentPeriodEnd      DateTime?
+  graceUntil            DateTime?
+  cancelAtPeriodEnd     Boolean        @default(false)
+  lastEventOccurredAt   DateTime?
+  trialStartedAt        DateTime?
+  firstPaidAt           DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  billingAccount        BillingAccount @relation(fields: [billingAccountId], references: [id], onDelete: Cascade)
+
+  @@index([status, currentPeriodEnd])
+}
+
+model BillingWebhookEvent {
+  id              String   @id @default(cuid())
+  providerEventId String   @unique
+  type            String
+  occurredAt      DateTime
+  processedAt     DateTime @default(now())
+
+  @@index([type, occurredAt])
+}
+
+model BillingSubscriptionEvent {
+  id                   String         @id @default(cuid())
+  billingAccountId     String
+  providerEventId      String         @unique
+  stripeSubscriptionId String
+  type                 String
+  status               String
+  priceId              String
+  occurredAt           DateTime
+  createdAt            DateTime       @default(now())
+  billingAccount       BillingAccount @relation(fields: [billingAccountId], references: [id], onDelete: Cascade)
+
+  @@index([billingAccountId, occurredAt])
+  @@index([type, occurredAt])
+  @@index([status, occurredAt])
+}
+
+model MonthlySubmissionUsage {
+  id              String   @id @default(cuid())
+  userId          String
+  monthStart      DateTime
+  submissionCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, monthStart])
+  @@index([monthStart])
+}
+
+model CoachingPlan {
+  id                 String          @id @default(cuid())
+  athleteId          String
+  drillDefinitionId  String
+  sourceSubmissionId String          @unique
+  status             String          @default("ACTIVE")
+  weaknesses         Json
+  recommendations    Json
+  confidenceScore    Float
+  reassessmentDueAt  DateTime
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  athlete            User            @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  drillDefinition    DrillDefinition @relation(fields: [drillDefinitionId], references: [id], onDelete: Cascade)
+  sourceSubmission   DrillSubmission @relation(fields: [sourceSubmissionId], references: [id], onDelete: Cascade)
+  actionCompletions  CoachingPlanActionCompletion[]
+  actionEvents       CoachingPlanActionEvent[]
+  reports            UserReport[]
+
+  @@index([athleteId, status, reassessmentDueAt])
+}
+
+model CoachingPlanActionCompletion {
+  id             String       @id @default(cuid())
+  coachingPlanId String
+  actionIndex    Int
+  completedAt    DateTime     @default(now())
+  coachingPlan   CoachingPlan @relation(fields: [coachingPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([coachingPlanId, actionIndex])
+  @@index([coachingPlanId, completedAt])
+}
+
+model CoachingPlanActionEvent {
+  id             String       @id @default(cuid())
+  coachingPlanId String
+  actionIndex    Int
+  actorUserId    String
+  completed      Boolean
+  createdAt      DateTime     @default(now())
+  coachingPlan   CoachingPlan @relation(fields: [coachingPlanId], references: [id], onDelete: Cascade)
+  actor          User         @relation("CoachingPlanActionEventActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([coachingPlanId, actionIndex, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+model GoalProgressCheckIn {
+  id              String   @id @default(cuid())
+  athleteId       String
+  progressPercent Int
+  note            String?
+  createdAt       DateTime @default(now())
+  athlete         User     @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId, createdAt])
+}
+
+model UserNotification {
+  id         String    @id @default(cuid())
+  userId     String
+  key        String
+  type       String
+  title      String
+  body       String
+  actionHref String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId, readAt, createdAt])
+}
+
 model ConsentLog {
   id          String   @id @default(cuid())
   userId      String
@@ -216,6 +484,14 @@ model UserReport {
   id           String           @id @default(cuid())
   reporterId   String
   submissionId String?
+  coachingPlanId String?
+  recommendationActionIndex Int?
+  metricName   String?
+  reportedValue Float?
+  disputedFrameIndex Int?
+  accuracyRating Int?
+  usefulnessRating Int?
+  requestType  ReportRequestType @default(ISSUE)
   reason       String
   details      String?
   status       ReportStatus     @default(OPEN)
@@ -225,8 +501,119 @@ model UserReport {
   reporter     User             @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
   reviewedBy   User?            @relation("ReportReviewer", fields: [reviewedById], references: [id])
   submission   DrillSubmission? @relation(fields: [submissionId], references: [id])
+  coachingPlan CoachingPlan?    @relation(fields: [coachingPlanId], references: [id], onDelete: SetNull)
+  statusEvents UserReportStatusEvent[]
 
   @@index([status, createdAt])
+  @@index([submissionId, metricName, createdAt])
+  @@index([coachingPlanId, recommendationActionIndex, createdAt])
+}
+
+model UserReportStatusEvent {
+  id             String       @id @default(cuid())
+  reportId       String
+  actorUserId    String
+  status         ReportStatus
+  resolutionNote String?
+  createdAt      DateTime     @default(now())
+  report         UserReport   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  actor          User         @relation("ReportStatusEventActor", fields: [actorUserId], references: [id])
+
+  @@index([reportId, createdAt])
+}
+
+model SubmissionKeyMoment {
+  id           String          @id @default(cuid())
+  submissionId String
+  reviewerId   String
+  frameIndex   Int
+  label        String
+  note         String
+  createdAt    DateTime        @default(now())
+  submission   DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewer     User            @relation("KeyMomentReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, frameIndex, label])
+  @@index([submissionId, createdAt])
+  @@index([reviewerId, createdAt])
+}
+
+model Team {
+  id          String           @id @default(cuid())
+  name        String
+  sport       String
+  ownerId     String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  owner       User             @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  memberships TeamMembership[]
+  invitations TeamInvitation[]
+
+  @@unique([ownerId, name])
+  @@index([sport, createdAt])
+}
+
+model TeamMembership {
+  id       String             @id @default(cuid())
+  teamId   String
+  userId   String
+  role     TeamMembershipRole @default(OWNER)
+  joinedAt DateTime           @default(now())
+  team     Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId, joinedAt])
+}
+
+model TeamInvitation {
+  id          String               @id @default(cuid())
+  teamId      String
+  recipientId String
+  inviterId   String
+  status      TeamInvitationStatus @default(PENDING)
+  createdAt   DateTime             @default(now())
+  expiresAt   DateTime
+  updatedAt   DateTime             @updatedAt
+  team        Team                 @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  recipient   User                 @relation("TeamInvitationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  inviter     User                 @relation("TeamInvitationInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, recipientId])
+  @@index([recipientId, status, createdAt])
+  @@index([recipientId, status, expiresAt])
+  @@index([teamId, status, expiresAt])
+  @@index([inviterId, createdAt])
+}
+
+model SubmissionShare {
+  id              String          @id @default(cuid())
+  submissionId    String
+  recipientId     String
+  active          Boolean         @default(true)
+  updatedByUserId String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  submission      DrillSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  recipient       User            @relation("ShareRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  updatedBy       User            @relation("ShareUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, recipientId])
+  @@index([recipientId, active, updatedAt])
+}
+
+model SubmissionShareAudit {
+  id           String                @id @default(cuid())
+  submissionId String
+  recipientId  String
+  actorUserId  String
+  action       SubmissionShareAction
+  createdAt    DateTime              @default(now())
+  submission   DrillSubmission       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  recipient    User                  @relation("ShareAuditRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor        User                  @relation("ShareAuditActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, recipientId, createdAt])
 }
 
 model ManualOverride {
@@ -316,11 +703,46 @@ model DataExportRequest {
   @@index([userId, requestedAt])
 }
 
+model RateLimitWindow {
+  key         String   @id @db.VarChar(128)
+  windowStart DateTime
+  count       Int
+  updatedAt   DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
+model ErasureTombstone {
+  id       String   @id @default(cuid())
+  userId   String   @unique
+  erasedAt DateTime @default(now())
+
+  @@index([erasedAt])
+}
+
 enum Role {
   ATHLETE
   PARENT
   COACH
   ADMIN
+}
+
+enum TeamMembershipRole {
+  OWNER
+  COACH
+  ATHLETE
+}
+
+enum TeamInvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum SubmissionShareAction {
+  GRANTED
+  REVOKED
+  VIEWED
 }
 
 enum ProcessingStatus {
@@ -343,6 +765,12 @@ enum ReportStatus {
   IN_REVIEW
   RESOLVED
   DISMISSED
+}
+
+enum ReportRequestType {
+  ISSUE
+  HUMAN_REVIEW
+  REPROCESS
 }
 
 enum ExportStatus {

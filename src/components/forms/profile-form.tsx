@@ -4,13 +4,20 @@ import { useState, type FormEvent } from "react";
 
 import {
   COMPETITION_LEVEL_OPTIONS,
-  POSITION_OPTIONS,
+  getDefaultPositionForSport,
+  getPositionOptionsForSport,
+  isPositionValidForSport,
+  SPORT_LABELS,
+  SPORT_OPTIONS,
+  type SportOption,
 } from "@/lib/constants";
 
 type ProfileFormProps = {
   profile: {
     name: string;
     age: number;
+    primarySport: string;
+    performanceGoal: string;
     position: string;
     team: string;
     competitionLevel: string;
@@ -23,6 +30,15 @@ type ProfileFormProps = {
 export function ProfileForm({ profile }: ProfileFormProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const initialSport = SPORT_OPTIONS.includes(profile.primarySport as SportOption)
+    ? profile.primarySport as SportOption
+    : "soccer";
+  const [primarySport, setPrimarySport] = useState<SportOption>(initialSport);
+  const [position, setPosition] = useState(() => (
+    isPositionValidForSport(initialSport, profile.position)
+      ? profile.position
+      : getDefaultPositionForSport(initialSport)
+  ));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,7 +50,9 @@ export function ProfileForm({ profile }: ProfileFormProps) {
     const payload = {
       name: formData.get("name"),
       age: Number(formData.get("age")),
-      position: formData.get("position"),
+      primarySport,
+      performanceGoal: formData.get("performanceGoal"),
+      position,
       team: formData.get("team"),
       competitionLevel: formData.get("competitionLevel"),
       gender: formData.get("gender"),
@@ -62,14 +80,14 @@ export function ProfileForm({ profile }: ProfileFormProps) {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Full name
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="name" defaultValue={profile.name} required />
+          <input className="athlemetry-control" name="name" defaultValue={profile.name} required />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Age
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="athlemetry-control"
             name="age"
             type="number"
             defaultValue={profile.age}
@@ -80,24 +98,46 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         </label>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
+          Primary sport
+          <select
+            className="athlemetry-control"
+            name="primarySport"
+            value={primarySport}
+            onChange={(event) => {
+              const nextSport = event.target.value as SportOption;
+              setPrimarySport(nextSport);
+              setPosition(getDefaultPositionForSport(nextSport));
+            }}
+          >
+            {SPORT_OPTIONS.map((sport) => (
+              <option key={sport} value={sport}>{SPORT_LABELS[sport]}</option>
+            ))}
+          </select>
+        </label>
+        <label className="athlemetry-label">
           Position
-          <select className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="position" defaultValue={profile.position}>
-            {POSITION_OPTIONS.map((position) => (
-              <option key={position} value={position}>
-                {position}
+          <select
+            className="athlemetry-control"
+            name="position"
+            value={position}
+            onChange={(event) => setPosition(event.target.value as typeof position)}
+          >
+            {getPositionOptionsForSport(primarySport).map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Team
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="team" defaultValue={profile.team} />
+          <input className="athlemetry-control" name="team" defaultValue={profile.team} />
         </label>
-        <label className="text-sm text-slate-700">
+        <label className="athlemetry-label">
           Competition level
           <select
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="athlemetry-control"
             name="competitionLevel"
             defaultValue={profile.competitionLevel}
           >
@@ -109,21 +149,25 @@ export function ProfileForm({ profile }: ProfileFormProps) {
           </select>
         </label>
       </div>
-      <label className="text-sm text-slate-700">
+      <label className="athlemetry-label">
         Gender
-        <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" name="gender" defaultValue={profile.gender} />
+        <input className="athlemetry-control" name="gender" defaultValue={profile.gender} />
       </label>
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="athlemetry-label">
+        Performance goal
+        <textarea className="athlemetry-control min-h-24" name="performanceGoal" defaultValue={profile.performanceGoal} maxLength={500} />
+      </label>
+      <label className="athlemetry-check">
         <input type="checkbox" name="shareInBenchmarks" defaultChecked={profile.shareInBenchmarks} /> Share in benchmark cohorts
       </label>
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="athlemetry-check">
         <input type="checkbox" name="anonymizeForBenchmark" defaultChecked={profile.anonymizeForBenchmark} /> Anonymize benchmark identity
       </label>
-      {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="athlemetry-message">{message}</p> : null}
       <button
         disabled={saving}
         type="submit"
-        className="w-fit rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+        className="athlemetry-button athlemetry-button-primary w-fit disabled:opacity-60"
       >
         {saving ? "Saving..." : "Save profile"}
       </button>

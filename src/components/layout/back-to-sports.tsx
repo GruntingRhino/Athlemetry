@@ -7,7 +7,10 @@ type BackToSportsProps = {
 
 export function BackToSports({ href = "/#sports", label = "Back to sports" }: BackToSportsProps) {
   return (
-    <Link href={href} className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+    <Link
+      href={href}
+      className="athlemetry-chip border-teal-200 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-900"
+    >
       <span aria-hidden="true">←</span>
       <span>{label}</span>
     </Link>

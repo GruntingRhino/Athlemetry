@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 import { authOptions } from "@/lib/auth";
+import { invalidateManualOverrideEvidence } from "@/lib/manual-override";
 import { prisma } from "@/lib/prisma";
 import { manualOverrideSchema } from "@/lib/validators";
 
@@ -18,47 +19,76 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data;
+  const metricValues = {
+    sprintTime: data.sprintTime,
+    accelerationTiming: data.accelerationTiming,
+    changeOfDirectionMeasurement: data.changeOfDirectionMeasurement,
+    shotTiming: data.shotTiming,
+    repetitionCount: data.repetitionCount,
+    consistencyScore: data.consistencyScore,
+  };
+  const changesMetrics = Object.values(metricValues).some((value) => value !== undefined);
+  let applied: boolean;
+  try {
+    applied = await prisma.$transaction(async (tx) => {
+      const submission = await tx.drillSubmission.findUnique({
+        where: { id: data.submissionId },
+        select: { metadata: true },
+      });
+      if (!submission) return false;
 
-  await prisma.manualOverride.create({
-    data: {
-      submissionId: data.submissionId,
-      adminId: session.user.id,
-      action: data.action,
-      notes: data.notes,
-      payload: data,
-    },
-  });
-
-  if (data.processingStatus) {
-    await prisma.drillSubmission.update({
-      where: { id: data.submissionId },
-      data: {
-        processingStatus: data.processingStatus,
-      },
+      await tx.manualOverride.create({
+        data: {
+          submissionId: data.submissionId,
+          adminId: session.user.id,
+          action: data.action,
+          notes: data.notes,
+          payload: data,
+        },
+      });
+      if (data.processingStatus || changesMetrics) {
+        await tx.drillSubmission.update({
+          where: { id: data.submissionId },
+          data: {
+            ...(data.processingStatus ? { processingStatus: data.processingStatus } : {}),
+            ...(changesMetrics ? { metadata: invalidateManualOverrideEvidence(submission.metadata) } : {}),
+          },
+        });
+      }
+      if (changesMetrics) {
+        await tx.metricResult.upsert({
+          where: { submissionId: data.submissionId },
+          update: metricValues,
+          create: {
+            submissionId: data.submissionId,
+            metricVersion: "manual-override",
+            ...metricValues,
+          },
+        });
+        await tx.benchmarkSnapshot.deleteMany({ where: { submissionId: data.submissionId } });
+        await tx.coachingPlan.updateMany({
+          where: { sourceSubmissionId: data.submissionId, status: "ACTIVE" },
+          data: { status: "ARCHIVED" },
+        });
+      }
+      await tx.systemLog.create({
+        data: {
+          level: "INFO",
+          category: "SECURITY_AUDIT",
+          message: "Manual override applied",
+          metadata: {
+            action: "MANUAL_OVERRIDE_APPLIED",
+            actorUserId: session.user.id,
+            submissionId: data.submissionId,
+          },
+        },
+      });
+      return true;
     });
+  } catch {
+    return NextResponse.json({ error: "Manual override could not be recorded safely." }, { status: 503 });
   }
-
-  await prisma.metricResult.upsert({
-    where: { submissionId: data.submissionId },
-    update: {
-      sprintTime: data.sprintTime,
-      accelerationTiming: data.accelerationTiming,
-      changeOfDirectionMeasurement: data.changeOfDirectionMeasurement,
-      shotTiming: data.shotTiming,
-      repetitionCount: data.repetitionCount,
-      consistencyScore: data.consistencyScore,
-    },
-    create: {
-      submissionId: data.submissionId,
-      metricVersion: "manual-override",
-      sprintTime: data.sprintTime,
-      accelerationTiming: data.accelerationTiming,
-      changeOfDirectionMeasurement: data.changeOfDirectionMeasurement,
-      shotTiming: data.shotTiming,
-      repetitionCount: data.repetitionCount,
-      consistencyScore: data.consistencyScore,
-    },
-  });
+  if (!applied) return NextResponse.json({ error: "Submission not found." }, { status: 404 });
 
   return NextResponse.json({ ok: true });
 }

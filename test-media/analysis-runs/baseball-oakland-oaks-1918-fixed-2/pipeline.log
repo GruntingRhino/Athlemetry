@@ -1,0 +1,138 @@
+2026-07-25 11:56:41,082  INFO     modules.pipeline — [video_ingest] Loading video: /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv
+2026-07-25 11:56:41,215  INFO     modules.pipeline — [video_ingest] 400x300 @ 30.0 fps, 141.4 s (4238 frames)
+2026-07-25 11:56:41,216  INFO     modules.pipeline — [extract_frames] Extracting frames…
+2026-07-25 11:56:41,750  INFO     modules.video_ingest — extract_frames: extracted 2119 frames from /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv (stride=2).
+2026-07-25 11:56:41,750  INFO     modules.pipeline — [extract_frames] Extracted 2119 frames (stride=2)
+2026-07-25 11:56:41,750  INFO     modules.pipeline — [preprocess] Preprocessing 2119 frames…
+2026-07-25 11:56:41,797  INFO     modules.pipeline — [preprocess] Done (2119 frames)
+2026-07-25 11:56:41,797  INFO     modules.pipeline — [detect] Running object detection on 2119 frames…
+2026-07-25 11:56:43,226  INFO     modules.detectors — YOLODetector: loading model 'yolov8n.pt' ...
+2026-07-25 11:56:43,249  INFO     modules.detectors — YOLODetector: model loaded successfully.
+2026-07-25 11:56:43,249  INFO     modules.detectors — detect_all_frames: using YOLODetector (yolov8n.pt).
+2026-07-25 11:57:32,274  INFO     modules.detectors — detect_all_frames: 2119 frames — baseball 0.0%, batter 91.5%, bat 0.3%.
+2026-07-25 11:57:32,275  INFO     modules.pipeline — [detect] Ball detection rate: 0.0%, Batter: 91.5%
+2026-07-25 11:57:32,275  INFO     modules.pipeline — [pose] Running pose estimation on 2119 frames…
+2026-07-25 11:57:33,239  INFO     modules.pose — Pose estimation progress: 50 / 2119 frames processed (0 with detections)
+2026-07-25 11:57:33,600  INFO     modules.pose — Pose estimation progress: 100 / 2119 frames processed (0 with detections)
+2026-07-25 11:57:33,971  INFO     modules.pose — Pose estimation progress: 150 / 2119 frames processed (0 with detections)
+2026-07-25 11:57:34,326  INFO     modules.pose — Pose estimation progress: 200 / 2119 frames processed (0 with detections)
+2026-07-25 11:57:34,803  INFO     modules.pose — Pose estimation progress: 250 / 2119 frames processed (8 with detections)
+2026-07-25 11:57:35,205  INFO     modules.pose — Pose estimation progress: 300 / 2119 frames processed (8 with detections)
+2026-07-25 11:57:35,671  INFO     modules.pose — Pose estimation progress: 350 / 2119 frames processed (24 with detections)
+2026-07-25 11:57:36,026  INFO     modules.pose — Pose estimation progress: 400 / 2119 frames processed (24 with detections)
+2026-07-25 11:57:36,380  INFO     modules.pose — Pose estimation progress: 450 / 2119 frames processed (24 with detections)
+2026-07-25 11:57:36,799  INFO     modules.pose — Pose estimation progress: 500 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:37,156  INFO     modules.pose — Pose estimation progress: 550 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:37,511  INFO     modules.pose — Pose estimation progress: 600 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:37,883  INFO     modules.pose — Pose estimation progress: 650 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:38,237  INFO     modules.pose — Pose estimation progress: 700 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:38,604  INFO     modules.pose — Pose estimation progress: 750 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:38,969  INFO     modules.pose — Pose estimation progress: 800 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:39,336  INFO     modules.pose — Pose estimation progress: 850 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:39,702  INFO     modules.pose — Pose estimation progress: 900 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:40,067  INFO     modules.pose — Pose estimation progress: 950 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:40,434  INFO     modules.pose — Pose estimation progress: 1000 / 2119 frames processed (28 with detections)
+2026-07-25 11:57:40,850  INFO     modules.pose — Pose estimation progress: 1050 / 2119 frames processed (31 with detections)
+2026-07-25 11:57:41,374  INFO     modules.pose — Pose estimation progress: 1100 / 2119 frames processed (45 with detections)
+2026-07-25 11:57:41,874  INFO     modules.pose — Pose estimation progress: 1150 / 2119 frames processed (59 with detections)
+2026-07-25 11:57:42,513  INFO     modules.pose — Pose estimation progress: 1200 / 2119 frames processed (97 with detections)
+2026-07-25 11:57:43,102  INFO     modules.pose — Pose estimation progress: 1250 / 2119 frames processed (134 with detections)
+2026-07-25 11:57:43,470  INFO     modules.pose — Pose estimation progress: 1300 / 2119 frames processed (134 with detections)
+2026-07-25 11:57:44,062  INFO     modules.pose — Pose estimation progress: 1350 / 2119 frames processed (167 with detections)
+2026-07-25 11:57:44,683  INFO     modules.pose — Pose estimation progress: 1400 / 2119 frames processed (191 with detections)
+2026-07-25 11:57:45,187  INFO     modules.pose — Pose estimation progress: 1450 / 2119 frames processed (211 with detections)
+2026-07-25 11:57:45,574  INFO     modules.pose — Pose estimation progress: 1500 / 2119 frames processed (213 with detections)
+2026-07-25 11:57:45,930  INFO     modules.pose — Pose estimation progress: 1550 / 2119 frames processed (213 with detections)
+2026-07-25 11:57:46,285  INFO     modules.pose — Pose estimation progress: 1600 / 2119 frames processed (213 with detections)
+2026-07-25 11:57:46,641  INFO     modules.pose — Pose estimation progress: 1650 / 2119 frames processed (213 with detections)
+2026-07-25 11:57:46,996  INFO     modules.pose — Pose estimation progress: 1700 / 2119 frames processed (213 with detections)
+2026-07-25 11:57:47,350  INFO     modules.pose — Pose estimation progress: 1750 / 2119 frames processed (213 with detections)
+2026-07-25 11:57:47,735  INFO     modules.pose — Pose estimation progress: 1800 / 2119 frames processed (217 with detections)
+2026-07-25 11:57:48,360  INFO     modules.pose — Pose estimation progress: 1850 / 2119 frames processed (257 with detections)
+2026-07-25 11:57:49,038  INFO     modules.pose — Pose estimation progress: 1900 / 2119 frames processed (304 with detections)
+2026-07-25 11:57:49,764  INFO     modules.pose — Pose estimation progress: 1950 / 2119 frames processed (343 with detections)
+2026-07-25 11:57:50,616  INFO     modules.pose — Pose estimation progress: 2000 / 2119 frames processed (365 with detections)
+2026-07-25 11:57:51,285  INFO     modules.pose — Pose estimation progress: 2050 / 2119 frames processed (415 with detections)
+2026-07-25 11:57:51,943  INFO     modules.pose — Pose estimation progress: 2100 / 2119 frames processed (465 with detections)
+2026-07-25 11:57:52,197  INFO     modules.pose — Pose estimation complete: 484 / 2119 frames had pose detections.
+2026-07-25 11:57:52,197  INFO     modules.pipeline — [pose] Valid pose frames: 484/2119
+2026-07-25 11:57:52,197  INFO     modules.pipeline — [track_ball] Building ball trajectory…
+2026-07-25 11:57:57,316  INFO     modules.pipeline — [track_ball] Trajectory: 0 points (0 non-interpolated), confidence=0.00
+2026-07-25 11:57:57,316  WARNING  modules.pipeline — [track_ball] PARTIAL: Low overall tracking confidence
+2026-07-25 11:57:57,316  INFO     modules.pipeline — [events] Segmenting swing phases…
+2026-07-25 11:57:57,318  INFO     modules.pipeline — [events] Detected 7 swing phases (confidence=0.30, method=heuristic)
+2026-07-25 11:57:57,318  INFO     modules.pipeline — [metrics] Computing swing speed and trajectory metrics…
+2026-07-25 11:57:57,321  INFO     modules.pipeline — [metrics] Calibration: mode=anthropometric_estimation, ppi=2.6906045845576694
+2026-07-25 11:57:57,321  ERROR    modules.pipeline — [metrics] FAILED: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,321  INFO     modules.pipeline — [pitch_analysis] Estimating pitch movement and spin proxy…
+2026-07-25 11:57:57,323  INFO     modules.pipeline — [pitch_analysis] Spin proxy: N/A rpm (confidence=0.00, assessment=unknown)
+2026-07-25 11:57:57,323  WARNING  modules.pipeline — [pitch_analysis] PARTIAL: Low trajectory confidence — pitch estimates are approximate
+2026-07-25 11:57:57,323  INFO     modules.pipeline — [scoring] Evaluating swing form…
+2026-07-25 11:57:57,325  ERROR    modules.scoring — Scorer head_stability raised an exception: 'NoneType' object has no attribute 'frame_idx'
+Traceback (most recent call last):
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 656, in _safe
+    return fn(*args)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 151, in score_head_stability
+    stance_pose = _first_pose_in_phases(poses, phases, ["stance"])
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 107, in _first_pose_in_phases
+    subset = _poses_in_phases(poses, phases, labels)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 96, in _poses_in_phases
+    if s <= pose.frame_idx <= e:
+AttributeError: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,330  ERROR    modules.scoring — Scorer stance_balance raised an exception: 'NoneType' object has no attribute 'frame_idx'
+Traceback (most recent call last):
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 656, in _safe
+    return fn(*args)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 216, in score_stance_balance
+    stance_pose = _first_pose_in_phases(poses, phases, ["stance"])
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 107, in _first_pose_in_phases
+    subset = _poses_in_phases(poses, phases, labels)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 96, in _poses_in_phases
+    if s <= pose.frame_idx <= e:
+AttributeError: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,330  ERROR    modules.scoring — Scorer hip_rotation_timing raised an exception: 'NoneType' object has no attribute 'frame_idx'
+Traceback (most recent call last):
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 656, in _safe
+    return fn(*args)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 277, in score_hip_rotation_timing
+    swing_poses = _poses_in_phases(poses, phases, ["initiation", "contact_zone"])
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 96, in _poses_in_phases
+    if s <= pose.frame_idx <= e:
+AttributeError: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,330  ERROR    modules.scoring — Scorer stride_control raised an exception: 'NoneType' object has no attribute 'frame_idx'
+Traceback (most recent call last):
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 656, in _safe
+    return fn(*args)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 378, in score_stride_control
+    stride_poses = _poses_in_phases(poses, phases, ["stride"])
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 96, in _poses_in_phases
+    if s <= pose.frame_idx <= e:
+AttributeError: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,330  ERROR    modules.scoring — Scorer hand_path_efficiency raised an exception: 'NoneType' object has no attribute 'frame_idx'
+Traceback (most recent call last):
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 656, in _safe
+    return fn(*args)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 466, in score_hand_path
+    init_poses = _poses_in_phases(poses, phases, ["initiation"])
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 96, in _poses_in_phases
+    if s <= pose.frame_idx <= e:
+AttributeError: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,330  ERROR    modules.scoring — Scorer follow_through_balance raised an exception: 'NoneType' object has no attribute 'frame_idx'
+Traceback (most recent call last):
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 656, in _safe
+    return fn(*args)
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 547, in score_follow_through
+    ft_poses = _poses_in_phases(poses, phases, ["follow_through", "finish"])
+  File "/Users/abhay/RTB/athlemetry/baseball_tracker/modules/scoring.py", line 96, in _poses_in_phases
+    if s <= pose.frame_idx <= e:
+AttributeError: 'NoneType' object has no attribute 'frame_idx'
+2026-07-25 11:57:57,330  INFO     modules.pipeline — [scoring] Overall form score: N/A (confidence=0.00)
+2026-07-25 11:57:57,330  WARNING  modules.pipeline — [scoring] PARTIAL: Low pose coverage — form scores are approximate
+2026-07-25 11:57:57,330  INFO     modules.pipeline — [llm_feedback] SKIPPED: Ollama disabled via --no-ollama flag
+2026-07-25 11:57:57,330  INFO     modules.pipeline — [visualization] SKIPPED: Video export disabled
+2026-07-25 11:57:57,330  INFO     modules.pipeline — [export] Writing reports…
+2026-07-25 11:57:57,382  INFO     modules.export — JSON report written to ../test-media/analysis-runs/baseball-oakland-oaks-1918-fixed-2/bdaea370_analysis.json
+2026-07-25 11:57:57,383  INFO     modules.export — CSV summary written to ../test-media/analysis-runs/baseball-oakland-oaks-1918-fixed-2/bdaea370_summary.csv
+2026-07-25 11:57:57,383  INFO     modules.export — Coach report written to ../test-media/analysis-runs/baseball-oakland-oaks-1918-fixed-2/bdaea370_coach_report.txt
+2026-07-25 11:57:57,383  INFO     modules.pipeline — [export] Reports saved to ../test-media/analysis-runs/baseball-oakland-oaks-1918-fixed-2
+2026-07-25 11:57:57,383  INFO     modules.pipeline — Pipeline complete in 76.3 s — run_id=bdaea370

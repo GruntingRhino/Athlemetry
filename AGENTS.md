@@ -15,7 +15,7 @@ npm run lint:fix      # ESLint auto-fix
 npm test              # Run all tests with coverage (vitest)
 npm run test:watch    # Run tests in watch mode
 # Run a single test file:
-npx vitest run tests/metrics.test.ts
+npx vitest run tests/vision-analysis.test.ts
 
 # Database
 npm run db:up         # Start local Postgres via Docker Compose
@@ -23,10 +23,10 @@ npm run db:down       # Stop Postgres container
 npm run prisma:migrate   # Create and apply new migration (dev)
 npm run prisma:deploy    # Apply existing migrations (prod/CI)
 npm run prisma:generate  # Regenerate Prisma client after schema changes
-npm run prisma:seed      # Seed baseline drill definitions + default admin
+npm run prisma:seed      # Seed baseline drills + optional configured admin
 ```
 
-Default seeded admin: `admin@athlemetry.dev` / `admin1234`
+Administrator seeding is opt-in through `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (minimum 16 characters); no default credential is shipped.
 
 ## Architecture
 
@@ -41,7 +41,7 @@ Default seeded admin: `admin@athlemetry.dev` / `admin1234`
 
 1. Athlete uploads a video via the submission form → `POST /api/submissions` stores the file via the storage provider and creates a `DrillSubmission` record with `processingStatus: QUEUED`.
 2. `POST /api/processing/run` dequeues submissions and calls `src/lib/processing/queue.ts` to drive state transitions.
-3. Metrics are extracted by `src/lib/metrics/engine.ts` (`extractMetrics()`). Input is frame-based timing data or a file-size baseline; output is drill-specific metric fields written to `MetricResult`.
+3. Production workers run `vision_core` through `src/lib/vision-analysis.ts`; only analyzer-supported metrics with sufficient reliability are written to `MetricResult`. File size and user-entered distance are not production metric evidence.
 4. After extraction, `BenchmarkSnapshot` is computed and stored (percentile, cohort distribution).
 5. Videos are treated as temporary assets: `src/lib/storage.ts` handles `local` and `s3`-compatible providers. Purge is driven by `VIDEO_RETENTION_HOURS`.
 
@@ -56,8 +56,8 @@ Default seeded admin: `admin@athlemetry.dev` / `admin1234`
 | `src/lib/prisma.ts` | Singleton Prisma client |
 | `src/lib/benchmarking.ts` | Cohort percentile computation |
 | `src/lib/dashboard.ts` | Aggregated stats for dashboard views |
-| `src/lib/metrics/engine.ts` | Drill metric extraction (frame-based or file-size fallback) |
-| `src/lib/metrics/types.ts` | `ExtractionInput` / `ExtractedMetrics` types |
+| `src/lib/vision-analysis.ts` | Production adapter from `vision_core` evidence to persisted metrics |
+| `src/lib/metrics/types.ts` | Persisted analyzer metric output types |
 | `src/lib/processing/queue.ts` | Submission queue runner |
 | `src/lib/validators.ts` | Zod schemas for request validation |
 | `src/lib/constants.ts` | App-wide constants (drill slugs, cohort keys, etc.) |

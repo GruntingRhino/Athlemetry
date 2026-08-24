@@ -1,0 +1,82 @@
+{
+  "run_id": "1b7b2a7f",
+  "input": {
+    "video_path": "/Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv",
+    "player_height_inches": null,
+    "bat_length_inches": null,
+    "handedness": null,
+    "camera_view": "unknown",
+    "calibration_reference": null,
+    "analysis_mode": "fast",
+    "player_id": null
+  },
+  "video_metadata": {
+    "fps": 29.97002997002997,
+    "width": 400,
+    "height": 300,
+    "total_frames": 4238,
+    "duration_seconds": 141.40793333333335,
+    "codec": "theo",
+    "orientation": null,
+    "source_path": "/Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv"
+  },
+  "detections_summary": {
+    "baseball_detected_frames": 0,
+    "batter_detected_frames": 1939,
+    "bat_detected_frames": 7,
+    "total_frames": 2119,
+    "baseball_detection_rate": 0.0,
+    "batter_detection_rate": 0.9150542708824917,
+    "bat_detection_rate": 0.0033034450212364322,
+    "notes": []
+  },
+  "swing_phases": {
+    "phases": [],
+    "likely_contact_frame": null,
+    "likely_contact_time_sec": null,
+    "segmentation_method": "heuristic",
+    "confidence": 0.0,
+    "notes": [
+      "No frames available for segmentation."
+    ]
+  },
+  "ball_trajectory": null,
+  "pitch_analysis": null,
+  "swing_speed": null,
+  "form_scores": null,
+  "ollama_feedback": null,
+  "artifacts": {
+    "annotated_video_path": null,
+    "trajectory_plot_path": null,
+    "speed_chart_path": null,
+    "json_report_path": null,
+    "csv_summary_path": null,
+    "debug_dir": null
+  },
+  "module_status": {
+    "video_ingest": "ok",
+    "extract_frames": "ok",
+    "preprocess": "ok",
+    "detect": "ok",
+    "pose": "failed",
+    "track_ball": "failed",
+    "events": "ok",
+    "metrics": "skipped",
+    "pitch_analysis": "skipped",
+    "scoring": "skipped",
+    "llm_feedback": "skipped",
+    "visualization": "skipped"
+  },
+  "module_errors": {
+    "pose": "'AnalysisConfig' object has no attribute 'min_detection_confidence'",
+    "track_ball": "'AnalysisConfig' object has no attribute 'ball_process_noise'",
+    "metrics": "No pose data available for metric computation",
+    "pitch_analysis": "No ball trajectory available for pitch analysis",
+    "scoring": "No pose data available for form scoring",
+    "llm_feedback": "Ollama disabled via --no-ollama flag",
+    "visualization": "Video export disabled"
+  },
+  "pipeline_duration_sec": null,
+  "_disclaimer": "Speed, angle, and trajectory values marked as ESTIMATE are derived from computer-vision pixel analysis and are NOT certified measurements.  Do not use as substitutes for radar guns, bat sensors, or other calibrated instruments.",
+  "_exported_at": "2026-07-25T15:55:49.100188+00:00"
+}

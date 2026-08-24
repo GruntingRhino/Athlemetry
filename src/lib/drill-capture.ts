@@ -1,10 +1,17 @@
+import { BASEBALL_LEAGUE_OPTIONS } from "@/lib/constants";
+
 const BASEBALL_DEFAULT_DISTANCE = 60.5;
 const BASKETBALL_DEFAULT_DISTANCE = 15;
 const SOCCER_SPRINT_DISTANCE = 65.6;
 const SOCCER_AGILITY_DISTANCE = 45;
 const SOCCER_SHOOTING_DISTANCE = 54;
+const SOCCER_SHOOTING_MECHANICS_DISTANCE = 26.2;
+const SOCCER_MOVEMENT_EFFICIENCY_DISTANCE = 19.7;
+const SOCCER_PASSING_DISTANCE = 32.8;
+const SOCCER_FIRST_TOUCH_DISTANCE = 16.4;
 const SOCCER_DRIBBLE_DISTANCE = 30;
 const SOCCER_SHUTTLE_DISTANCE = 60;
+const BASEBALL_THROWING_MECHANICS_DISTANCE = 32.8;
 
 function approx(value: number, target: number, tolerance = 0.75) {
   return Math.abs(value - target) <= tolerance;
@@ -14,7 +21,8 @@ function roundDistance(value: number) {
   return Math.round(value * 10) / 10;
 }
 
-export function getDrillCaptureProfile(drill?: { slug: string; sport: string }) {
+export function getDrillCaptureProfile(drill?: { slug: string; sport: string }, _baseballLeague?: string | null) {
+  void _baseballLeague;
   switch (drill?.slug) {
     case "baseball-pitch-velocity":
       return {
@@ -36,6 +44,16 @@ export function getDrillCaptureProfile(drill?: { slug: string; sport: string }) 
         distanceMaxFeet: 90,
         distanceStep: 0.5,
       };
+    case "baseball-throwing-mechanics":
+      return {
+        cameraAngle: "open-side",
+        distanceLabel: "Throwing lane distance (ft)",
+        distanceHelp: "Default assumes an independently measured 10 m throwing lane with the ball, full body, home-plate marker, and numbered target visible. Adjust only to match the measured lane.",
+        measurementDistanceFeet: BASEBALL_THROWING_MECHANICS_DISTANCE,
+        distanceMinFeet: 15,
+        distanceMaxFeet: 50,
+        distanceStep: 0.5,
+      };
     case "baseball-swing-timing":
       return {
         cameraAngle: "open-side",
@@ -45,6 +63,36 @@ export function getDrillCaptureProfile(drill?: { slug: string; sport: string }) 
         distanceMinFeet: 40,
         distanceMaxFeet: 90,
         distanceStep: 0.5,
+      };
+    case "basketball-free-throw":
+      return {
+        cameraAngle: "diagonal",
+        distanceLabel: "Free-throw line distance (ft)",
+        distanceHelp: "Use the measured 15 ft line. Keep the line, full body, rim, backboard, and ball in frame without panning.",
+        measurementDistanceFeet: BASKETBALL_DEFAULT_DISTANCE,
+        distanceMinFeet: 14,
+        distanceMaxFeet: 16,
+        distanceStep: 0.25,
+      };
+    case "basketball-lane-agility":
+      return {
+        cameraAngle: "diagonal",
+        distanceLabel: "Lane-agility route distance (ft)",
+        distanceHelp: "Use the measured 47 ft lane route. Keep all turn lines, start, finish, and the full body in frame without panning.",
+        measurementDistanceFeet: 47,
+        distanceMinFeet: 45,
+        distanceMaxFeet: 49,
+        distanceStep: 0.5,
+      };
+    case "basketball-spot-shooting":
+      return {
+        cameraAngle: "diagonal",
+        distanceLabel: "Spot-shooting court reference (ft)",
+        distanceHelp: "Use the measured court line for each marked spot. Keep the spot, full body, rim, backboard, and ball in frame without panning.",
+        measurementDistanceFeet: BASKETBALL_DEFAULT_DISTANCE,
+        distanceMinFeet: 10,
+        distanceMaxFeet: 26,
+        distanceStep: 0.25,
       };
     case "basketball-form-capture":
       return {
@@ -75,6 +123,46 @@ export function getDrillCaptureProfile(drill?: { slug: string; sport: string }) 
         distanceMinFeet: 20,
         distanceMaxFeet: 90,
         distanceStep: 1,
+      };
+    case "shooting-mechanics":
+      return {
+        cameraAngle: "diagonal",
+        distanceLabel: "Mechanics lane distance (ft)",
+        distanceHelp: "Default assumes an independently measured 8 m mechanics lane with the ball, plant marker cone, full body, goal frame, and target grid visible. Adjust only to match the measured lane.",
+        measurementDistanceFeet: SOCCER_SHOOTING_MECHANICS_DISTANCE,
+        distanceMinFeet: 15,
+        distanceMaxFeet: 50,
+        distanceStep: 0.5,
+      };
+    case "movement-efficiency":
+      return {
+        cameraAngle: "diagonal",
+        distanceLabel: "Movement route distance (ft)",
+        distanceHelp: "Default assumes a measured 6 m movement route with every cone, the numbered finish target, and the full body visible. Adjust only to match the independently measured route.",
+        measurementDistanceFeet: SOCCER_MOVEMENT_EFFICIENCY_DISTANCE,
+        distanceMinFeet: 12,
+        distanceMaxFeet: 40,
+        distanceStep: 0.5,
+      };
+    case "passing-accuracy":
+      return {
+        cameraAngle: "side",
+        distanceLabel: "Passing lane distance (ft)",
+        distanceHelp: "Default assumes a measured 10 m passing lane with the full target visible. Adjust only to match the independently measured lane.",
+        measurementDistanceFeet: SOCCER_PASSING_DISTANCE,
+        distanceMinFeet: 15,
+        distanceMaxFeet: 60,
+        distanceStep: 1,
+      };
+    case "first-touch-control":
+      return {
+        cameraAngle: "diagonal",
+        distanceLabel: "First-touch service lane (ft)",
+        distanceHelp: "Default assumes a measured 5 m ground-service lane with both control-square cones and the target visible. Adjust only to match the independently measured lane.",
+        measurementDistanceFeet: SOCCER_FIRST_TOUCH_DISTANCE,
+        distanceMinFeet: 10,
+        distanceMaxFeet: 40,
+        distanceStep: 0.5,
       };
     case "cone-dribble":
       return {
@@ -110,7 +198,11 @@ export function getDrillCaptureProfile(drill?: { slug: string; sport: string }) 
   }
 }
 
-export function getDefaultMeasurementDistanceFeet(drillSlug: string) {
+export function getDefaultMeasurementDistanceFeet(drillSlug: string, baseballLeague?: string | null) {
+  if (drillSlug.startsWith("baseball") && baseballLeague) {
+    const league = BASEBALL_LEAGUE_OPTIONS.find((option) => option.key === baseballLeague);
+    if (league) return league.distanceFeet;
+  }
   return getDrillCaptureProfile({ slug: drillSlug, sport: "" }).measurementDistanceFeet;
 }
 
@@ -118,6 +210,10 @@ export function describeReferenceDistance(drillSlug: string, measurementDistance
   const feet = roundDistance(
     measurementDistanceFeet ?? getDefaultMeasurementDistanceFeet(drillSlug),
   );
+
+  if (drillSlug === "baseball-throwing-mechanics") {
+    return `${feet.toFixed(1)} ft throwing mechanics lane reference`;
+  }
 
   if (drillSlug.startsWith("baseball")) {
     if (approx(feet, BASEBALL_DEFAULT_DISTANCE, 0.6) || approx(feet, 60, 0.6)) {
@@ -157,6 +253,22 @@ export function describeReferenceDistance(drillSlug: string, measurementDistance
 
   if (drillSlug === "shooting-accuracy") {
     return `${feet.toFixed(1)} ft shooting lane reference`;
+  }
+
+  if (drillSlug === "shooting-mechanics") {
+    return `${feet.toFixed(1)} ft shooting mechanics lane reference`;
+  }
+
+  if (drillSlug === "movement-efficiency") {
+    return `${feet.toFixed(1)} ft movement route reference`;
+  }
+
+  if (drillSlug === "passing-accuracy") {
+    return `${feet.toFixed(1)} ft passing lane reference`;
+  }
+
+  if (drillSlug === "first-touch-control") {
+    return `${feet.toFixed(1)} ft first-touch service lane reference`;
   }
 
   if (drillSlug === "cone-dribble") {

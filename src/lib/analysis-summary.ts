@@ -40,6 +40,7 @@ function buildSoccerSummary(
   clipQuality: string,
   reliability: number,
   measurementDistanceFeet: number,
+  calibrationNote?: string,
 ) {
   if (drillType === "sprint-20m") {
     return {
@@ -54,7 +55,8 @@ function buildSoccerSummary(
       reliabilityLabel: "Confidence",
       reliabilityValue: `${Math.round(reliability)} / 100`,
       note:
-        "Side or diagonal clips with the full sprint lane visible give the most reliable result. If the distance is custom, the slider keeps the estimate conservative.",
+        calibrationNote
+        ?? "Side or diagonal clips with the full sprint lane visible give the most reliable result. If the distance is custom, the slider keeps the estimate conservative.",
     };
   }
 
@@ -91,6 +93,74 @@ function buildSoccerSummary(
       reliabilityValue: `${Math.round(reliability)} / 100`,
       note:
         "Keep the goal mouth or target area visible. The output is conservative when the camera is not behind-goal or the target is obscured.",
+    };
+  }
+
+  if (drillType === "shooting-mechanics") {
+    return {
+      sport: "soccer",
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Shooting mechanics capture",
+      primaryValue:
+        typeof metricResult.techniqueScore === "number" ? `${metricResult.techniqueScore.toFixed(1)} / 100` : "Unavailable",
+      secondaryLabel: "Mechanics lane",
+      secondaryValue: describeReferenceDistance(drillType, measurementDistanceFeet),
+      reliabilityLabel: "Confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "This protocol records visible plant and first-strike evidence only; it is not a coaching or shot-quality claim. Customer output remains withheld until the current capture and release gates pass.",
+    };
+  }
+
+  if (drillType === "movement-efficiency") {
+    return {
+      sport: "soccer",
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Movement-route capture",
+      primaryValue:
+        typeof metricResult.consistencyScore === "number" ? `${metricResult.consistencyScore.toFixed(1)} / 100` : "Unavailable",
+      secondaryLabel: "Movement route",
+      secondaryValue: describeReferenceDistance(drillType, measurementDistanceFeet),
+      reliabilityLabel: "Confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "This protocol records visible route, turn, and finish-target evidence only; it is not an efficiency, coaching, or scientific claim. Customer output remains withheld until the current capture and release gates pass.",
+    };
+  }
+
+  if (drillType === "passing-accuracy") {
+    return {
+      sport: "soccer",
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Passing target accuracy",
+      primaryValue:
+        typeof metricResult.accuracyScore === "number" ? `${metricResult.accuracyScore.toFixed(1)} / 100` : "Unavailable",
+      secondaryLabel: "Passing lane",
+      secondaryValue: describeReferenceDistance(drillType, measurementDistanceFeet),
+      reliabilityLabel: "Confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "Only independently verified target outcomes can support this protocol-defined result. Keep the stationary start line, full lane, and numbered target visible.",
+    };
+  }
+
+  if (drillType === "first-touch-control") {
+    return {
+      sport: "soccer",
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "First-touch control accuracy",
+      primaryValue:
+        typeof metricResult.accuracyScore === "number" ? `${metricResult.accuracyScore.toFixed(1)} / 100` : "Unavailable",
+      secondaryLabel: "Service lane",
+      secondaryValue: describeReferenceDistance(drillType, measurementDistanceFeet),
+      reliabilityLabel: "Confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "Only independently verified first-touch outcomes inside the marked control square can support this protocol-defined result. Keep the measured service line, both cones, and numbered target visible.",
     };
   }
 
@@ -140,6 +210,63 @@ export function buildAnalysisSummary(
   const frameDuration = metricResult.frameBasedDuration;
   const reliability = metricResult.reliabilityScore ?? 0;
   const sport = readString(metadata.sport) ?? (submission.drillType.startsWith("baseball-") ? "baseball" : "soccer");
+  const visionEvidence = toObject(toObject(metadata.visionAnalysis).evidence);
+  const calibrationMethod = readString(visionEvidence.calibration_method);
+  const calibrationConfidence = readNumber(visionEvidence.calibration_confidence);
+  const calibrationObservations = readNumber(visionEvidence.calibration_marker_observations);
+  const calibrationNote =
+    calibrationMethod === "aruco-course-markers"
+    && calibrationConfidence !== undefined
+    && calibrationObservations !== undefined
+      ? `Automatic start/finish marker timing was detected across ${calibrationObservations} frames with ${Math.round(calibrationConfidence * 100)}% calibration confidence.`
+      : undefined;
+
+  if (submission.drillType === "basketball-free-throw") {
+    return {
+      sport,
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Free-throw outcome status",
+      primaryValue: "Unavailable pending validated outcome evidence",
+      secondaryLabel: "Court reference",
+      secondaryValue: describeReferenceDistance(submission.drillType, measurementDistanceFeet),
+      reliabilityLabel: "Capture confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "A free-throw result requires ten independently reviewable attempts with the measured line, ball, hoop, and first outcome visible. Capture confidence is not a made-shot percentage, accuracy claim, or benchmark eligibility.",
+    };
+  }
+
+  if (submission.drillType === "basketball-lane-agility") {
+    return {
+      sport,
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Lane-agility timing status",
+      primaryValue: "Unavailable pending validated route evidence",
+      secondaryLabel: "Lane route",
+      secondaryValue: describeReferenceDistance(submission.drillType, measurementDistanceFeet),
+      reliabilityLabel: "Capture confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "A lane-agility result requires verified route geometry, visible line touches, and independently reviewed timing evidence. Capture confidence is not a timing measurement, agility score, or benchmark eligibility.",
+    };
+  }
+
+  if (submission.drillType === "basketball-spot-shooting") {
+    return {
+      sport,
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Spot-shooting outcome status",
+      primaryValue: "Unavailable pending validated outcome evidence",
+      secondaryLabel: "Court reference",
+      secondaryValue: describeReferenceDistance(submission.drillType, measurementDistanceFeet),
+      reliabilityLabel: "Capture confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note: "A spot-shooting result requires independently reviewable marked spots, ball, hoop, releases, and first outcomes for every attempt. Capture confidence is not a made-shot percentage, accuracy claim, consistency result, or benchmark eligibility.",
+    };
+  }
 
   if (submission.drillType === "basketball-form-capture") {
     return {
@@ -158,26 +285,30 @@ export function buildAnalysisSummary(
   }
 
   if (submission.drillType === "baseball-pitch-velocity") {
-    const distanceFeet = measurementDistanceFeet ?? 60.5;
-    const velocityMph =
-      typeof frameDuration === "number" && frameDuration > 0
-        ? Math.round(((distanceFeet / frameDuration) * 0.681818) * 10) / 10
+    const calibratedSpeed =
+      typeof metricResult.speed === "number" && Number.isFinite(metricResult.speed)
+        ? metricResult.speed
         : null;
-
     return {
       sport,
       cameraAngle,
       clipQuality,
-      primaryLabel: "Pitch velocity estimate",
-      primaryValue: velocityMph !== null ? `${velocityMph.toFixed(1)} mph` : "Unavailable",
-      secondaryLabel: "Release-to-target travel",
-      secondaryValue: typeof frameDuration === "number" ? `${frameDuration.toFixed(3)}s` : "Unavailable",
+      primaryLabel: calibratedSpeed === null ? "Release-to-target timing" : "Calibrated pitch speed",
+      primaryValue:
+        calibratedSpeed === null
+          ? typeof frameDuration === "number" ? `${frameDuration.toFixed(3)}s` : "Unavailable"
+          : `${calibratedSpeed.toFixed(2)} m/s`,
+      secondaryLabel: calibratedSpeed === null ? "Velocity status" : "Release-to-target timing",
+      secondaryValue:
+        calibratedSpeed === null
+          ? "Unavailable"
+          : typeof frameDuration === "number" ? `${frameDuration.toFixed(3)}s` : "Unavailable",
       reliabilityLabel: "Confidence",
       reliabilityValue: `${Math.round(reliability)} / 100`,
       note:
-        velocityMph !== null
-          ? `Velocity was derived from user-supplied frame markers and a ${describeReferenceDistance(submission.drillType, distanceFeet)} anchor, so accuracy depends on clean release and catch/plate frames.`
-          : buildUnclearReason(metadata, "Video was not clear enough to estimate pitch velocity reliably."),
+        calibratedSpeed === null
+          ? "Velocity is withheld unless a separately calibrated speed metric passes the pitch-velocity validation gate. User-entered distance and frame timing are not independent calibration."
+          : "This speed came from the calibrated analyzer output. Customer display additionally requires the independent pitch-speed validation gate.",
       spinRateStatus: {
         state: "unavailable",
         reason: buildUnclearReason(metadata, "Video was not clear enough to estimate RPM reliably."),
@@ -205,6 +336,26 @@ export function buildAnalysisSummary(
       spinRateStatus: {
         state: "unavailable",
         reason: buildUnclearReason(metadata, "Command clips do not provide enough ball detail for RPM estimation."),
+      },
+    };
+  }
+
+  if (submission.drillType === "baseball-throwing-mechanics") {
+    return {
+      sport,
+      cameraAngle,
+      clipQuality,
+      primaryLabel: "Throwing-mechanics capture",
+      primaryValue: "Unavailable",
+      secondaryLabel: "Throwing lane",
+      secondaryValue: describeReferenceDistance(submission.drillType, measurementDistanceFeet),
+      reliabilityLabel: "Confidence",
+      reliabilityValue: `${Math.round(reliability)} / 100`,
+      note:
+        "This protocol records visible ball, plate-marker, target-reference, and throwing-action evidence only. Customer output remains withheld until the current capture and release gates pass.",
+      spinRateStatus: {
+        state: "not_applicable",
+        reason: "This controlled capture does not provide a released physical measurement.",
       },
     };
   }
@@ -241,6 +392,7 @@ export function buildAnalysisSummary(
       clipQuality,
       reliability,
       measurementDistanceFeet ?? getDefaultMeasurementDistanceFeet(submission.drillType),
+      calibrationNote,
     );
   }
 

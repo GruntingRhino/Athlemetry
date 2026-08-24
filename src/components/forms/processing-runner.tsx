@@ -54,7 +54,7 @@ export function ProcessingRunner() {
           type="button"
           disabled={pending}
           onClick={runBatch}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+          className="athlemetry-button athlemetry-button-primary disabled:opacity-60"
         >
           {pending ? "Running..." : "Run processing batch"}
         </button>
@@ -62,12 +62,12 @@ export function ProcessingRunner() {
           type="button"
           disabled={purgePending}
           onClick={purgeExpired}
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+          className="athlemetry-button athlemetry-button-secondary disabled:opacity-60"
         >
           {purgePending ? "Purging..." : "Purge expired videos"}
         </button>
       </div>
-      {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="athlemetry-message">{message}</p> : null}
     </div>
   );
 }

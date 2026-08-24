@@ -17,13 +17,22 @@ export async function GET(
 
   const submission = await prisma.drillSubmission.findUnique({
     where: { id },
-    include: {
-      metricResult: true,
-      benchmarkSnapshots: true,
+    select: {
+      id: true,
+      athleteId: true,
+      processingStatus: true,
+      processingAttempts: true,
+      nextAttemptAt: true,
+      deadLetteredAt: true,
+      uploadProgress: true,
+      queuedAt: true,
+      startedAt: true,
+      completedAt: true,
       processingLogs: {
         orderBy: {
           createdAt: "desc",
         },
+        select: { status: true, attempt: true, durationMs: true, createdAt: true },
       },
     },
   });
@@ -36,5 +45,18 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  return NextResponse.json({ submission });
+  return NextResponse.json({
+    submission: {
+      id: submission.id,
+      processingStatus: submission.processingStatus,
+      processingAttempts: submission.processingAttempts,
+      nextAttemptAt: submission.nextAttemptAt,
+      deadLetteredAt: submission.deadLetteredAt,
+      uploadProgress: submission.uploadProgress,
+      queuedAt: submission.queuedAt,
+      startedAt: submission.startedAt,
+      completedAt: submission.completedAt,
+      processingLogs: submission.processingLogs,
+    },
+  });
 }

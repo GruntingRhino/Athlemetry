@@ -1,15 +1,3 @@
-export type ExtractionInput = {
-  drillSlug: string;
-  frameRate?: number | null;
-  startFrame?: number | null;
-  finishFrame?: number | null;
-  repetitionHint?: number | null;
-  fileSize: number;
-  cameraAngle?: string | null;
-  clipQuality?: string | null;
-  measurementDistanceFeet?: number | null;
-};
-
 export type ExtractedMetrics = {
   sprintTime?: number;
   accelerationTiming?: number;
@@ -22,4 +10,11 @@ export type ExtractedMetrics = {
   drillCompletionRate?: number;
   consistencyScore?: number;
   reliabilityScore?: number;
+  speed?: number;
+  acceleration?: number;
+  agilityScore?: number;
+  techniqueScore?: number;
+  accuracyScore?: number;
+  powerScore?: number;
+  overallPerformanceScore?: number;
 };

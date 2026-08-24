@@ -38,19 +38,19 @@ export function ConsentForm() {
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
-      <label className="block text-sm text-slate-700">
+      <label className="athlemetry-label">
         Athlete email
         <input
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="athlemetry-control"
           type="email"
           name="athleteEmail"
           required
         />
       </label>
-      <label className="block text-sm text-slate-700">
+      <label className="athlemetry-label">
         Decision
         <select
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="athlemetry-control"
           name="granted"
           defaultValue="approve"
         >
@@ -58,11 +58,11 @@ export function ConsentForm() {
           <option value="deny">Deny</option>
         </select>
       </label>
-      {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="athlemetry-message">{message}</p> : null}
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+        className="athlemetry-button athlemetry-button-primary disabled:opacity-60"
       >
         {pending ? "Submitting..." : "Submit consent decision"}
       </button>

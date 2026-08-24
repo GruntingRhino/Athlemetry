@@ -16,25 +16,42 @@ export async function POST(request: Request) {
   }
   const version = payload.version;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.modelVersion.updateMany({
-      where: { isActive: true },
-      data: { isActive: false },
-    });
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.modelVersion.updateMany({
+        where: { isActive: true },
+        data: { isActive: false },
+      });
 
-    await tx.modelVersion.upsert({
-      where: { version },
-      update: {
-        isActive: true,
-        notes: payload.notes || "Manual version activation.",
-      },
-      create: {
-        version,
-        isActive: true,
-        notes: payload.notes || "Manual version activation.",
-      },
+      await tx.modelVersion.upsert({
+        where: { version },
+        update: {
+          isActive: true,
+          notes: payload.notes || "Manual version activation.",
+        },
+        create: {
+          version,
+          isActive: true,
+          notes: payload.notes || "Manual version activation.",
+        },
+      });
+
+      await tx.systemLog.create({
+        data: {
+          level: "INFO",
+          category: "SECURITY_AUDIT",
+          message: "Model version activated",
+          metadata: {
+            action: "MODEL_VERSION_ACTIVATED",
+            actorUserId: session.user.id,
+            modelVersion: version,
+          },
+        },
+      });
     });
-  });
+  } catch {
+    return NextResponse.json({ error: "Model version activation could not be recorded safely." }, { status: 503 });
+  }
 
   return NextResponse.json({ ok: true });
 }

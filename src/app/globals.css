@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f3f8f2;
-  --foreground: #09120f;
+  --background: #f6f8fb;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-soft: #eef3fb;
+  --border: #d9e1ee;
+  --border-strong: #c8d4e6;
+  --muted: #475569;
+  --muted-soft: #64748b;
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --accent-soft: rgba(15, 118, 110, 0.10);
+  --success: #16a34a;
+  --warning: #b45309;
+  --shadow-soft: 0 24px 70px -42px rgba(15, 23, 42, 0.26);
 }
 
 * {
@@ -17,18 +30,302 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 32%),
-    radial-gradient(circle at top right, rgba(15, 23, 42, 0.05), transparent 24%),
-    linear-gradient(180deg, #f5fbf3 0%, #edf5ee 100%);
+    radial-gradient(circle at 20% 0%, rgba(15, 118, 110, 0.10), transparent 28%),
+    radial-gradient(circle at 85% 0%, rgba(17, 94, 89, 0.07), transparent 22%),
+    linear-gradient(180deg, #f8fbfe 0%, #eef4fa 100%);
   color: var(--foreground);
-  font-family: Inter, "Segoe UI", "Avenir Next", sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-a:not([class]) {
+::selection {
+  background: rgba(15, 118, 110, 0.18);
+  color: var(--foreground);
+}
+
+a {
   color: inherit;
+  text-decoration: none;
 }
 
-a.bg-slate-900,
-button.bg-slate-900 {
-  color: var(--color-white) !important;
+a:hover {
+  text-decoration-thickness: 1px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  color: var(--foreground);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-soft);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(15, 118, 110, 0.7);
+  outline-offset: 2px;
+}
+
+.athlemetry-shell {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.athlemetry-card {
+  border: 1px solid rgba(201, 209, 224, 0.9);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 28px;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(8px);
+}
+
+.athlemetry-card-soft {
+  border: 1px solid rgba(201, 209, 224, 0.75);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  box-shadow: 0 16px 40px -30px rgba(15, 23, 42, 0.18);
+}
+
+.athlemetry-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(201, 209, 224, 0.85);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(244, 248, 252, 0.92)),
+    linear-gradient(180deg, rgba(15, 118, 110, 0.05), transparent);
+  border-radius: 34px;
+  box-shadow: var(--shadow-soft);
+}
+
+.athlemetry-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -30% auto;
+  width: 28rem;
+  height: 28rem;
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.16) 0%, rgba(15, 118, 110, 0.04) 40%, transparent 72%);
+  pointer-events: none;
+}
+
+.athlemetry-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.athlemetry-title {
+  font-size: clamp(2.3rem, 5vw, 4.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.athlemetry-body {
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.athlemetry-section-heading {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.athlemetry-section-lead {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.athlemetry-stat {
+  border: 1px solid rgba(201, 209, 224, 0.75);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 1rem 1.05rem;
+}
+
+.athlemetry-stat-label {
+  color: var(--muted-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.athlemetry-stat-value {
+  margin-top: 0.5rem;
+  color: var(--foreground);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.athlemetry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(201, 209, 224, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.42rem 0.8rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.athlemetry-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.8rem 1.15rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 14px 30px -22px rgba(15, 118, 110, 0.4);
+}
+
+.athlemetry-button:hover {
+  transform: translateY(-1px);
+}
+
+.athlemetry-button-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+}
+
+.athlemetry-button-secondary {
+  border-color: rgba(201, 209, 224, 0.95);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--foreground);
+}
+
+.athlemetry-panel-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.athlemetry-panel-item {
+  border: 1px solid rgba(201, 209, 224, 0.75);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 22px;
+  padding: 1rem 1.05rem;
+}
+
+.athlemetry-divider {
+  border-top: 1px solid rgba(201, 209, 224, 0.72);
+}
+
+.athlemetry-form-shell {
+  border: 1px solid rgba(201, 209, 224, 0.78);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 20px 40px -34px rgba(15, 23, 42, 0.2);
+}
+
+@media (max-width: 640px) {
+  .athlemetry-shell {
+    padding-inline: 0.8rem;
+    padding-top: 1rem;
+  }
+}
+
+.athlemetry-control {
+  width: 100%;
+  border: 1px solid rgba(201, 209, 224, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.72rem 0.85rem;
+  color: var(--foreground);
+  box-shadow: 0 12px 28px -26px rgba(15, 23, 42, 0.24);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.athlemetry-control:hover {
+  border-color: rgba(15, 118, 110, 0.28);
+}
+
+.athlemetry-control:focus {
+  border-color: rgba(15, 118, 110, 0.62);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.10);
+  outline: none;
+}
+
+.athlemetry-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.athlemetry-label > .athlemetry-control,
+.athlemetry-label > input,
+.athlemetry-label > select,
+.athlemetry-label > textarea {
+  margin-top: 0.45rem;
+}
+
+.athlemetry-check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid rgba(201, 209, 224, 0.7);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.75rem 0.85rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.athlemetry-message {
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  border-radius: 16px;
+  background: rgba(15, 118, 110, 0.08);
+  padding: 0.8rem 0.9rem;
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.athlemetry-danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.athlemetry-danger:hover {
+  background: #b91c1c;
+}
+
+.athlemetry-table-card {
+  overflow: hidden;
+  border: 1px solid rgba(201, 209, 224, 0.82);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 16px 42px -34px rgba(15, 23, 42, 0.24);
 }

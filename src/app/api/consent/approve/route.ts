@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { consentApprovalSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -14,10 +15,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  const payload = (await request.json()) as { athleteEmail?: string; granted?: boolean };
-  if (!payload.athleteEmail) {
-    return NextResponse.json({ error: "athleteEmail is required." }, { status: 400 });
+  const parsed = consentApprovalSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid consent approval payload.", issues: parsed.error.flatten() }, { status: 400 });
   }
+  const payload = parsed.data;
 
   const athlete = await prisma.user.findUnique({
     where: { email: payload.athleteEmail.toLowerCase() },
@@ -26,25 +28,56 @@ export async function POST(request: Request) {
   if (!athlete) {
     return NextResponse.json({ error: "Athlete not found." }, { status: 404 });
   }
+  if (athlete.role !== "ATHLETE" || athlete.age === null || athlete.age >= 18) {
+    return NextResponse.json(
+      { error: "Parental approval applies only to registered minor athletes." },
+      { status: 409 },
+    );
+  }
 
-  const granted = payload.granted ?? true;
+  if (
+    session.user.role === "PARENT"
+    && (!session.user.email || athlete.parentEmail?.toLowerCase() !== session.user.email.toLowerCase())
+  ) {
+    return NextResponse.json({ error: "You are not the registered parent for this athlete." }, { status: 403 });
+  }
 
-  await prisma.user.update({
-    where: { id: athlete.id },
-    data: {
-      parentConsentVerified: granted,
-    },
-  });
+  const granted = payload.granted;
 
-  await prisma.consentLog.create({
-    data: {
-      userId: athlete.id,
-      actorUserId: session.user.id,
-      consentType: "PARENTAL_APPROVAL",
-      granted,
-      notes: `Approved by ${session.user.email}`,
-    },
-  });
+  try {
+    await prisma.$transaction(async (transaction) => {
+      await transaction.user.update({
+        where: { id: athlete.id },
+        data: {
+          parentConsentVerified: granted,
+        },
+      });
+      await transaction.consentLog.create({
+        data: {
+          userId: athlete.id,
+          actorUserId: session.user.id,
+          consentType: "PARENTAL_APPROVAL",
+          granted,
+          notes: "Approval recorded by the linked parent or an administrator.",
+        },
+      });
+      await transaction.systemLog.create({
+        data: {
+          level: "INFO",
+          category: "SECURITY_AUDIT",
+          message: "Parental consent approval updated",
+          metadata: {
+            action: "PARENTAL_CONSENT_APPROVAL_UPDATED",
+            actorUserId: session.user.id,
+            athleteId: athlete.id,
+            granted,
+          },
+        },
+      });
+    });
+  } catch {
+    return NextResponse.json({ error: "Consent approval could not be recorded safely." }, { status: 503 });
+  }
 
   return NextResponse.json({ ok: true, athleteId: athlete.id, granted });
 }

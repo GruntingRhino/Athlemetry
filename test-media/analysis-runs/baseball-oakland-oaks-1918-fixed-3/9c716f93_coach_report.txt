@@ -1,0 +1,159 @@
+========================================================================
+  ATHLEMETRY — BASEBALL SWING ANALYSIS REPORT
+========================================================================
+
+  Run ID    : 9c716f93
+  Player ID : N/A
+  Generated : 2026-07-25 15:59:46 UTC
+  Video     : /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv
+
+  *** IMPORTANT DISCLAIMER ***
+  All speed, angle, and trajectory values marked [ESTIMATE] are
+  derived from computer-vision pixel analysis.  They are NOT
+  certified measurements and should NOT be used as substitutes for
+  radar guns, bat sensors, or other calibrated instruments.  Treat
+  all numeric estimates as approximate guides only.
+
+------------------------------------------------------------------------
+  1. VIDEO INFORMATION
+
+  Resolution  : 400 × 300 px
+  Frame Rate  : 29.97 fps
+  Duration    : 141.41 sec  (4238 frames)
+  Codec       : theo
+
+  Camera View  : unknown
+  Handedness   : not specified
+  Player Height: not provided inches
+  Bat Length   : not provided inches
+
+------------------------------------------------------------------------
+  2. SWING METRICS
+
+  [ SWING SPEED — ALL VALUES ARE ESTIMATES ]
+    Peak Speed [ESTIMATE]   : 120.0 mph
+    Average Speed [ESTIMATE]: 49.2 mph
+    Confidence Band         : [96.0 – 144.0 mph]
+    Confidence              : 25%  [LOW]
+    Calibration Mode        : anthropometric_estimation
+    Pixels per Inch         : 2.6906
+
+    Estimation method: wrist_displacement_proxy; peak speed derived
+  from max per-frame wrist displacement during
+  initiation/contact_zone phases; ESTIMATE ONLY
+
+  [ BALL TRAJECTORY ]
+    Tracking Method : fallback
+    Confidence      : 0%  [LOW]
+    Points Detected : 0
+    Notes           :
+      • No ball detections found; trajectory is empty.
+
+  [ SWING PHASE TIMING ]
+    Contact Frame   : N/A
+    Contact Time    : N/A sec
+    Method          : heuristic
+    Confidence      : 30%  [LOW]
+
+    Phase breakdown:
+      stance                frames    0–423   (14114 ms)  conf 30%
+      load                  frames  424–635   (7040 ms)  conf 30%
+      stride                frames  636–953   (10577 ms)  conf 30%
+      initiation            frames  954–1164  (7007 ms)  conf 30%
+      contact_zone          frames 1165–1376  (7040 ms)  conf 30%
+      follow_through        frames 1377–1800  (14114 ms)  conf 30%
+      finish                frames 1801–2118  (10577 ms)  conf 30%
+
+------------------------------------------------------------------------
+  3. FORM ANALYSIS  [CV-derived, rule-based — no LLM]
+
+  Overall Score      : 0.430 / 1.000  (43.0%)
+  Overall Confidence : 64%  [MEDIUM]
+
+  Head Stability
+    Score      : 0.000 / 1.000  (0.0%)
+    Confidence : 70%  [HIGH]
+    Rationale  : Head displacement 111.4 px (37.1% of frame height) from stance to contact; threshold 4.0%
+    Issues     :
+      • Head rises excessively during swing
+      • Head drifts forward (toward pitcher) during swing
+    Suggestions:
+      → Stay tall through the ball; avoid lunging upward
+      → Keep head still; let your eyes track the ball to the bat
+
+  Stance Balance
+    Score      : 0.943 / 1.000  (94.3%)
+    Confidence : 65%  [MEDIUM]
+    Rationale  : Hip CoM proxy offset from ankle midpoint: 0.1 px (3.4% of half-stance width)
+
+  Hip Rotation Timing
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 60%  [MEDIUM]
+    Rationale  : Hip peak angular velocity at frame 1233; shoulder peak at frame 1228 (lead = -5 frames). Cumulative hip rotation before shoulder peak: 4496.7° (target ≥ 10.0°)
+    Issues     :
+      • Shoulders appear to rotate before hips (reverse sequencing)
+    Suggestions:
+      → Initiate the swing by driving hips toward the pitcher first
+      → Drill: 'hip first' tee work, focusing on hip-fire cue before hands move
+
+  Stride Control
+    Score      : 0.500 / 1.000  (50.0%)
+    Confidence : 0%  [LOW]
+    Rationale  : Skipped: stride phase has fewer than 2 pose frames
+    Suggestions:
+      → Improve video quality or coverage for this metric
+
+  Hand Path Efficiency
+    Score      : 0.000 / 1.000  (0.0%)
+    Confidence : 60%  [MEDIUM]
+    Rationale  : Max wrist lateral extension from torso: 10.85× shoulder width (avg 1.18×)
+    Issues     :
+      • Hands cast excessively away from body during initiation
+    Suggestions:
+      → Keep hands close to the body on the path to the ball
+      → Drill: towel drill or 'knob to the ball' cue to prevent casting
+
+  Follow-Through Balance
+    Score      : 0.619 / 1.000  (61.9%)
+    Confidence : 65%  [MEDIUM]
+    Rationale  : Hip tilt ratio at finish: 0.208; shoulder tilt ratio: 0.249
+
+  Key Issues (aggregated):
+    • Head rises excessively during swing
+    • Head drifts forward (toward pitcher) during swing
+    • Shoulders appear to rotate before hips (reverse sequencing)
+    • Hands cast excessively away from body during initiation
+
+  Coaching Suggestions (aggregated):
+    → Stay tall through the ball; avoid lunging upward
+    → Keep head still; let your eyes track the ball to the bat
+    → Initiate the swing by driving hips toward the pitcher first
+    → Drill: 'hip first' tee work, focusing on hip-fire cue before hands move
+    → Improve video quality or coverage for this metric
+    → Keep hands close to the body on the path to the ball
+    → Drill: towel drill or 'knob to the ball' cue to prevent casting
+
+------------------------------------------------------------------------
+  4. LLM COACHING FEEDBACK  (Ollama)
+
+  LLM feedback not generated (Ollama disabled or unavailable).
+
+------------------------------------------------------------------------
+  5. MODULE STATUS
+
+    video_ingest                        OK
+    extract_frames                      OK
+    preprocess                          OK
+    detect                              OK
+    pose                                OK
+    track_ball                          PARTIAL  [Low overall tracking confidence]
+    events                              OK
+    metrics                             OK
+    pitch_analysis                      PARTIAL  [Low trajectory confidence — pitch estimates are approximate]
+    scoring                             OK
+    llm_feedback                        SKIPPED  [Ollama disabled via --no-ollama flag]
+    visualization                       SKIPPED  [Video export disabled]
+
+========================================================================
+  End of Report
+========================================================================

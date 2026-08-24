@@ -22,5 +22,14 @@ export function buildSportHref(section: SportSectionKey, sport?: string | null) 
 
 export const SPORT_SETTINGS_LINKS = [
   { href: "/profile", label: "Profile" },
+  { href: "/coaching", label: "Coaching plans" },
+  { href: "/teams", label: "Teams" },
+  { href: "/team-invitations", label: "Team invitations" },
+  { href: "/feedback", label: "Feedback history" },
+  { href: "/shared", label: "Shared with you" },
+  { href: "/protocols", label: "Drill protocols" },
+  { href: "/billing", label: "Billing" },
   { href: "/privacy", label: "Privacy" },
+  { href: "/privacy-notice", label: "Privacy Notice" },
+  { href: "/terms", label: "Terms of Use" },
 ] as const;

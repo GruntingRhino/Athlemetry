@@ -1,0 +1,19 @@
+{
+  "purpose": "Technical media-ingestion/decode experiments only. Not athlete-CV, sports-accuracy, or performance-validation evidence.",
+  "assets": [
+    {
+      "file": "baseball-oakland-oaks-1918.ogv",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:1918_Oakland_Oaks_baseball_season_opens.ogv",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/1918_Oakland_Oaks_baseball_season_opens.ogv",
+      "license": "Public Domain",
+      "attribution": "Unknown author; Wikimedia Commons"
+    },
+    {
+      "file": "basketball-4.ogv",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Basketball_(4).ogv",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/7/74/Basketball_%284%29.ogv",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Azorbli; Wikimedia Commons; retain CC BY-SA 4.0 attribution if redistributed."
+    }
+  ]
+}

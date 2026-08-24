@@ -5,7 +5,7 @@ import { signOut } from "next-auth/react";
 export function LogoutButton() {
   return (
     <button
-      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+      className="athlemetry-button athlemetry-button-secondary px-4 py-2 text-sm"
       onClick={() => signOut({ callbackUrl: "/" })}
       type="button"
     >

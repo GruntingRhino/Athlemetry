@@ -13,10 +13,10 @@ type NavLink = {
 
 function NavGroup({ label, href, links }: { label: string; href?: string; links: ReadonlyArray<NavLink> }) {
   return (
-    <div className="rounded-3xl border border-slate-100 bg-slate-50/80 p-3 shadow-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+    <div className="athlemetry-card-soft p-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">
         {href ? (
-          <Link href={href} className="text-slate-500 transition hover:text-emerald-700">
+          <Link href={href} className="transition hover:text-teal-700">
             {label}
           </Link>
         ) : (
@@ -28,7 +28,7 @@ function NavGroup({ label, href, links }: { label: string; href?: string; links:
           <Link
             key={link.href}
             href={link.href}
-            className="rounded-full border border-transparent bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-900"
+            className="rounded-full border border-transparent bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900"
           >
             {link.label}
           </Link>
@@ -53,19 +53,26 @@ export async function Navigation() {
   }));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-emerald-100/80 bg-white/92 backdrop-blur-xl">
-      <div className="mx-auto w-full max-w-7xl px-4 py-3">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-4">
-            <Link href="/#sports" className="text-lg font-bold tracking-tight text-slate-950">
+    <header className="sticky top-0 z-50 border-b border-white/70 bg-white/80 backdrop-blur-xl">
+      <div className="athlemetry-shell py-3 lg:py-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/#sports"
+              className="athlemetry-chip border-teal-200 bg-teal-50 px-4 py-2 text-sm text-teal-900"
+            >
+              <span className="inline-flex h-2 w-2 rounded-full bg-teal-600" aria-hidden="true" />
               {APP_NAME}
             </Link>
-            <Link href="/#sports" className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100">
+            <Link
+              href="/#sports"
+              className="athlemetry-button athlemetry-button-secondary px-4 py-2 text-sm"
+            >
               <span aria-hidden="true">←</span>
               Sports home
             </Link>
             {session?.user.role === "ADMIN" ? (
-              <Link href="/admin" className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-900">
+              <Link href="/admin" className="athlemetry-button athlemetry-button-secondary px-4 py-2 text-sm">
                 Admin console
               </Link>
             ) : null}
@@ -74,23 +81,20 @@ export async function Navigation() {
           <div className="flex flex-wrap items-center gap-3 xl:justify-end">
             {session?.user ? (
               <>
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                <span className="athlemetry-chip border-teal-200 bg-teal-50 px-3 py-1 text-xs uppercase tracking-[0.18em] text-teal-800">
                   {session.user.role}
                 </span>
-                <Link href="/profile" className="text-sm font-medium text-slate-700 hover:text-slate-950">
+                <Link href="/profile" className="text-sm font-semibold text-slate-700 transition hover:text-slate-950">
                   {session.user.name || session.user.email}
                 </Link>
                 <LogoutButton />
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm font-medium text-slate-700 hover:text-slate-950">
+                <Link href="/login" className="text-sm font-semibold text-slate-700 transition hover:text-slate-950">
                   Login
                 </Link>
-                <Link
-                  href="/register"
-                  className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-600/15 transition hover:bg-emerald-700"
-                >
+                <Link href="/register" className="athlemetry-button athlemetry-button-primary px-4 py-2 text-sm">
                   Register
                 </Link>
               </>
@@ -102,7 +106,14 @@ export async function Navigation() {
           {sportGroups.map((sport) => (
             <NavGroup key={sport.label} label={sport.label} href={sport.href} links={sport.links} />
           ))}
-          <NavGroup label="Settings" links={SPORT_SETTINGS_LINKS} />
+          <NavGroup
+            label="Settings"
+            links={SPORT_SETTINGS_LINKS.filter((link) => {
+              if (link.href === "/teams") return session?.user?.role === "COACH" || session?.user?.role === "ADMIN";
+              if (link.href === "/team-invitations") return session?.user?.role === "ATHLETE";
+              return true;
+            })}
+          />
         </nav>
       </div>
     </header>

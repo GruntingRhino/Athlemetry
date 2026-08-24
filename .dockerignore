@@ -1,0 +1,16 @@
+node_modules
+.next
+coverage
+.git
+.github
+.env*
+!.env.example
+uploads
+test-media
+*.pt
+*.onnx
+*.task
+baseball_tracker/.venv
+__pycache__
+*.pyc
+npm-debug.log*

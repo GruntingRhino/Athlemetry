@@ -220,11 +220,7 @@ def stage_detect(
     logger.info("[detect] Running object detection on %d frames…", len(preprocessed_frames))
     try:
         det = _import_detectors()
-        # Convert preprocessed frames to (idx, ts, np.ndarray) tuples expected by detector
-        frame_tuples = [
-            (pf.frame_idx, pf.timestamp_sec, pf.frame) for pf in preprocessed_frames
-        ]
-        detections, summary = det.detect_all_frames(frame_tuples, config)
+        detections, summary = det.detect_all_frames(preprocessed_frames, config)
         result.detections_summary = summary
         logger.info(
             "[detect] Ball detection rate: %.1f%%, Batter: %.1f%%",
@@ -250,10 +246,10 @@ def stage_pose(
     logger.info("[pose] Running pose estimation on %d frames…", len(preprocessed_frames))
     try:
         po = _import_pose()
-        frame_tuples = [
-            (pf.frame_idx, pf.timestamp_sec, pf.frame) for pf in preprocessed_frames
-        ]
-        poses = po.estimate_all_frames(frame_tuples, config)
+        poses = po.estimate_all_frames(
+            [pf.frame for pf in preprocessed_frames],
+            config.pose,
+        )
         valid_poses = sum(1 for p in poses if p is not None)
         logger.info("[pose] Valid pose frames: %d/%d", valid_poses, len(poses))
         if valid_poses == 0:
@@ -278,7 +274,7 @@ def stage_track_ball(
     logger.info("[track_ball] Building ball trajectory…")
     try:
         tr = _import_tracking()
-        traj = tr.track_ball(detections, config)
+        traj = tr.track_ball(detections, config.tracking)
         result.ball_trajectory = traj
         tracked_pts = sum(1 for p in traj.points if not p.interpolated)
         logger.info(
@@ -352,7 +348,7 @@ def stage_metrics(
         # Swing speed — extract phase list from segmentation
         phase_list = result.swing_phases.phases if result.swing_phases else []
         swing_speed = met.estimate_swing_speed(
-            poses=poses,
+            poses=[pose for pose in poses if pose is not None],
             phases=phase_list,
             video_meta=result.video_metadata,
             pixels_per_inch=ppi,
@@ -416,7 +412,7 @@ def stage_scoring(
         sc = _import_scoring()
         phase_list = result.swing_phases.phases if result.swing_phases else []
         form = sc.evaluate_form(
-            poses=poses,
+            poses=[pose for pose in poses if pose is not None],
             phases=phase_list,
             video_meta=result.video_metadata,
             config=config,  # evaluate_form takes full AnalysisConfig

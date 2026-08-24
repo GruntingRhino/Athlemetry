@@ -25,16 +25,47 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  await prisma.drillSubmission.update({
-    where: { id },
-    data: {
-      processingStatus: "RETRYING",
-      queuedAt: new Date(),
-      lastError: null,
-    },
-  });
+  if (submission.processingStatus !== "FAILED") {
+    return NextResponse.json(
+      { error: "Only failed submissions can be retried." },
+      { status: 409 },
+    );
+  }
+
+  try {
+    await prisma.$transaction(async (transaction) => {
+      await transaction.drillSubmission.update({
+        where: { id },
+        data: {
+          processingStatus: "QUEUED",
+          processingAttempts: 0,
+          queuedAt: new Date(),
+          lastError: null,
+          nextAttemptAt: null,
+          deadLetteredAt: null,
+        },
+      });
+      await transaction.systemLog.create({
+        data: {
+          level: "INFO",
+          category: "SECURITY_AUDIT",
+          message: "Submission retry requested",
+          metadata: {
+            action: "SUBMISSION_RETRY_REQUESTED",
+            actorUserId: session.user.id,
+            submissionId: id,
+          },
+        },
+      });
+    });
+  } catch {
+    return NextResponse.json({ error: "Retry could not be recorded safely." }, { status: 503 });
+  }
+
+  if (process.env.INLINE_PROCESSING_ENABLED !== "true") {
+    return NextResponse.json({ ok: true, queued: true }, { status: 202 });
+  }
 
   const result = await processSubmission(id);
-
   return NextResponse.json({ ok: true, result });
 }

@@ -36,7 +36,7 @@ export function LoginForm() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="email">
+        <label className="athlemetry-label" htmlFor="email">
           Email
         </label>
         <input
@@ -44,12 +44,12 @@ export function LoginForm() {
           name="email"
           type="email"
           required
-          className="w-full rounded-md border border-slate-300 px-3 py-2"
+          className="athlemetry-control"
           autoComplete="email"
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="password">
+        <label className="athlemetry-label" htmlFor="password">
           Password
         </label>
         <input
@@ -57,7 +57,7 @@ export function LoginForm() {
           name="password"
           type="password"
           required
-          className="w-full rounded-md border border-slate-300 px-3 py-2"
+          className="athlemetry-control"
           autoComplete="current-password"
         />
       </div>
@@ -65,7 +65,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+        className="athlemetry-button athlemetry-button-primary w-full disabled:opacity-60"
       >
         {loading ? "Signing in..." : "Sign in"}
       </button>

@@ -1,5 +1,7 @@
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { requireUser } from "@/lib/authz";
+import { requirePaidFeatureAccess } from "@/lib/billing-access";
+import { isMetricReleased } from "@/lib/customer-metrics";
 import { prisma } from "@/lib/prisma";
 import { formatPercent } from "@/lib/utils";
 import { normalizeSport } from "@/lib/drills";
@@ -13,6 +15,7 @@ export default async function BenchmarkingPage({
   searchParams?: Promise<{ sport?: string }> | { sport?: string };
 }) {
   const user = await requireUser();
+  await requirePaidFeatureAccess(user);
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const sport = typeof resolvedSearchParams.sport === "string" && resolvedSearchParams.sport.trim() ? normalizeSport(resolvedSearchParams.sport) : null;
 
@@ -24,7 +27,10 @@ export default async function BenchmarkingPage({
     include: {
       submission: {
         include: {
-          drillDefinition: true,
+          drillDefinition: {
+            include: { metricValidations: true },
+          },
+          metricResult: true,
         },
       },
     },
@@ -32,45 +38,53 @@ export default async function BenchmarkingPage({
       createdAt: "desc",
     },
   });
+  const releasedSnapshots = snapshots.filter((snapshot) => {
+    const drill = snapshot.submission.drillDefinition;
+    const modelVersion = snapshot.submission.metricResult?.metricVersion ?? "unavailable";
+    const validation = drill.metricValidations.find((item) => item.metricName === drill.metricPrimaryKey && item.modelVersion === modelVersion);
+    return isMetricReleased(drill.slug, drill.metricPrimaryKey, modelVersion, validation);
+  });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 lg:space-y-8">
       <BackToSports />
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">{sport ? `${SPORT_LABELS[sport]} benchmarking` : "Position-based benchmarking"}</p>
-        <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-          {sport ? `${SPORT_LABELS[sport]} cohort comparisons` : "Position-based benchmarking"}
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {sport
-            ? `Benchmarks are filtered to ${SPORT_LABELS[sport].toLowerCase()} so the cohort view stays sport-specific.`
-            : "Cohorts are grouped by age, position, competition level, and gender. Benchmarks are anonymized."}
-        </p>
+      <section className="athlemetry-card p-6 md:p-8 lg:p-10">
+        <div className="max-w-3xl">
+          <div className="athlemetry-kicker">{sport ? `${SPORT_LABELS[sport]} benchmarking` : "Position-based benchmarking"}</div>
+          <h1 className="mt-4 athlemetry-section-heading">
+            {sport ? `${SPORT_LABELS[sport]} cohort comparisons` : "Position-based benchmarking"}
+          </h1>
+          <p className="athlemetry-section-lead">
+            {sport
+              ? `Benchmarks are filtered to ${SPORT_LABELS[sport].toLowerCase()} so the cohort view stays sport-specific.`
+              : "Cohorts are grouped by age, position, competition level, and gender. Benchmarks are anonymized."}
+          </p>
+        </div>
       </section>
 
       <section className="space-y-3">
-        {snapshots.length ? (
-          snapshots.map((snapshot) => (
-            <article key={snapshot.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center justify-between">
+        {releasedSnapshots.length ? (
+          releasedSnapshots.map((snapshot) => (
+            <article key={snapshot.id} className="athlemetry-card p-5 md:p-6">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{snapshot.submission.drillDefinition.name}</p>
+                  <p className="text-sm font-semibold text-slate-950">{snapshot.submission.drillDefinition.name}</p>
                   <p className="text-xs text-slate-500">{snapshot.cohortKey}</p>
                 </div>
-                <span className="rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
+                <span className="athlemetry-chip border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-teal-800">
                   {formatPercent(snapshot.percentile)}
                 </span>
               </div>
-              <div className="mt-2 grid gap-2 text-xs text-slate-700 md:grid-cols-3">
-                <p>Relative rank: #{snapshot.relativeRank}</p>
-                <p>Normalized score: {snapshot.normalizedScore.toFixed(3)}</p>
-                <p>Anonymized: {snapshot.isAnonymized ? "Yes" : "No"}</p>
+              <div className="mt-4 grid gap-2 text-xs text-slate-700 md:grid-cols-3">
+                <p className="athlemetry-panel-item">Relative rank: #{snapshot.relativeRank}</p>
+                <p className="athlemetry-panel-item">Normalized score: {snapshot.normalizedScore.toFixed(3)}</p>
+                <p className="athlemetry-panel-item">Anonymized: {snapshot.isAnonymized ? "Yes" : "No"}</p>
               </div>
             </article>
           ))
         ) : (
-          <article className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
-            No benchmark snapshots yet. Submit and process at least one drill first.
+          <article className="athlemetry-card p-5 text-sm text-slate-600">
+            No independently validated benchmark snapshots are available yet. Rankings remain disabled until the exact metric and drill protocol pass corpus, error, confidence-calibration, and independent-review gates.
           </article>
         )}
       </section>

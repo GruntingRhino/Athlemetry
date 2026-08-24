@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   title: "Athlemetry - Multi-sport video performance intelligence",
   description:
     "Structured multi-sport drill uploads, conservative metric extraction, and benchmark-ready athlete reporting for soccer, baseball, and basketball.",
+  applicationName: "Athlemetry",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Athlemetry",
+  },
 };
 
 export default function RootLayout({
@@ -16,9 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-[var(--background)] text-slate-900 antialiased">
+      <body>
         <Navigation />
-        <main className="mx-auto w-full max-w-7xl px-4 py-8">{children}</main>
+        <main className="athlemetry-shell">{children}</main>
       </body>
     </html>
   );

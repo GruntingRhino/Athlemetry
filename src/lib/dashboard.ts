@@ -1,23 +1,25 @@
 import { differenceInDays } from "date-fns";
 import { type MetricResult } from "@prisma/client";
 
+import { hasReleasedMetricValue, isMetricReleased } from "@/lib/customer-metrics";
+import { calculateTrialConversionRate } from "@/lib/billing-lifecycle";
+import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
 import { prisma } from "@/lib/prisma";
 import { normalizeSport } from "@/lib/drills";
 
 type TrendPoint = {
   date: string;
   value: number;
-  percentile: number;
+  percentile: number | null;
   score: number | null;
 };
 
 const SCORE_FIELDS = [
-  "motionTrackingScore",
-  "errorToleranceScore",
-  "drillCompletionRate",
   "consistencyScore",
-  "normalizedScore",
-  "reliabilityScore",
+  "agilityScore",
+  "techniqueScore",
+  "accuracyScore",
+  "powerScore",
 ] as const satisfies readonly (keyof MetricResult)[];
 
 function clampScore(value: number) {
@@ -28,20 +30,12 @@ export function normalizeScoreToHundred(value: number) {
   if (!Number.isFinite(value)) {
     return 0;
   }
-
-  if (value >= 0 && value <= 1) {
-    return clampScore(value * 100);
-  }
-
-  // Treat small negative standardized scores as centered around 50.
-  if (value < 0 && value >= -5) {
-    return clampScore(50 + value * 10);
-  }
-
   return clampScore(value);
 }
 
-function collectNormalizedScores(metricResult?: Pick<MetricResult, (typeof SCORE_FIELDS)[number]> | null) {
+type ScoreFields = Partial<MetricResult>;
+
+function collectNormalizedScores(metricResult?: ScoreFields | null) {
   if (!metricResult) {
     return [] as number[];
   }
@@ -53,7 +47,7 @@ function collectNormalizedScores(metricResult?: Pick<MetricResult, (typeof SCORE
 }
 
 export function calculateSubmissionScore(
-  metricResult?: Pick<MetricResult, (typeof SCORE_FIELDS)[number]> | null,
+  metricResult?: ScoreFields | null,
 ) {
   const normalizedScores = collectNormalizedScores(metricResult);
 
@@ -65,8 +59,20 @@ export function calculateSubmissionScore(
   return Math.round(average * 10) / 10;
 }
 
+export function calculateReleasedSubmissionScore(
+  metricResult: Partial<MetricResult> | null | undefined,
+  releasedMetricNames: Set<string>,
+) {
+  if (!metricResult) return null;
+  return calculateSubmissionScore(Object.fromEntries(
+    SCORE_FIELDS
+      .filter((field) => releasedMetricNames.has(field))
+      .map((field) => [field, metricResult[field]]),
+  ));
+}
+
 export function calculateAverageUserScore(
-  metricResults: Array<Pick<MetricResult, (typeof SCORE_FIELDS)[number]> | null | undefined>,
+  metricResults: Array<ScoreFields | null | undefined>,
 ) {
   const scores = metricResults.flatMap((metricResult) => collectNormalizedScores(metricResult ?? null));
 
@@ -76,6 +82,75 @@ export function calculateAverageUserScore(
 
   const average = scores.reduce((sum, value) => sum + value, 0) / scores.length;
   return Math.round(average * 10) / 10;
+}
+
+export function normalizeBenchmarkPercentile(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+export function selectComparableTrendSubmissions<
+  T extends { drillDefinitionId: string; drillDefinition: { metricPrimaryKey: string } },
+>(submissions: T[]) {
+  const latest = submissions.at(-1);
+  if (!latest) return [];
+  return submissions.filter((submission) =>
+    submission.drillDefinitionId === latest.drillDefinitionId
+    && submission.drillDefinition.metricPrimaryKey === latest.drillDefinition.metricPrimaryKey,
+  );
+}
+
+export function buildEvidenceBasedDashboardGuidance({
+  values,
+  scores,
+  percentiles,
+  recommendationsReleased,
+}: {
+  values: number[];
+  scores: number[];
+  percentiles: number[];
+  recommendationsReleased: boolean;
+}) {
+  if (!values.length) {
+    return {
+      strengths: ["No released performance evidence is available yet."],
+      suggestions: ["Complete a protocol-compliant, validated drill before performance guidance is generated."],
+    };
+  }
+  if (!recommendationsReleased) {
+    return {
+      strengths: ["Performance interpretation is unavailable until the coaching-recommendation gate is independently validated."],
+      suggestions: ["No coaching recommendation is released for this drill yet."],
+    };
+  }
+
+  const strengths = [
+    values.length >= 3
+      ? "Sufficient released history for an initial trend view"
+      : "More released sessions are required for a stable trend",
+    scores.length
+      ? scores.reduce((sum, value) => sum + value, 0) / scores.length >= 80
+        ? "Strong released composite scores across completed sessions"
+        : "Released composite scores remain below the high-performance threshold"
+      : "Composite scoring is unavailable for the released metrics",
+  ];
+
+  const suggestions = [
+    "Continue using the same validated capture and execution protocol so future results remain comparable.",
+    percentiles.length
+      ? percentiles[percentiles.length - 1] < 60
+        ? "Review the released result against its verified comparable cohort."
+        : "The latest verified cohort result is at or above the 60th percentile."
+      : "Peer-percentile guidance is unavailable until a comparable verified cohort is available.",
+  ];
+
+  return { strengths, suggestions };
+}
+
+export function calculateMetricVariability(values: number[]) {
+  if (values.length < 2) return null;
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance);
 }
 
 function toTimelineDelta(points: TrendPoint[]) {
@@ -107,55 +182,81 @@ export async function getAthleteDashboardData(userId: string, sport?: string | n
     },
   });
 
-  const drillFrequency = submissions.reduce<Record<string, number>>((acc, item) => {
+  const validations = await prisma.metricValidation.findMany({
+    where: {
+      drillDefinitionId: { in: [...new Set(submissions.map((item) => item.drillDefinitionId))] },
+    },
+  });
+  const releasedByDrill = new Map<string, Set<string>>();
+  for (const validation of validations) {
+    const submission = submissions.find((item) => item.drillDefinitionId === validation.drillDefinitionId);
+    if (!submission || !isMetricReleased(submission.drillDefinition.slug, validation.metricName, validation.modelVersion, validation)) continue;
+    const releaseKey = `${validation.drillDefinitionId}:${validation.modelVersion}`;
+    const released = releasedByDrill.get(releaseKey) ?? new Set<string>();
+    released.add(validation.metricName);
+    releasedByDrill.set(releaseKey, released);
+  }
+
+  const evidenceSubmissions = submissions.filter((item) => {
+    const primaryMetricName = item.drillDefinition.metricPrimaryKey;
+    const protocol = DRILL_PROTOCOLS[item.drillDefinition.slug as keyof typeof DRILL_PROTOCOLS];
+    return hasReleasedMetricValue(
+      item.metricResult ? { ...item.metricResult } : null,
+      releasedByDrill.get(`${item.drillDefinitionId}:${item.metricResult?.metricVersion ?? "unavailable"}`) ?? new Set<string>(),
+      primaryMetricName,
+      item.metadata,
+      protocol?.version ?? "unavailable",
+    );
+  });
+
+  const drillFrequency = evidenceSubmissions.reduce<Record<string, number>>((acc, item) => {
     acc[item.drillType] = (acc[item.drillType] ?? 0) + 1;
     return acc;
   }, {});
 
-  const timeline: TrendPoint[] = submissions
-    .filter((item) => item.metricResult)
+  const trendSubmissions = selectComparableTrendSubmissions(evidenceSubmissions);
+  const trendDefinition = trendSubmissions.at(-1)?.drillDefinition;
+  const timeline: TrendPoint[] = trendSubmissions
     .map((item) => ({
       date: item.submittedAt.toISOString().slice(0, 10),
-      value:
-        item.metricResult?.sprintTime ??
-        item.metricResult?.changeOfDirectionMeasurement ??
-        item.metricResult?.shotTiming ??
-        Number(item.metricResult?.repetitionCount ?? 0),
-      percentile: item.benchmarkSnapshots?.percentile ?? 50,
-      score: calculateSubmissionScore(item.metricResult),
+      value: item.metricResult?.[item.drillDefinition.metricPrimaryKey as keyof MetricResult] as number,
+      percentile: normalizeBenchmarkPercentile(item.benchmarkSnapshots?.percentile),
+      score: calculateReleasedSubmissionScore(
+        item.metricResult,
+        releasedByDrill.get(`${item.drillDefinitionId}:${item.metricResult?.metricVersion ?? "unavailable"}`) ?? new Set<string>(),
+      ),
     }));
 
   const values = timeline.map((point) => point.value);
-  const mean = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
-  const variance =
-    values.length > 1
-      ? values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length
-      : 0;
-  const consistencyScore = values.length ? Math.max(0, 100 - Math.sqrt(variance) * 10) : 0;
-  const averageScore = calculateAverageUserScore(submissions.map((item) => item.metricResult));
-
-  const strengths = [
-    consistencyScore > 75 ? "High repeatability across drill sessions" : "Consistency needs work",
-    timeline.length >= 3 ? "Sufficient historical dataset for trend analysis" : "Collect more sessions for stronger trends",
-    averageScore >= 80
-      ? "Strong overall composite score across completed sessions"
-      : "Composite score can improve with more consistent outputs",
-  ];
-
-  const suggestions = [
-    consistencyScore < 70
-      ? "Prioritize form stability in repeat drills to improve consistency scores."
-      : "Maintain current warmup and execution routine.",
-    (timeline[timeline.length - 1]?.percentile ?? 50) < 60
-      ? "Increase drill frequency to target percentile growth."
-      : "Percentiles are trending up; preserve progression plan.",
-  ];
+  const metricVariability = calculateMetricVariability(values);
+  const scores = timeline
+    .map((point) => point.score)
+    .filter((score): score is number => typeof score === "number" && Number.isFinite(score));
+  const averageScore = scores.length
+    ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10
+    : null;
+  const percentiles = timeline
+    .map((point) => point.percentile)
+    .filter((percentile): percentile is number => typeof percentile === "number" && Number.isFinite(percentile));
+  const { strengths, suggestions } = buildEvidenceBasedDashboardGuidance({
+    values,
+    scores,
+    percentiles,
+    recommendationsReleased: Boolean(
+      trendSubmissions.length
+      && releasedByDrill.get(`${trendSubmissions[0].drillDefinitionId}:${trendSubmissions[0].metricResult?.metricVersion ?? "unavailable"}`)?.has("coachingRecommendations"),
+    ),
+  });
 
   return {
     submissions,
+    releasedSubmissionCount: evidenceSubmissions.length,
+    researchOnlyCount: submissions.length - evidenceSubmissions.length,
+    trendDrillName: trendDefinition?.name ?? null,
+    trendMetricName: trendDefinition?.metricPrimaryKey ?? null,
     timeline,
     trendSlope: toTimelineDelta(timeline),
-    consistencyScore,
+    metricVariability,
     averageScore,
     drillFrequency,
     strengths,
@@ -164,6 +265,7 @@ export async function getAthleteDashboardData(userId: string, sport?: string | n
 }
 
 export async function getAdminDashboardData() {
+  const lifecycleWindowStart = new Date(Date.now() - 30 * 24 * 60 * 60_000);
   const [
     totalUsers,
     totalSubmissions,
@@ -173,6 +275,9 @@ export async function getAdminDashboardData() {
     systemErrors,
     adoption,
     growth,
+    trialStartedCount,
+    convertedCount,
+    cancellationCount,
   ] = await Promise.all([
     prisma.user.count({ where: { deletedAt: null } }),
     prisma.drillSubmission.count(),
@@ -198,6 +303,11 @@ export async function getAdminDashboardData() {
       GROUP BY month
       ORDER BY month ASC
     `,
+    prisma.billingSubscription.count({ where: { trialStartedAt: { not: null } } }),
+    prisma.billingSubscription.count({ where: { firstPaidAt: { not: null } } }),
+    prisma.billingSubscriptionEvent.count({
+      where: { type: "customer.subscription.deleted", occurredAt: { gte: lifecycleWindowStart } },
+    }),
   ]);
 
   return {
@@ -209,5 +319,11 @@ export async function getAdminDashboardData() {
     systemErrors,
     adoption,
     growth,
+    billingLifecycle: {
+      trialStartedCount,
+      convertedCount,
+      trialConversionRate: calculateTrialConversionRate({ trialStartedCount, convertedCount }),
+      cancellationCount,
+    },
   };
 }

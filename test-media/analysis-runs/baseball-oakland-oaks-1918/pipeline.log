@@ -1,0 +1,28 @@
+2026-07-25 11:53:43,689  INFO     modules.pipeline — [video_ingest] Loading video: /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv
+2026-07-25 11:53:43,756  INFO     modules.pipeline — [video_ingest] 400x300 @ 30.0 fps, 141.4 s (4238 frames)
+2026-07-25 11:53:43,756  INFO     modules.pipeline — [extract_frames] Extracting frames…
+2026-07-25 11:53:44,134  INFO     modules.video_ingest — extract_frames: extracted 2119 frames from /Users/abhay/RTB/athlemetry/test-media/external/baseball-oakland-oaks-1918.ogv (stride=2).
+2026-07-25 11:53:44,135  INFO     modules.pipeline — [extract_frames] Extracted 2119 frames (stride=2)
+2026-07-25 11:53:44,135  INFO     modules.pipeline — [preprocess] Preprocessing 2119 frames…
+2026-07-25 11:53:44,189  INFO     modules.pipeline — [preprocess] Done (2119 frames)
+2026-07-25 11:53:44,189  INFO     modules.pipeline — [detect] Running object detection on 2119 frames…
+2026-07-25 11:53:46,340  INFO     modules.detectors — YOLODetector: loading model 'yolov8n.pt' ...
+2026-07-25 11:53:46,800  INFO     modules.detectors — YOLODetector: model loaded successfully.
+2026-07-25 11:53:46,800  INFO     modules.detectors — detect_all_frames: using YOLODetector (yolov8n.pt).
+2026-07-25 11:53:46,800  ERROR    modules.pipeline — [detect] FAILED: 'tuple' object has no attribute 'frame_idx'
+2026-07-25 11:53:46,800  INFO     modules.pipeline — [pose] Running pose estimation on 2119 frames…
+2026-07-25 11:53:47,097  ERROR    modules.pipeline — [pose] FAILED: module 'mediapipe' has no attribute 'solutions'
+2026-07-25 11:53:47,097  INFO     modules.pipeline — [track_ball] SKIPPED: No detections to track
+2026-07-25 11:53:47,097  INFO     modules.pipeline — [events] Segmenting swing phases…
+2026-07-25 11:53:47,098  INFO     modules.pipeline — [events] Detected 0 swing phases (confidence=0.00, method=heuristic)
+2026-07-25 11:53:47,099  INFO     modules.pipeline — [metrics] SKIPPED: No pose data available for metric computation
+2026-07-25 11:53:47,099  INFO     modules.pipeline — [pitch_analysis] SKIPPED: No ball trajectory available for pitch analysis
+2026-07-25 11:53:47,099  INFO     modules.pipeline — [scoring] SKIPPED: No pose data available for form scoring
+2026-07-25 11:53:47,099  INFO     modules.pipeline — [llm_feedback] SKIPPED: Ollama disabled via --no-ollama flag
+2026-07-25 11:53:47,099  INFO     modules.pipeline — [visualization] SKIPPED: Video export disabled
+2026-07-25 11:53:47,099  INFO     modules.pipeline — [export] Writing reports…
+2026-07-25 11:53:47,100  INFO     modules.export — JSON report written to ../test-media/analysis-runs/baseball-oakland-oaks-1918/53afab6c_analysis.json
+2026-07-25 11:53:47,100  INFO     modules.export — CSV summary written to ../test-media/analysis-runs/baseball-oakland-oaks-1918/53afab6c_summary.csv
+2026-07-25 11:53:47,101  INFO     modules.export — Coach report written to ../test-media/analysis-runs/baseball-oakland-oaks-1918/53afab6c_coach_report.txt
+2026-07-25 11:53:47,101  INFO     modules.pipeline — [export] Reports saved to ../test-media/analysis-runs/baseball-oakland-oaks-1918
+2026-07-25 11:53:47,101  INFO     modules.pipeline — Pipeline complete in 3.4 s — run_id=53afab6c
