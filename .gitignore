@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Environment files & secrets
+.env
+.env.*
+!.env.example
+
+# Local override files
+*.local
+
+# Test coverage & reports
+coverage/
+test-results/
+playwright-report/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Python virtualenvs & bytecode
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# OS artifacts
+.DS_Store
+
+# NOTE: *.pt model weights are intentionally NOT ignored.
+# This repository tracks its pinned CV weights by design:
+#   yolov8n.pt, yolov8n-pose.pt, yolov8s-worldv2.pt, baseball_tracker/yolov8n.pt
