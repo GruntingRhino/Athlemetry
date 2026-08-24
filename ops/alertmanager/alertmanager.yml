@@ -17,8 +17,8 @@ route:
 
 receivers:
   - name: athlemetry-operator
+    # NOTE: webhook_configs `timeout` field requires Alertmanager >= 0.28; omitted to stay valid on 0.27 too.
     webhook_configs:
       - url_file: /run/secrets/alertmanager_webhook_url
         send_resolved: true
         max_alerts: 20
-        timeout: 10s
