@@ -12,6 +12,13 @@ RUN npm ci
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# The builder prerenders NextAuth pages and therefore needs build-time
+# configuration. These are placeholders only; runtime credentials are supplied
+# by the deployment environment and are not copied into the final images.
+ENV DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/athlemetry?schema=public \
+    DIRECT_URL=postgresql://ci:ci@127.0.0.1:5432/athlemetry?schema=public \
+    NEXTAUTH_URL=http://localhost:3000 \
+    NEXTAUTH_SECRET=ci-only-build-secret-not-for-runtime
 RUN npx prisma generate && npm run build
 
 FROM base AS web
