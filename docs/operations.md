@@ -6,11 +6,31 @@ Run these before deployment and require the GitHub Actions `CI` workflow to pass
 
 ```bash
 npm run lint
+npx tsc --noEmit
 npm test
 npm run build
-docker build --target web -t athlemetry-web:release .
-docker build --target worker -t athlemetry-worker:release .
+CI=1 npm run test:a11y
+podman build --target web -t athlemetry-web:release .
+podman build --target worker -t athlemetry-worker:release .
 ```
+
+### Local verification record (2026-08-25)
+
+The current canonical `main` head was `694ed0cf194de81edd265912f44ab7a3e8eada15`.
+On the disk-constrained local VM, the following were verified: ESLint PASS; TypeScript
+typecheck PASS; Vitest PASS (113 files, 480 tests); Next.js production build PASS; and
+the accessibility spec PASS (7/7 with `CI=1`, Playwright Chromium, one worker).
+The local Prometheus/Alertmanager config tests also passed as part of Vitest. `promtool`
+and `amtool` were not installed, so deployed-version rule/config validation remains
+unverified locally. A Podman PostgreSQL backup/restore rehearsal passed with 43/43 public
+tables matching. These are **VERIFIED-LOCAL / LOCAL-SYNTHETIC** results only, not staging
+or production evidence.
+
+The first local Vitest attempt exposed a missing `ffprobe` executable; the VM's ffmpeg
+binary was already present and a local-only ffprobe compatibility shim was used to rerun
+the test. CI now installs the `ffmpeg` package explicitly before tests. The latest GitHub
+Actions run for this head had failed at `npm test` before this correction; rerun CI after
+the workflow change and require a green run before launch claims.
 
 ## Staging deployment checklist
 
