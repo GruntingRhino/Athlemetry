@@ -172,3 +172,32 @@ athlemetry_worker_errors_total 2
 | Prometheus metrics endpoint   | PASS (401 unauthenticated / 200 with token, live queue gauges) |
 
 Playwright accessibility spec: see appended section below.
+
+## Accessibility spec run (LOCAL-SYNTHETIC) — 2026-08-25
+
+Repo @ e6f82a2, Playwright 1.62.0, bundled chromium-1234 (headless shell).
+
+```
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/athlemetry \
+CI=1 npx playwright test e2e/accessibility.spec.ts --reporter=line
+```
+
+Notes:
+- `CI=1` selects the config's bundled-chromium launch branch — no system Chrome
+  exists on this VM, so the local default `channel: "chrome"` cannot resolve.
+- The config's webServer hook booted its own `npm run dev` on 127.0.0.1:3100
+  against the seeded athl-pg container (127.0.0.1:5432).
+- Axe tags per route: wcag2a, wcag2aa, wcag21aa; test passes only when zero
+  critical/serious violations are detected.
+
+| Route           | Result |
+|-----------------|--------|
+| /               | PASS   |
+| /login          | PASS   |
+| /register       | PASS   |
+| /privacy-notice | PASS   |
+| /terms          | PASS   |
+| /drills         | PASS   |
+| /protocols      | PASS   |
+
+**Result: 7 passed, 0 failed (53.3s), 1 worker, 0 retries consumed.**
