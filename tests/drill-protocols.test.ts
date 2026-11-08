@@ -184,8 +184,10 @@ describe("standardized drill protocols and release gates", () => {
     const drillLibrary = readFileSync("src/app/drills/page.tsx", "utf8");
     const uploadPage = readFileSync("src/app/submissions/new/page.tsx", "utf8");
 
-    expect(drillLibrary).toContain("?sport=${encodeURIComponent(drill.sport)}&drill=${encodeURIComponent(drill.slug)}");
-    expect(uploadPage).toContain("resolveSelectedDrillSlug(drills, resolvedSearchParams.drill)");
+    // The drill slug alone carries the selection; the upload flow derives the sport from the drill
+    // (see resolveInitialSelection in tests/upload-flow.test.ts).
+    expect(drillLibrary).toContain("/submissions/new?drill=${encodeURIComponent(drill.slug)}");
+    expect(uploadPage).toContain("initialDrillSlug={");
     expect(resolveSelectedDrillSlug([
       { slug: "sprint-20m" },
       { slug: "shooting-accuracy" },

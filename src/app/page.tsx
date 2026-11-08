@@ -1,28 +1,27 @@
 import Link from "next/link";
 
+import { SPORT_DESCRIPTIONS } from "@/lib/constants";
 import { buildSportHref } from "@/lib/sport-navigation";
 
 const sports = [
   {
     id: "soccer",
     label: "Soccer",
-    description: "Structured speed, agility, striking, and consistency drills with benchmark-friendly uploads.",
+    description: SPORT_DESCRIPTIONS.soccer,
     image:
       "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: "baseball",
     label: "Baseball",
-    description:
-      "Pitching and batting workflows that prioritize honest, angle-aware analysis over fake certainty. If RPM or contact quality cannot be seen, the product should say so plainly.",
+    description: SPORT_DESCRIPTIONS.baseball,
     image:
       "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: "basketball",
     label: "Basketball",
-    description:
-      "Navigation and product surface are live now, and basketball now has baseline court-line calibration instead of a placeholder label.",
+    description: SPORT_DESCRIPTIONS.basketball,
     image:
       "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80",
   },
@@ -41,33 +40,32 @@ export default function Home() {
       <section id="sports" className="athlemetry-hero">
         <div className="relative grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="relative p-8 md:p-12 lg:p-14">
-            <div className="athlemetry-kicker">Multi-sport performance intelligence</div>
-            <h1 className="mt-6 max-w-3xl athlemetry-title">
-              Clear video-based feedback for athletes, coaches, and parents.
+            <h1 className="max-w-3xl athlemetry-title">
+              Analyze a drill from a phone video.
             </h1>
             <p className="mt-6 max-w-2xl text-base md:text-lg athlemetry-body">
-              Athlemetry is built to feel premium, trustworthy, and coach-usable — not like a generic vibe-coded toy.
-              Upload structured drill footage, get angle-aware analysis, and surface confidence notes whenever a clip is
-              not good enough for a reliable call.
+              Upload a phone video of a drill. Athlemetry checks the recording against that drill&apos;s capture
+              requirements, then reports a result only for metrics that have passed its validation checks. If a
+              result can&apos;t be reported, it tells you why.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={buildSportHref("uploads", "soccer")} className="athlemetry-button athlemetry-button-primary">
-                Start with Soccer
+              <Link href="/submissions/new" className="athlemetry-button athlemetry-button-primary">
+                Upload a drill video
               </Link>
               <Link href="/drills" className="athlemetry-button athlemetry-button-secondary">
-                Explore sports library
+                Browse drills
               </Link>
             </div>
 
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {[
-                ["Honest confidence", "If the video is not clear enough for RPM or contact-quality interpretation, the product should say that instead of guessing."],
-                ["Sport-specific surfaces", "Soccer, baseball, and basketball each get their own uploads, submissions, dashboards, and benchmarking entry points."],
-                ["Settings in one place", "Privacy and related account controls live under settings instead of cluttering the sport workflows."],
+                ["Checked against the drill", "Your recording is compared with the drill's capture requirements, such as camera view and what must stay in frame."],
+                ["Results only when validated", "A metric is reported only after it has passed validation checks. Otherwise you see why it was held back."],
+                ["Soccer, basketball, and baseball", "Each sport has its own drills, uploads, and submission history."],
               ].map(([title, body]) => (
-                <article key={title} className="athlemetry-stat">
+                <article key={title} className="border-l-2 border-teal-700 pl-4">
                   <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">{body}</p>
                 </article>
               ))}
             </div>
@@ -84,10 +82,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_35%)]" />
             <div className="relative flex h-full flex-col justify-end p-8 text-white md:p-10">
               <div className="max-w-md rounded-[28px] border border-white/15 bg-white/10 p-5 backdrop-blur-md">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-100">Coach-grade product posture</p>
-                <p className="mt-3 text-lg font-semibold">Premium visual system. Clear sports segmentation. Conservative analysis notes.</p>
-                <p className="mt-3 text-sm leading-6 text-emerald-50/90">
-                  The product surface should make a parent or coach trust the output before they trust the algorithm.
+                <p className="text-lg font-semibold">If a clip can&apos;t support a result, you&apos;ll see why.</p>
+                <p className="mt-3 text-sm leading-6 text-emerald-50">
+                  Recordings that miss a drill&apos;s capture requirements, and metrics that haven&apos;t passed validation,
+                  aren&apos;t reported as results. Athlemetry gives the reason instead.
                 </p>
               </div>
             </div>
@@ -95,18 +93,22 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        {[
-          ["3 sports", "Dedicated surfaces for Soccer, Baseball, and Basketball."],
-          ["Conservative analysis", "Clear uncertainty when the clip is too weak to trust."],
-          ["Live benchmarks", "Trends, cohorts, and percentile movement in one place."],
-          ["Account controls", "Privacy, consent, and profile settings stay reachable."],
-        ].map(([value, label]) => (
-          <article key={value} className="athlemetry-stat">
-            <p className="athlemetry-stat-label">{label}</p>
-            <p className="athlemetry-stat-value text-3xl">{value}</p>
-          </article>
-        ))}
+      <section aria-labelledby="how-it-works" className="space-y-4">
+        <h2 id="how-it-works" className="text-xl font-bold tracking-tight text-slate-950">How it works</h2>
+        <ol className="grid gap-4 md:grid-cols-4">
+          {[
+            ["Pick a drill", "Choose a sport and a drill. Each drill has recording tips."],
+            ["Record it", "Film with your phone, following the drill's capture guide."],
+            ["Upload", "Send the clip. Analysis runs once the upload finishes."],
+            ["Read the result", "See the result, or the reason it was held back."],
+          ].map(([title, body], index) => (
+            <li key={title} className="athlemetry-stat">
+              <p className="text-sm font-semibold text-teal-800">Step {index + 1}</p>
+              <p className="mt-1 text-lg font-bold tracking-tight text-slate-950">{title}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">{body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-3">
@@ -117,19 +119,14 @@ export default function Home() {
               style={{ backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.14), rgba(15, 23, 42, 0.56)), url('${sport.image}')` }}
             />
             <div className="p-6 md:p-7">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xl font-bold tracking-tight text-slate-950">{sport.label}</h2>
-                <span className="athlemetry-chip border-teal-200 bg-teal-50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-teal-800">
-                  {sport.id === "basketball" ? "Baseline" : "Live"}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{sport.description}</p>
+              <h2 className="text-xl font-bold tracking-tight text-slate-950">{sport.label}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{sport.description}</p>
               <div className="mt-5 grid grid-cols-2 gap-2">
                 {sportActions.map((action) => (
                   <Link
                     key={action.key}
                     href={buildSportHref(action.key, sport.id)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900"
+                    className="flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900"
                   >
                     {action.label}
                   </Link>

@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
+  COMPETITION_LEVEL_LABELS,
   COMPETITION_LEVEL_OPTIONS,
   getDefaultPositionForSport,
   getPositionOptionsForSport,
+  ROLE_LABELS,
   SELF_REGISTRATION_ROLE_OPTIONS,
   SPORT_LABELS,
   SPORT_OPTIONS,
@@ -22,6 +24,7 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
   const [age, setAge] = useState(14);
   const [primarySport, setPrimarySport] = useState<SportOption>("soccer");
   const [position, setPosition] = useState(getDefaultPositionForSport("soccer"));
+  const [optionalOpen, setOptionalOpen] = useState(initialReferralCode.length > 0);
 
   const isAthlete = role === "ATHLETE";
   const requiresParentEmail = useMemo(() => isAthlete && age < 18, [age, isAthlete]);
@@ -81,148 +84,155 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
       <div className="grid gap-4 md:grid-cols-2">
         <label className="athlemetry-label">
           Full name
-          <input className="athlemetry-control" name="name" required />
+          <input className="athlemetry-control min-h-11" name="name" autoComplete="name" required />
         </label>
         <label className="athlemetry-label">
           Email
           <input
-            className="athlemetry-control"
+            className="athlemetry-control min-h-11"
             name="email"
             type="email"
+            autoComplete="email"
             required
           />
         </label>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
         <label className="athlemetry-label">
           Password
           <input
-            className="athlemetry-control"
+            className="athlemetry-control min-h-11"
             name="password"
             type="password"
+            autoComplete="new-password"
             minLength={8}
             required
           />
         </label>
         <label className="athlemetry-label">
-          Role
+          I am signing up as
           <select
-            className="athlemetry-control"
+            className="athlemetry-control min-h-11"
             name="role"
             value={role}
             onChange={(event) => setRole(event.target.value as (typeof SELF_REGISTRATION_ROLE_OPTIONS)[number])}
           >
             {SELF_REGISTRATION_ROLE_OPTIONS.map((roleOption) => (
               <option key={roleOption} value={roleOption}>
-                {roleOption}
+                {ROLE_LABELS[roleOption]}
               </option>
             ))}
           </select>
         </label>
       </div>
 
-      <label className="athlemetry-label">
-        Referral code (optional)
-        <input className="athlemetry-control" name="referralCode" defaultValue={initialReferralCode} maxLength={24} autoCapitalize="characters" />
-      </label>
-
       {isAthlete ? (
-        <>
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="athlemetry-label">
-              Age
+        <fieldset className="grid gap-4 border-t border-slate-200 pt-4 md:grid-cols-2">
+          <legend className="text-base font-semibold text-slate-950">About the athlete</legend>
+          <label className="athlemetry-label">
+            Age
+            <input
+              className="athlemetry-control min-h-11"
+              name="age"
+              type="number"
+              inputMode="numeric"
+              min={6}
+              max={80}
+              value={age}
+              onChange={(event) => setAge(Number(event.target.value))}
+              required
+            />
+          </label>
+          <label className="athlemetry-label">
+            Primary sport
+            <select
+              className="athlemetry-control min-h-11"
+              name="primarySport"
+              value={primarySport}
+              onChange={(event) => {
+                const nextSport = event.target.value as SportOption;
+                setPrimarySport(nextSport);
+                setPosition(getDefaultPositionForSport(nextSport));
+              }}
+            >
+              {SPORT_OPTIONS.map((sport) => (
+                <option key={sport} value={sport}>{SPORT_LABELS[sport]}</option>
+              ))}
+            </select>
+          </label>
+          <label className="athlemetry-label">
+            Position
+            <select
+              className="athlemetry-control min-h-11"
+              name="position"
+              value={position}
+              onChange={(event) => setPosition(event.target.value as typeof position)}
+            >
+              {getPositionOptionsForSport(primarySport).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="athlemetry-label">
+            Competition level
+            <select
+              className="athlemetry-control min-h-11"
+              name="competitionLevel"
+              defaultValue="academy"
+            >
+              {COMPETITION_LEVEL_OPTIONS.map((level) => (
+                <option key={level} value={level}>
+                  {COMPETITION_LEVEL_LABELS[level]}
+                </option>
+              ))}
+            </select>
+          </label>
+          {requiresParentEmail ? (
+            <label className="athlemetry-label md:col-span-2">
+              Parent email (required for athletes under 18)
               <input
-                className="athlemetry-control"
-                name="age"
-                type="number"
-                min={6}
-                max={80}
-                value={age}
-                onChange={(event) => setAge(Number(event.target.value))}
+                className="athlemetry-control min-h-11"
+                name="parentEmail"
+                type="email"
+                autoComplete="off"
                 required
               />
             </label>
-            <label className="athlemetry-label">
-              Primary sport
-              <select
-                className="athlemetry-control"
-                name="primarySport"
-                value={primarySport}
-                onChange={(event) => {
-                  const nextSport = event.target.value as SportOption;
-                  setPrimarySport(nextSport);
-                  setPosition(getDefaultPositionForSport(nextSport));
-                }}
-              >
-                {SPORT_OPTIONS.map((sport) => (
-                  <option key={sport} value={sport}>{SPORT_LABELS[sport]}</option>
-                ))}
-              </select>
-            </label>
-            <label className="athlemetry-label">
-              Position
-              <select
-                className="athlemetry-control"
-                name="position"
-                value={position}
-                onChange={(event) => setPosition(event.target.value as typeof position)}
-              >
-                {getPositionOptionsForSport(primarySport).map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          ) : null}
+        </fieldset>
+      ) : null}
 
-          <div className="grid gap-4 md:grid-cols-3">
+      <details
+        className="rounded-2xl border border-slate-200 bg-white/70"
+        open={optionalOpen}
+        onToggle={(event) => setOptionalOpen(event.currentTarget.open)}
+      >
+        <summary className="flex min-h-11 cursor-pointer items-center px-4 text-sm font-semibold text-slate-900">
+          Optional details
+        </summary>
+        <div className="grid gap-4 border-t border-slate-200 px-4 py-4 md:grid-cols-2">
+          {isAthlete ? (
             <label className="athlemetry-label">
               Team
-              <input className="athlemetry-control" name="team" />
+              <input className="athlemetry-control min-h-11" name="team" />
             </label>
-            <label className="athlemetry-label">
-              Competition level
-              <select
-                className="athlemetry-control"
-                name="competitionLevel"
-                defaultValue="academy"
-              >
-                {COMPETITION_LEVEL_OPTIONS.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="athlemetry-label">
-              Gender
-              <input className="athlemetry-control" name="gender" />
-            </label>
-          </div>
-
+          ) : null}
           <label className="athlemetry-label">
-            Performance goal (optional)
-            <textarea className="athlemetry-control min-h-24" name="performanceGoal" maxLength={500} />
+            Gender
+            <input className="athlemetry-control min-h-11" name="gender" />
           </label>
-
           <label className="athlemetry-label">
-            Parent email (required for minors)
-            <input
-              className="athlemetry-control"
-              name="parentEmail"
-              type="email"
-              required={requiresParentEmail}
-            />
+            Referral code
+            <input className="athlemetry-control min-h-11" name="referralCode" defaultValue={initialReferralCode} maxLength={24} autoCapitalize="characters" />
           </label>
-        </>
-      ) : (
-        <label className="athlemetry-label">
-          Gender (optional)
-          <input className="athlemetry-control" name="gender" />
-        </label>
-      )}
+          {isAthlete ? (
+            <label className="athlemetry-label md:col-span-2">
+              Performance goal
+              <textarea className="athlemetry-control min-h-24" name="performanceGoal" maxLength={500} />
+            </label>
+          ) : null}
+        </div>
+      </details>
 
       <label className="athlemetry-check">
         <input type="checkbox" name="shareInBenchmarks" defaultChecked /> Share data in cohort benchmarking

@@ -1,3 +1,5 @@
+import { getMetricPresentation } from "@/lib/metric-presentation";
+
 export const APP_NAME = "Athlemetry";
 
 export const TEAM_INVITATION_TTL_DAYS = 14;
@@ -22,11 +24,11 @@ export const SPORT_LABELS: Record<SportOption, string> = {
 };
 
 export const SPORT_DESCRIPTIONS: Record<SportOption, string> = {
-  soccer: "Linear speed, change of direction, striking, and repeatability drills with field-line aware defaults.",
+  soccer: "Sprint, agility, shooting, passing, first-touch, and dribbling drills.",
   baseball:
-    "Pitching and batting workflows with angle-aware upload guidance, conservative video interpretation, and honest confidence notes.",
+    "Pitching, throwing, and swing-timing drills. If the ball or contact point is not clearly visible, Athlemetry says so instead of guessing.",
   basketball:
-    "Shot-form capture and court-line calibration with free-throw and three-point defaults that stay editable.",
+    "Spot shooting, free throws, lane agility, and shot-form capture, using visible court lines as the reference.",
 };
 
 export const STANDARD_DRILLS = [
@@ -218,6 +220,13 @@ export const STANDARD_DRILLS = [
 export const ROLE_OPTIONS = ["ATHLETE", "PARENT", "COACH", "ADMIN"] as const;
 export const SELF_REGISTRATION_ROLE_OPTIONS = ["ATHLETE", "PARENT", "COACH"] as const;
 
+export const ROLE_LABELS: Record<(typeof ROLE_OPTIONS)[number], string> = {
+  ATHLETE: "Athlete",
+  PARENT: "Parent",
+  COACH: "Coach",
+  ADMIN: "Admin",
+};
+
 export const SPORT_POSITION_TAXONOMY = {
   soccer: [
     { value: "GK", label: "Goalkeeper" },
@@ -274,6 +283,30 @@ export const COMPETITION_LEVEL_OPTIONS = [
   "elite",
   "school",
 ] as const;
+
+export const COMPETITION_LEVEL_LABELS: Record<(typeof COMPETITION_LEVEL_OPTIONS)[number], string> = {
+  recreational: "Recreational",
+  academy: "Academy",
+  elite: "Elite",
+  school: "School",
+};
+
+/**
+ * Human label for a metric key such as `sprintTime`. Prefers the customer-facing
+ * presentation label; unknown keys fall back to a split, capitalized camelCase
+ * string rather than the raw identifier.
+ */
+export function getMetricLabel(metricKey: string): string {
+  const presentation = getMetricPresentation(metricKey);
+  if (presentation) return presentation.label;
+
+  const words = metricKey
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .toLowerCase();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : metricKey;
+}
 
 export const BASEBALL_LEAGUE_OPTIONS = [
   { key: "regulation-60-5", label: "Regulation (60.5 ft)", distanceFeet: 60.5 },
