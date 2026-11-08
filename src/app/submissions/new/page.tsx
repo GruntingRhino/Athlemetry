@@ -7,7 +7,7 @@ import { getMonthlySubmissionLimit } from "@/lib/submission-usage";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Upload a drill" };
+export const metadata = { title: "Upload a clip" };
 
 type NewSubmissionSearchParams = { sport?: string; drill?: string };
 
@@ -32,7 +32,7 @@ export default async function NewSubmissionPage({
     <div className="space-y-5 lg:space-y-6">
       <BackToSports />
       <div className="max-w-3xl">
-        <h1 className="athlemetry-section-heading">Upload a drill video</h1>
+        <h1 className="athlemetry-section-heading">Upload a clip</h1>
         <p className="athlemetry-section-lead mt-2">
           Pick the sport and drill, add your clip, and submit. Athlemetry checks the recording against the drill&apos;s capture requirements before reporting anything.
         </p>

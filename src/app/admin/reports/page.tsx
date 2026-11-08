@@ -45,7 +45,6 @@ export default async function AdminReportsPage() {
     <div className="space-y-6 lg:space-y-8">
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
         <div className="max-w-3xl">
-          <div className="athlemetry-kicker">Admin review</div>
           <h1 className="mt-4 athlemetry-section-heading">User report review</h1>
           <p className="athlemetry-section-lead">
             Review and resolve issue reports from athletes, parents, and coaches without leaving the operating dashboard.

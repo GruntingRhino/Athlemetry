@@ -40,7 +40,7 @@ export function TeamInvitationForm({ teamId, onCreated }: { teamId: string; onCr
     <form className="mt-4 flex flex-wrap items-end gap-2" onSubmit={onSubmit}>
       <label className="min-w-56 flex-1 text-xs font-semibold text-slate-700">
         Existing athlete email
-        <input className="mt-1 athlemetry-control text-sm" name="recipientEmail" type="email" maxLength={254} required />
+        <input className="mt-1 athlemetry-control" name="recipientEmail" type="email" maxLength={254} required />
       </label>
       <button type="submit" disabled={saving} className="athlemetry-button athlemetry-button-secondary px-3 py-2 text-xs disabled:opacity-60">
         {saving ? "Inviting..." : "Invite athlete"}

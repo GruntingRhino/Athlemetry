@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ReportForm } from "@/components/forms/report-form";
 import { SubmissionSharingForm } from "@/components/forms/submission-sharing-form";
 import { SubmissionVideoReview } from "@/components/forms/submission-video-review";
+import { LiveSubmissionStatus } from "@/app/submissions/live-status";
 import { LocalTime } from "@/app/submissions/local-time";
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { DevStandInPanel } from "@/components/layout/dev-standin-panel";
@@ -24,6 +25,7 @@ import {
 import { normalizeSport } from "@/lib/drills";
 import { SPORT_LABELS } from "@/lib/constants";
 import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
+import { isInFlight } from "@/lib/processing-timeline";
 import { getMetricPresentation } from "@/lib/metric-presentation";
 
 export const dynamic = "force-dynamic";
@@ -104,10 +106,17 @@ export default async function SubmissionsPage({
             </p>
           </div>
           <Link href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"} className="athlemetry-button athlemetry-button-primary">
-            New submission
+            Upload a clip
           </Link>
         </div>
       </section>
+
+      {submissions.length === 0 ? (
+        <section className="athlemetry-card p-6 md:p-8">
+          <h2 className="text-lg font-semibold text-slate-950">No clips yet</h2>
+          <p className="mt-2 athlemetry-body">Upload your first clip and its status will appear here.</p>
+        </section>
+      ) : null}
 
       <div className="space-y-4 lg:space-y-5">
         {submissions.map((submission) => {
@@ -187,7 +196,13 @@ export default async function SubmissionsPage({
                 </div>
               ) : null}
 
-              {inProgressMessage ? (
+              {isInFlight(submission.processingStatus) ? (
+                <LiveSubmissionStatus
+                  submissionId={submission.id}
+                  initialStatus={submission.processingStatus}
+                  canPoll={submission.athleteId === user.id || user.role === "ADMIN"}
+                />
+              ) : inProgressMessage ? (
                 <div className="mt-5 flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 sm:flex-row sm:items-center sm:justify-between">
                   <p>{inProgressMessage}</p>
                   {canRetryProcessing(submission.processingStatus) ? (
@@ -292,8 +307,8 @@ export default async function SubmissionsPage({
               ) : null}
 
               <details className="mt-5 rounded-[22px] border border-slate-200 bg-slate-50/90 p-4">
-                <summary className="cursor-pointer py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-700">
-                  Report this submission
+                <summary className="cursor-pointer py-3 text-sm font-semibold text-slate-800">
+                  Report a problem with this submission
                 </summary>
                 <div className="mt-3">
                   <ReportForm

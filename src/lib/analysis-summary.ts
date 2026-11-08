@@ -280,7 +280,7 @@ export function buildAnalysisSummary(
       reliabilityLabel: "Confidence",
       reliabilityValue: `${Math.round(reliability)} / 100`,
       note:
-        "Basketball analysis anchors off visible free-throw or three-point markings. If the clip is off-angle, the distance slider keeps the result conservative instead of pretending the camera was perfect.",
+        "Basketball analysis anchors off visible free-throw or three-point markings. If the clip is off-angle, the entered distance keeps the result conservative instead of pretending the camera was perfect.",
     };
   }
 

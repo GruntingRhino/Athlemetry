@@ -33,7 +33,6 @@ export default async function TeamInvitationsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Team membership</div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Team invitations</h1>
         <p className="mt-3 athlemetry-body">Only accept a team invitation you recognize. Acceptance creates a team membership and does not share your submissions, reports, or profile.</p>
       </section>

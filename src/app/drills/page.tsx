@@ -24,7 +24,7 @@ export default async function DrillsPage() {
             </p>
           </div>
           <Link href="/submissions/new" className="athlemetry-button athlemetry-button-primary">
-            Start an upload
+            Upload a clip
           </Link>
         </div>
       </section>

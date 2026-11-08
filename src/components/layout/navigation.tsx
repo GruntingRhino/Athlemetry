@@ -115,7 +115,26 @@ export async function Navigation() {
           <>
             {/* Desktop: compact single row */}
             <div className="hidden min-w-0 flex-1 items-center gap-4 md:flex">
-              <Suspense fallback={null}>
+              <Suspense
+                fallback={
+                  // Same links without sport/active state, so the nav is in the server HTML
+                  // (useSearchParams in SportNav suspends until hydration).
+                  <nav aria-label="Primary">
+                    <ul className="flex items-center gap-1">
+                      {sections.map((section) => (
+                        <li key={section.key}>
+                          <Link
+                            href={section.href}
+                            className="inline-flex min-h-10 items-center rounded-full px-3 text-sm font-semibold text-slate-700"
+                          >
+                            {section.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                }
+              >
                 <SportNav sports={sports} sections={sections} />
               </Suspense>
             </div>

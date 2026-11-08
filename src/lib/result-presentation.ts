@@ -111,11 +111,11 @@ export function rerecordHref(drillSlug: string) {
 export function getInProgressMessage(processingStatus: string): string | null {
   switch (processingStatus) {
     case "QUEUED":
-      return "Uploaded and waiting to be analyzed. Refresh this page later to see the result.";
+      return "Uploaded and waiting to be analyzed. No result is shown until it passes our checks.";
     case "PROCESSING":
-      return "Being analyzed now. Refresh this page later to see the result.";
+      return "Being analyzed now. No result is shown until it passes our checks.";
     case "RETRYING":
-      return "Analysis hit a temporary problem and will retry automatically. Refresh this page later to see the result.";
+      return "We retry automatically, so you don't need to upload again.";
     case "FAILED":
       return "Analysis failed before a result could be produced. Use Retry processing to try again.";
     default:

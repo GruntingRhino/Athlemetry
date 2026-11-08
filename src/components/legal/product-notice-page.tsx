@@ -8,7 +8,6 @@ export function ProductNoticePage({ kind }: { kind: "privacy" | "terms" }) {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Product notice</div>
         <h1 className="mt-4 athlemetry-section-heading">{notice.title}</h1>
         <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm text-slate-600">
           <div>

@@ -38,13 +38,13 @@ export function SubmissionKeyMomentForm({ submissionId, disabled }: SubmissionKe
       <form className="mt-3 space-y-3" onSubmit={onSubmit}>
         <p className="text-xs leading-5 text-slate-600">Available after processing completes. Notes are visible to the athlete without reviewer identity and must not make automated coaching, health, or performance claims.</p>
         <label className="block text-xs font-semibold text-slate-700">Frame index
-          <input name="frameIndex" type="number" min="0" step="1" required disabled={disabled} className="athlemetry-control mt-1 text-sm" />
+          <input name="frameIndex" type="number" min="0" step="1" required disabled={disabled} className="athlemetry-control mt-1" />
         </label>
         <label className="block text-xs font-semibold text-slate-700">Short label
-          <input name="label" minLength={3} maxLength={80} required disabled={disabled} className="athlemetry-control mt-1 text-sm" />
+          <input name="label" minLength={3} maxLength={80} required disabled={disabled} className="athlemetry-control mt-1" />
         </label>
         <label className="block text-xs font-semibold text-slate-700">Reviewed note
-          <textarea name="note" minLength={3} maxLength={300} required disabled={disabled} className="athlemetry-control mt-1 min-h-20 text-sm" />
+          <textarea name="note" minLength={3} maxLength={300} required disabled={disabled} className="athlemetry-control mt-1 min-h-20" />
         </label>
         <p className="text-xs text-slate-500">Do not include contact details or external links.</p>
         <button type="submit" disabled={disabled} className="athlemetry-button athlemetry-button-primary px-3 py-1.5 text-xs">Save reviewed moment</button>

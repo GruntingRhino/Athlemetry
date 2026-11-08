@@ -33,8 +33,8 @@ export function RecommendationFeedbackForm({ coachingPlanId, actionIndex }: Reco
     <details className="mt-2 text-xs text-slate-600">
       <summary className="cursor-pointer font-medium text-teal-800">Request recommendation review</summary>
       <form className="mt-2 space-y-2" onSubmit={onSubmit}>
-        <input name="reason" required maxLength={120} className="athlemetry-control text-xs" placeholder="Reason for review" />
-        <textarea name="details" maxLength={400} rows={2} className="athlemetry-control text-xs" placeholder="Optional details (do not include contact details or links)" />
+        <input name="reason" required maxLength={120} className="athlemetry-control" placeholder="Reason for review" />
+        <textarea name="details" maxLength={400} rows={2} className="athlemetry-control" placeholder="Optional details (do not include contact details or links)" />
         <p>Feedback does not change this recommendation automatically or schedule training.</p>
         <button type="submit" className="athlemetry-button athlemetry-button-secondary px-3 py-1.5 text-xs">Submit feedback</button>
         {message ? <p role="status">{message}</p> : null}

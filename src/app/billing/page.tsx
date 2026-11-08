@@ -38,7 +38,6 @@ export default async function BillingPage({
   return (
     <div className="space-y-6 lg:space-y-8">
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Subscription</div>
         <h1 className="mt-4 athlemetry-section-heading">Athlemetry membership</h1>
         <p className="athlemetry-section-lead">
           Hosted Checkout and the billing portal keep payment details out of Athlemetry. Access changes only after a signed Stripe webhook updates the local entitlement.

@@ -89,7 +89,7 @@ export default async function DashboardPage({
             </p>
           </div>
           <Link href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"} className="athlemetry-button athlemetry-button-primary">
-            Submit new drill
+            Upload a clip
           </Link>
         </div>
       </section>
@@ -106,11 +106,6 @@ export default async function DashboardPage({
                 <div>
                   <span className={step.complete ? "text-slate-600" : "font-medium text-slate-900"}>{step.label}</span>
                   {step.detail ? <p className="mt-1 text-sm text-slate-600">{step.detail}</p> : null}
-                  {step.key === "result" && !step.complete ? (
-                    <p className="mt-1 text-sm text-slate-600">
-                      Results appear only after a metric passes validation. Until then, we&apos;ll tell you why a clip was held back.
-                    </p>
-                  ) : null}
                 </div>
                 {step.complete ? (
                   <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-teal-800">
@@ -166,14 +161,15 @@ export default async function DashboardPage({
           <h2 id="no-results-heading" className="text-xl font-semibold text-slate-950">{noResults.heading}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">{noResults.body}</p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Link href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"} className="athlemetry-button athlemetry-button-primary min-h-[44px]">
-              Record your next clip
-            </Link>
             {noResults.showSubmissionsLink ? (
-              <Link href="/submissions" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-800 underline underline-offset-4">
+              <Link href="/submissions" className="athlemetry-button athlemetry-button-secondary min-h-[44px]">
                 See why clips were held
               </Link>
-            ) : null}
+            ) : (
+              <Link href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"} className="athlemetry-button athlemetry-button-primary min-h-[44px]">
+                Upload a clip
+              </Link>
+            )}
           </div>
         </section>
       )}

@@ -54,7 +54,6 @@ export function buildAthleteChecklist(input: AthleteChecklistInput) {
     href: uploaded ? "/submissions" : "/submissions/new",
     actionLabel: uploaded ? "See your clips" : "Upload a clip",
     complete: hasResult,
-    detail: !hasResult && uploaded ? "Your clips have not produced a validated result yet." : undefined,
   });
 
   return {

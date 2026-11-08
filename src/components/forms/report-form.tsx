@@ -50,7 +50,7 @@ export function ReportForm({ submissionId, reportableMetric }: ReportFormProps) 
     <form className="mt-2 space-y-2" onSubmit={onSubmit}>
       <label className="block text-xs font-medium text-slate-700">
         Request type
-        <select name="requestType" defaultValue="ISSUE" className="mt-1 athlemetry-control text-xs">
+        <select name="requestType" defaultValue="ISSUE" className="mt-1 athlemetry-control">
           <option value="ISSUE">Report an issue</option>
           <option value="HUMAN_REVIEW">Request human review</option>
           <option value="REPROCESS">Request reprocessing</option>
@@ -64,7 +64,7 @@ export function ReportForm({ submissionId, reportableMetric }: ReportFormProps) 
             name="metricName"
             value={metricName}
             onChange={(event) => setMetricName(event.target.value)}
-            className="mt-1 athlemetry-control text-xs"
+            className="mt-1 athlemetry-control"
           >
             <option value="">Entire submission</option>
             <option value={reportableMetric.name}>{reportableMetric.label} metric</option>
@@ -81,26 +81,28 @@ export function ReportForm({ submissionId, reportableMetric }: ReportFormProps) 
             max="1000000"
             step="any"
             disabled={!metricName}
-            className="mt-1 athlemetry-control text-xs"
+            className="mt-1 athlemetry-control"
             placeholder={`Select ${reportableMetric.label} metric first`}
           />
           <span className="mt-1 block font-normal text-slate-500">This is a claim for admin review and does not change your analyzed result.</span>
         </label>
       ) : null}
       <div className="grid gap-2 sm:grid-cols-3">
-        <label className="block text-xs font-medium text-slate-700">Disputed video frame (optional)<input name="disputedFrameIndex" type="number" min="0" className="mt-1 athlemetry-control text-xs" /></label>
-        <label className="block text-xs font-medium text-slate-700">Accuracy rating (1–5)<input name="accuracyRating" type="number" min="1" max="5" className="mt-1 athlemetry-control text-xs" /></label>
-        <label className="block text-xs font-medium text-slate-700">Usefulness rating (1–5)<input name="usefulnessRating" type="number" min="1" max="5" className="mt-1 athlemetry-control text-xs" /></label>
+        <label className="block text-xs font-medium text-slate-700">Disputed video frame (optional)<input name="disputedFrameIndex" type="number" min="0" className="mt-1 athlemetry-control" /></label>
+        <label className="block text-xs font-medium text-slate-700">Accuracy rating (1–5)<input name="accuracyRating" type="number" min="1" max="5" className="mt-1 athlemetry-control" /></label>
+        <label className="block text-xs font-medium text-slate-700">Usefulness rating (1–5)<input name="usefulnessRating" type="number" min="1" max="5" className="mt-1 athlemetry-control" /></label>
       </div>
       <input
         name="reason"
-        className="athlemetry-control text-xs"
+        className="athlemetry-control"
+        aria-label="Report reason"
         placeholder="Report reason"
         required
       />
       <textarea
         name="details"
-        className="athlemetry-control text-xs"
+        className="athlemetry-control"
+        aria-label="Optional details"
         placeholder="Optional details (do not include contact details or links)"
         rows={2}
       />
@@ -111,7 +113,7 @@ export function ReportForm({ submissionId, reportableMetric }: ReportFormProps) 
       >
         Submit report
       </button>
-      {message ? <p className="athlemetry-message text-xs">{message}</p> : null}
+      {message ? <p role="status" className="athlemetry-message text-xs">{message}</p> : null}
     </form>
   );
 }

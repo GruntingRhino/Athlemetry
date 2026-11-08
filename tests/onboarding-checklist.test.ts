@@ -22,7 +22,7 @@ describe("buildAthleteChecklist", () => {
     const { checklist, step } = byKey({ ...base, submissionCount: 3 });
     expect(step("upload")).toMatchObject({ complete: true, label: "Upload your first clip" });
     expect(step("result")).toMatchObject({ complete: false, href: "/submissions" });
-    expect(step("result")?.detail).toMatch(/not produced a validated result/);
+    expect(step("result")?.detail).toBeUndefined(); // the empty-state card below explains it; one message, not two
     expect(checklist.completedCount).toBe(2);
     expect(checklist.totalCount).toBe(3);
   });

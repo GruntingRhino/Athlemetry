@@ -38,7 +38,6 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Profile</div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Athlete profile</h1>
         <p className="mt-3 athlemetry-body">Manage athlete metadata, cohort attributes, and privacy settings.</p>
         <div className="mt-6">
@@ -59,7 +58,6 @@ export default async function ProfilePage() {
         </div>
       </section>
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Goal progress</div>
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-950">Personal progress check-ins</h2>
         <p className="mt-3 athlemetry-body">Record your own progress toward the goal in your profile. Check-ins are self-reported and do not validate a coaching or performance claim.</p>
         <div className="mt-6">
@@ -74,7 +72,6 @@ export default async function ProfilePage() {
         </div>
       </section>
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Security</div>
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-950">Change password</h2>
         <div className="mt-6">
           <ChangePasswordForm />

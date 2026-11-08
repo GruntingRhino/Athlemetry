@@ -28,7 +28,6 @@ export default async function TeamsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Team foundation</div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Team management</h1>
         <p className="mt-3 athlemetry-body">Create and review teams owned by this coach or administrator, then invite existing eligible athletes. Invitations require athlete acceptance and do not grant submission access. Owners can review confirmed athlete rosters and remove athlete memberships without receiving emails, submissions, reports, or other profile details. Assignments, feedback, and team-wide access remain unavailable.</p>
       </section>

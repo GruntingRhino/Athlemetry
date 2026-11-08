@@ -38,7 +38,7 @@ export function ReportReviewForm({ reportId, currentStatus }: ReportReviewFormPr
       <select
         name="status"
         defaultValue={currentStatus}
-        className="athlemetry-control w-auto text-xs"
+        className="athlemetry-control w-auto"
       >
         <option value="OPEN">OPEN</option>
         <option value="IN_REVIEW">IN_REVIEW</option>
@@ -51,7 +51,7 @@ export function ReportReviewForm({ reportId, currentStatus }: ReportReviewFormPr
           id={`report-note-${reportId}`}
           name="resolutionNote"
           maxLength={500}
-          className="athlemetry-control mt-1 min-h-20 text-sm"
+          className="athlemetry-control mt-1 min-h-20"
         />
       </label>
       <p className="text-xs leading-5 text-slate-600">

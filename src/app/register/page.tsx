@@ -15,7 +15,7 @@ export default async function RegisterPage({
       <section className="athlemetry-card p-6 md:p-8">
         <h1 className="text-3xl font-bold tracking-tight text-slate-950">Create your account</h1>
         <p className="mt-3 athlemetry-body">
-          Self-registration supports athlete, parent, and coach roles with consent and privacy controls.
+          Create an account as an athlete, parent or coach. You choose what you share.
         </p>
         <div className="mt-6">
           <RegisterForm initialReferralCode={initialReferralCode} />

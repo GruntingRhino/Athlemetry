@@ -47,7 +47,6 @@ export default async function SharedAccessPage({
     <div className="space-y-6 lg:space-y-8">
       <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Read-only access</div>
         <h1 className="mt-4 athlemetry-section-heading">Shared with you</h1>
         <p className="athlemetry-section-lead">
           This page lists individual submissions another account has explicitly shared with you. It does not grant access to athlete profiles, other submissions, search, or team records.

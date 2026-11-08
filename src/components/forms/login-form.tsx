@@ -61,7 +61,7 @@ export function LoginForm() {
           autoComplete="current-password"
         />
       </div>
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-rose-700">{error}</p> : null}
       <button
         type="submit"
         disabled={loading}

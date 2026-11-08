@@ -75,7 +75,7 @@ export function MetricValidationPanel({ drills, records, currentUserId }: { dril
         <label className="athlemetry-label">Two expert reviewer IDs, comma-separated<input required name="reviewedBy" className="athlemetry-control" /></label>
         <label className="athlemetry-label md:col-span-2">Immutable HTTPS evidence report URI<input required name="evidenceUri" type="url" className="athlemetry-control" /></label>
         <label className="athlemetry-label md:col-span-2">Evidence report SHA-256<input required name="evidenceSha256" pattern="[A-Fa-f0-9]{64}" className="athlemetry-control" /></label>
-        <label className="athlemetry-label md:col-span-2">Professional capability report JSON<textarea required name="capabilityEvidence" rows={12} className="athlemetry-control font-mono text-xs" placeholder='{"schemaVersion":"athlemetry-capability-validation-v1",...}' /></label>
+        <label className="athlemetry-label md:col-span-2">Professional capability report JSON<textarea required name="capabilityEvidence" rows={12} className="athlemetry-control font-mono" placeholder='{"schemaVersion":"athlemetry-capability-validation-v1",...}' /></label>
         <button disabled={busy} className="athlemetry-button athlemetry-button-primary md:col-span-2">Submit validation evidence</button>
       </form>
 

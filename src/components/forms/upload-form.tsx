@@ -860,7 +860,7 @@ export function UploadForm({ drills, initialSport, initialDrillSlug, userRole, m
           disabled={pending}
           className="athlemetry-button athlemetry-button-primary min-h-11 w-full disabled:opacity-60 sm:w-auto"
         >
-          {pending ? "Uploading..." : "Submit drill"}
+          {pending ? "Uploading..." : "Upload clip"}
         </button>
       </div>
     </form>

@@ -353,7 +353,11 @@ describe("getBeforeYouFilmItems", () => {
       expect(items.length, drill.slug).toBeGreaterThanOrEqual(2);
       expect(items.length).toBeLessThanOrEqual(3);
       expect(items[0], drill.slug).toContain(`${protocol.camera.minimumFps} fps`);
-      expect(items.join(" ")).toContain(protocol.camera.referenceInFrame);
+      // Two phrases are reworded for athletes (display only); the rest must appear verbatim.
+      const expectedFrameText = protocol.camera.referenceInFrame
+        .replace("Known bat length or calibrated reference plane", "The whole bat, or a flat marked reference of known size")
+        .replace("Complete calibrated strike-zone target", "The whole strike-zone target");
+      expect(items.join(" ")).toContain(expectedFrameText);
     }
     expect(getBeforeYouFilmItems("baseball-pitch-velocity")[0]).toContain("120 fps");
     expect(getBeforeYouFilmItems("sprint-20m")[0]).toContain("60 fps");

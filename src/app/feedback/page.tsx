@@ -15,7 +15,6 @@ export default async function FeedbackHistoryPage() {
     <div className="space-y-6 lg:space-y-8">
       <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Feedback and disputes</div>
         <h1 className="mt-4 athlemetry-section-heading">Feedback history</h1>
         <p className="athlemetry-section-lead">
           Review the status and resolution notes for reports submitted from your account. This history does not expose reviewer identities or other athletes’ reports.

@@ -42,7 +42,6 @@ export default async function AdminSubmissionsPage() {
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="athlemetry-kicker">Admin operations</div>
             <h1 className="mt-4 athlemetry-section-heading">Submissions monitor</h1>
             <p className="athlemetry-section-lead">
               Queue status, processing state transitions, and the latest processing notes for athlete uploads.

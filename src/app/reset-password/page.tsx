@@ -15,7 +15,6 @@ export default async function ResetPasswordPage({
   return (
     <div className="mx-auto max-w-md">
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Account recovery</div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Choose a new password</h1>
         <p className="mt-3 athlemetry-body">Use a new password between 8 and 128 characters. Reset links expire and may be used once.</p>
         <div className="mt-6"><PasswordResetConfirmForm token={token} /></div>

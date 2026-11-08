@@ -94,7 +94,7 @@ export default async function BenchmarkingPage({
               href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"}
               className="athlemetry-button athlemetry-button-primary mt-4 min-h-11"
             >
-              Record your next clip
+              Upload another clip
             </Link>
           </article>
         )}

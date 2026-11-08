@@ -18,7 +18,6 @@ export default async function PrivacyPage() {
     <div className="space-y-6 lg:space-y-8">
       <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Settings</div>
         <h1 className="mt-4 athlemetry-section-heading">Privacy and compliance</h1>
         <p className="athlemetry-section-lead">
           Manage consent state, export personal data, and request account deletion.

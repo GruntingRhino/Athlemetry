@@ -8,7 +8,6 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">
       <section className="athlemetry-card p-6 md:p-8">
-        <div className="athlemetry-kicker">Welcome back</div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Sign in</h1>
         <p className="mt-3 athlemetry-body">Use your Athlemetry account credentials.</p>
         <div className="mt-6">

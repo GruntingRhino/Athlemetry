@@ -43,7 +43,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/submissions/new" className="athlemetry-button athlemetry-button-primary">
-                Upload a drill video
+                Upload a clip
               </Link>
               <Link href="/drills" className="athlemetry-button athlemetry-button-secondary">
                 Browse drills

@@ -19,6 +19,18 @@ function joinAngles(angles: string[]) {
   return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
 }
 
+/**
+ * Display-only plain wording for the two protocol phrases an athlete would not
+ * recognise. The protocol itself (and what the capture check requires) is
+ * unchanged.
+ */
+function plainFrameText(text: string) {
+  return text
+    .replace("Known bat length or calibrated reference plane", "The whole bat, or a flat marked reference of known size")
+    .replace("Complete calibrated strike-zone target", "The whole strike-zone target")
+    .replace(/calibrated /gi, "");
+}
+
 /** Up to three items. Empty when the drill has no published protocol; nothing is invented. */
 export function getBeforeYouFilmItems(drillSlug: string): string[] {
   const protocol = DRILL_PROTOCOLS[drillSlug as keyof typeof DRILL_PROTOCOLS];
@@ -34,7 +46,7 @@ export function getBeforeYouFilmItems(drillSlug: string): string[] {
     items.push(`Film from ${joinAngles(camera.acceptedAngles)} view.`);
   }
 
-  const inFrame = camera.referenceInFrame.trim();
+  const inFrame = plainFrameText(camera.referenceInFrame.trim());
   const frameParts: string[] = [];
   if (camera.fullBodyRequired) frameParts.push("Keep the athlete's whole body in frame.");
   if (inFrame) frameParts.push(`Also keep in frame: ${inFrame}.`);

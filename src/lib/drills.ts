@@ -74,17 +74,17 @@ export const DRILL_GUIDANCE: Record<string, { frameStartLabel: string; frameFini
   "baseball-pitch-command": {
     frameStartLabel: "Release frame",
     frameFinishLabel: "Target / catch frame",
-    helper: "Track one representative pitch travel window and use repetition hint for total command-set attempts.",
+    helper: "Track one representative pitch travel window and note the total pitches you threw.",
   },
   "baseball-swing-timing": {
     frameStartLabel: "Load start frame",
     frameFinishLabel: "Contact frame",
-    helper: "Mark the start of the committed load/move and the exact contact frame. If contact is not visible, expect an unclear-video note.",
+    helper: "Mark the start of the committed load/move and the exact contact frame. If contact is not visible, we will tell you the clip was unclear.",
   },
   "basketball-form-capture": {
     frameStartLabel: "Shot gather frame",
     frameFinishLabel: "Release frame",
-    helper: "Mark visible free-throw or three-point markings and use the distance slider if the court is nonstandard.",
+    helper: "Mark visible free-throw or three-point markings and enter the distance if the court is nonstandard.",
   },
 };
 
