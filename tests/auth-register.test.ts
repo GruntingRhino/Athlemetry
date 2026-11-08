@@ -192,7 +192,7 @@ describe("POST /api/auth/register", () => {
     }
   });
 
-  it("records a valid referral without exposing the referrer in the response", async () => {
+  it("records a valid referral without exposing the referrer or the account in the response", async () => {
     mocks.prisma.user.findUnique.mockResolvedValue(null);
     mocks.prisma.user.findFirst.mockResolvedValue({ id: "referrer-123" });
     mocks.prisma.user.create.mockResolvedValue({
@@ -227,10 +227,7 @@ describe("POST /api/auth/register", () => {
     expect(mocks.prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ referredByUserId: "referrer-123", referralCode: expect.stringMatching(/^[A-Z0-9]{16}$/) }),
     }));
-    await expect(response.json()).resolves.toEqual(expect.objectContaining({
-      ok: true,
-      user: expect.not.objectContaining({ referredByUserId: expect.anything(), referralCode: expect.anything() }),
-    }));
+    await expect(response.json()).resolves.toEqual({ ok: true });
   });
 
   it("rejects unknown referral codes without creating an account", async () => {
@@ -256,5 +253,65 @@ describe("POST /api/auth/register", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({ error: "Invalid referral code." });
     expect(mocks.prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  describe("account enumeration", () => {
+    const validBody = {
+      name: "Athlete One",
+      email: "athlete@example.com",
+      password: "supersecurepassword",
+      role: "ATHLETE",
+      age: 18,
+      primarySport: "soccer",
+      position: "MID",
+      competitionLevel: "academy",
+    };
+    const post = (body: unknown) =>
+      POST(new Request("http://localhost/api/auth/register", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: typeof body === "string" ? body : JSON.stringify(body),
+      }));
+
+    it("returns the same response for a new email and an already-registered email", async () => {
+      mocks.prisma.user.findUnique.mockResolvedValueOnce(null);
+      mocks.prisma.user.create.mockResolvedValue({
+        id: "athlete-123", email: "athlete@example.com", role: "ATHLETE", parentConsentVerified: true,
+      });
+      mocks.prisma.consentLog.create.mockResolvedValue({});
+      const created = await post(validBody);
+      const createdBody = await created.json();
+
+      mocks.prisma.user.create.mockClear();
+      mocks.prisma.user.findUnique.mockResolvedValueOnce({ id: "existing-1", deletedAt: null });
+      const duplicate = await post(validBody);
+      const duplicateBody = await duplicate.json();
+
+      expect(duplicate.status).toBe(created.status);
+      expect(duplicateBody).toEqual(createdBody);
+      expect(JSON.stringify(duplicateBody)).not.toMatch(/already|exists|existing-1/i);
+      expect(mocks.prisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it("does the same password-hashing work for a duplicate email as for a new one", async () => {
+      mocks.prisma.user.findUnique.mockResolvedValue({ id: "existing-1", deletedAt: null });
+      await post(validBody);
+      expect(mocks.bcryptHash).toHaveBeenCalledTimes(1);
+      expect(mocks.bcryptHash).toHaveBeenCalledWith(validBody.password, 12);
+    });
+
+    it("validates the referral code before looking up the email so the result does not depend on existence", async () => {
+      mocks.prisma.user.findUnique.mockResolvedValue({ id: "existing-1", deletedAt: null });
+      mocks.prisma.user.findFirst.mockResolvedValue(null);
+      const response = await post({ ...validBody, referralCode: "A1B2C3D4E5F6G7H8" });
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toEqual({ error: "Invalid referral code." });
+    });
+
+    it("rejects a malformed JSON body with 400 instead of throwing", async () => {
+      const response = await post("{not json");
+      expect(response.status).toBe(400);
+      expect(mocks.prisma.user.findUnique).not.toHaveBeenCalled();
+    });
   });
 });

@@ -72,7 +72,7 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
       return;
     }
 
-    setMessage("Registration succeeded. Continue to login.");
+    setMessage("Thanks. If this email is new, your account is ready; if you already registered, use your existing password. Continue to sign in.");
     router.push("/login");
   }
 

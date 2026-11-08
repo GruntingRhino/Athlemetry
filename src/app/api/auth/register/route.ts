@@ -30,7 +30,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = await request.json();
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid registration payload." }, { status: 400 });
+  }
   if (payload?.role === "ADMIN") {
     return NextResponse.json({ error: "Admin accounts are owner-managed only." }, { status: 403 });
   }
@@ -49,12 +54,6 @@ export async function POST(request: Request) {
 
   const data = parsed.data;
   const isAthlete = data.role === "ATHLETE";
-  const existing = await prisma.user.findUnique({ where: { email: data.email.toLowerCase() } });
-
-  if (existing && !existing.deletedAt) {
-    return NextResponse.json({ error: "Account already exists." }, { status: 409 });
-  }
-
   const referralCode = data.referralCode ? normalizeReferralCode(data.referralCode) : undefined;
   if (data.referralCode && !referralCode) {
     return NextResponse.json({ error: "Invalid referral code." }, { status: 400 });
@@ -69,12 +68,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid referral code." }, { status: 400 });
   }
 
+  // Hash before the existence lookup so a duplicate email costs the same work
+  // as a new one, and answer both identically. Until email verification exists
+  // (SPEC Q3) the signup response must not reveal whether an address is taken.
   const passwordHash = await bcrypt.hash(data.password, 12);
+  const existing = await prisma.user.findUnique({ where: { email: data.email.toLowerCase() } });
+  if (existing && !existing.deletedAt) {
+    return NextResponse.json({ ok: true });
+  }
 
-  let user;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      user = await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx) => {
       const created = await tx.user.create({
         data: {
           email: data.email.toLowerCase(),
@@ -138,7 +143,6 @@ export async function POST(request: Request) {
           metadata: { action: "ACCOUNT_REGISTERED", actorUserId: created.id },
         },
       });
-      return created;
       });
       break;
     } catch (error) {
@@ -148,8 +152,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    user,
-  });
+  return NextResponse.json({ ok: true });
 }
