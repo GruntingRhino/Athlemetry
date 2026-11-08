@@ -85,13 +85,13 @@ const safeText = (max: number) =>
   z.string().max(max).refine((value) => !CONTACT_OR_LINK.test(value), "Links and contact details are not allowed.");
 
 const vlmOutputSchema = z.strictObject({
-  drillShown: z.boolean(),
-  confidence: z.number().min(0).max(1),
-  grade: z.number().int().min(0).max(100),
-  summary: safeText(600),
-  observations: z.array(safeText(300)).max(6),
-  issues: z.array(safeText(300)).max(6),
-  recommendations: z.array(safeText(300)).max(4),
+  drillShown: z.boolean().describe("true only if the frames clearly show the named drill being performed"),
+  confidence: z.number().min(0).max(1).describe("a decimal from 0.0 to 1.0, NOT a percentage"),
+  grade: z.number().int().min(0).max(100).describe("whole number from 0 to 100"),
+  summary: safeText(600).describe("one or two plain sentences"),
+  observations: z.array(safeText(300)).max(6).describe("up to 6 short observations"),
+  issues: z.array(safeText(300)).max(6).describe("up to 6 short form issues"),
+  recommendations: z.array(safeText(300)).max(4).describe("up to 4 short suggestions"),
 });
 
 export type VlmOutput = Omit<z.infer<typeof vlmOutputSchema>, "grade"> & { grade: number | null };
@@ -99,7 +99,12 @@ export type VlmOutput = Omit<z.infer<typeof vlmOutputSchema>, "grade"> & { grade
 export const VLM_JSON_SCHEMA = z.toJSONSchema(vlmOutputSchema);
 
 export function parseVlmOutput(raw: string): VlmOutput {
-  const parsed = vlmOutputSchema.parse(JSON.parse(raw));
+  const result = vlmOutputSchema.safeParse(JSON.parse(raw));
+  if (!result.success) {
+    const fields = [...new Set(result.error.issues.map((issue) => issue.path.join(".") || "(root)"))].join(", ");
+    throw new Error(`Model output failed validation (${fields}).`);
+  }
+  const parsed = result.data;
   return { ...parsed, grade: parsed.drillShown ? parsed.grade : null };
 }
 
@@ -303,7 +308,7 @@ const SYSTEM_PROMPT = [
   "Answer ONLY with JSON matching the requested schema. No prose outside the JSON.",
   "Be conservative: if the frames do not clearly show the named drill being performed, set drillShown to false.",
   "Never state speeds, times, distances or angles; you cannot measure them from still frames.",
-  "grade is a rough 0-100 impression of form and completion. Do not include links or contact details.",
+  "grade is a rough whole-number 0-100 impression of form and completion. confidence is a decimal between 0.0 and 1.0, never a percentage. Do not include links or contact details.",
 ].join(" ");
 
 export async function runDevStandInAnalysis(

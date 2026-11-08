@@ -97,6 +97,10 @@ describe("parseVlmOutput", () => {
     expect(() => parseVlmOutput(raw)).toThrow();
   });
 
+  it("reports only the offending field names, not the whole validation dump", () => {
+    expect(() => parseVlmOutput(JSON.stringify({ ...goodVlm, confidence: 95 }))).toThrow(/^Model output failed validation \(confidence\)\.$/);
+  });
+
   it("nulls the grade when the drill is not shown", () => {
     expect(parseVlmOutput(JSON.stringify({ ...goodVlm, drillShown: false })).grade).toBeNull();
   });
