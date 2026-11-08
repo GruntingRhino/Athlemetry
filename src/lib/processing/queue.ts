@@ -1,9 +1,11 @@
 import { ProcessingStatus } from "@prisma/client";
 
+import { runAnalysisEngine } from "@/lib/analysis-engine";
 import { buildAnalysisSummary } from "@/lib/analysis-summary";
 import { assessCaptureAdherence } from "@/lib/capture-adherence";
 import { backfillCoachingPlans, upsertCoachingPlanForSubmission } from "@/lib/coaching-plans";
 import { isPrimaryMetricReleased } from "@/lib/customer-metrics";
+import { DEV_STANDIN_ENGINE, DEV_STANDIN_MODEL_VERSION } from "@/lib/dev-standin";
 import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
 import { scheduleEngagementNotifications } from "@/lib/engagement";
 import { verifiedOutcomeEvidence } from "@/lib/outcome-evidence";
@@ -21,7 +23,6 @@ import {
 } from "@/lib/storage";
 import {
   mapVisionAnalysisToMetrics,
-  runVisionAnalysis,
   verifiedCameraCalibration,
   verifiedCalibrationDistance,
   verifiedPlanarCalibration,
@@ -184,7 +185,7 @@ async function processSubmissionInternal(submissionId: string, alreadyClaimed: b
       throw new Error(`Unsupported analysis sport: ${sport}`);
     }
     const verifiedOutcomes = verifiedOutcomeEvidence(metadata);
-    const visionAnalysis = await runVisionAnalysis({
+    const engineResult = await runAnalysisEngine({
       videoPath: materializedVideo.path,
       sport,
       drill: submission.drillDefinition.slug,
@@ -194,14 +195,20 @@ async function processSubmissionInternal(submissionId: string, alreadyClaimed: b
       homography: verifiedPlanarCalibration(metadata, submission.drillDefinition.slug),
       cameraCalibration: verifiedCameraCalibration(metadata),
     });
+    const { engine, analysis: visionAnalysis } = engineResult;
+    // The dev stand-in is plumbing, not measurement: it is bound to a model
+    // version no validation can match and can never release a metric.
+    const isStandIn = engine === DEV_STANDIN_ENGINE;
     const captureAssessment = assessCaptureAdherence(submission.drillDefinition.slug, visionAnalysis.evidence);
     const metrics = mapVisionAnalysisToMetrics(visionAnalysis);
 
-    const modelVersion = resolveAnalyzerModelVersion(
-      await activeModelVersion(),
-      process.env.VISION_MODEL_VERSION,
-      process.env.NODE_ENV === "production",
-    );
+    const modelVersion = isStandIn
+      ? DEV_STANDIN_MODEL_VERSION
+      : resolveAnalyzerModelVersion(
+        await activeModelVersion(),
+        process.env.VISION_MODEL_VERSION,
+        process.env.NODE_ENV === "production",
+      );
 
     const persistedMetrics = await prisma.metricResult.upsert({
       where: { submissionId },
@@ -220,12 +227,14 @@ async function processSubmissionInternal(submissionId: string, alreadyClaimed: b
     const primaryMetricName = submission.drillDefinition.metricPrimaryKey;
     const primaryMetricValue = persistedMetrics[primaryMetricName as keyof typeof persistedMetrics];
     const protocol = DRILL_PROTOCOLS[submission.drillDefinition.slug as keyof typeof DRILL_PROTOCOLS];
-    const metricReleased = await isPrimaryMetricReleased({
-      drillDefinitionId: submission.drillDefinitionId,
-      drillSlug: submission.drillDefinition.slug,
-      metricName: primaryMetricName,
-      modelVersion,
-    });
+    const metricReleased = isStandIn
+      ? false
+      : await isPrimaryMetricReleased({
+        drillDefinitionId: submission.drillDefinitionId,
+        drillSlug: submission.drillDefinition.slug,
+        metricName: primaryMetricName,
+        modelVersion,
+      });
     const performanceAssessment = buildPerformanceAssessment({
       captureVerified: captureAssessment.status === "VERIFIED",
       metricReleased,
@@ -264,7 +273,8 @@ async function processSubmissionInternal(submissionId: string, alreadyClaimed: b
           performanceAssessment,
           analysisSummary,
           visionAnalysis,
-          analysisEngine: "athlemetry-vision-core",
+          analysisEngine: engine,
+          ...(engineResult.engine === DEV_STANDIN_ENGINE ? { devStandIn: engineResult.devStandIn } : {}),
           analyzedAt: new Date().toISOString(),
         },
       },

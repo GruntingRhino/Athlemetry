@@ -4,10 +4,12 @@ import { ReportForm } from "@/components/forms/report-form";
 import { SubmissionSharingForm } from "@/components/forms/submission-sharing-form";
 import { SubmissionVideoReview } from "@/components/forms/submission-video-review";
 import { BackToSports } from "@/components/layout/back-to-sports";
+import { DevStandInPanel } from "@/components/layout/dev-standin-panel";
 import { requireUser } from "@/lib/authz";
 import { readCaptureAssessment } from "@/lib/capture-adherence";
 import { hasReleasedMetricValue, isMetricReleased } from "@/lib/customer-metrics";
 import { calculateReleasedSubmissionScore } from "@/lib/dashboard";
+import { devStandInVisible, readDevStandInReport } from "@/lib/dev-standin";
 import { prisma } from "@/lib/prisma";
 import { formatPercent, formatSeconds } from "@/lib/utils";
 import { normalizeSport } from "@/lib/drills";
@@ -47,6 +49,7 @@ export default async function SubmissionsPage({
   searchParams?: Promise<{ sport?: string }> | { sport?: string };
 }) {
   const user = await requireUser();
+  const showDevStandIn = devStandInVisible();
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const sport = typeof resolvedSearchParams.sport === "string" && resolvedSearchParams.sport.trim() ? normalizeSport(resolvedSearchParams.sport) : null;
 
@@ -173,6 +176,10 @@ export default async function SubmissionsPage({
                     ? `This recording did not clear per-submission protocol checks (${captureAssessment.reasons.join(", ")}). Customer metrics, coaching claims, progress comparisons, and rankings remain hidden.`
                     : "Analysis completed in research-only mode. Customer metrics, mechanics claims, progress comparisons, and rankings remain hidden until this exact protocol, capture, and metric pass their validation gates."}
                 </div>
+              ) : null}
+
+              {showDevStandIn && readDevStandInReport(submission.metadata) ? (
+                <DevStandInPanel report={readDevStandInReport(submission.metadata)!} />
               ) : null}
 
               {analysisSummary && primaryReleased ? (
