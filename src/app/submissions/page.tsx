@@ -12,6 +12,13 @@ import { calculateReleasedSubmissionScore } from "@/lib/dashboard";
 import { devStandInVisible, readDevStandInReport } from "@/lib/dev-standin";
 import { prisma } from "@/lib/prisma";
 import { formatPercent, formatSeconds } from "@/lib/utils";
+import {
+  canRetryProcessing,
+  describeWithheldResult,
+  getInProgressMessage,
+  getSubmissionStatus,
+  rerecordHref,
+} from "@/lib/result-presentation";
 import { normalizeSport } from "@/lib/drills";
 import { SPORT_LABELS } from "@/lib/constants";
 import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
@@ -85,14 +92,11 @@ export default async function SubmissionsPage({
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="athlemetry-kicker">{sport ? `${SPORT_LABELS[sport]} submissions` : "Submission archive"}</div>
-            <h1 className="mt-4 athlemetry-section-heading">
-              {sport ? `${SPORT_LABELS[sport]} uploads, processing status, and analysis notes.` : "Uploads, processing status, and analysis notes."}
+            <h1 className="athlemetry-section-heading">
+              {sport ? `${SPORT_LABELS[sport]} submissions` : "Your submissions"}
             </h1>
             <p className="athlemetry-section-lead">
-              {sport
-                ? `${SPORT_LABELS[sport]} submissions stay in one lane so you can jump from upload to dashboard without mixing sports.`
-                : "Baseball uploads now surface explicit clarity notes instead of silently hiding what the model cannot support."}
+              Each clip shows whether it was measured. When it wasn&apos;t, we tell you why and how to re-record it.
             </p>
           </div>
           <Link href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"} className="athlemetry-button athlemetry-button-primary">
@@ -126,6 +130,28 @@ export default async function SubmissionsPage({
               )
             : null;
           const analysisSummary = readAnalysisSummary(submission.metadata);
+          const status = getSubmissionStatus({
+            processingStatus: submission.processingStatus,
+            captureStatus: captureAssessment?.status ?? null,
+            primaryReleased,
+          });
+          const withheld = describeWithheldResult({
+            processingStatus: submission.processingStatus,
+            primaryReleased,
+            assessment: captureAssessment,
+            drillSlug: submission.drillDefinition.slug,
+            drillName: submission.drillDefinition.name,
+          });
+          const inProgressMessage = getInProgressMessage(submission.processingStatus);
+          const devStandInReport = showDevStandIn ? readDevStandInReport(submission.metadata) : null;
+          const metricTiles = [
+            isReleased("sprintTime") ? ["Sprint", formatSeconds(submission.metricResult?.sprintTime)] : null,
+            isReleased("accelerationTiming") ? ["Accel", formatSeconds(submission.metricResult?.accelerationTiming)] : null,
+            isReleased("changeOfDirectionMeasurement") ? ["COD", formatSeconds(submission.metricResult?.changeOfDirectionMeasurement)] : null,
+            isReleased("shotTiming") ? ["Shot", formatSeconds(submission.metricResult?.shotTiming)] : null,
+            primaryReleased && submission.benchmarkSnapshots ? ["Percentile", formatPercent(submission.benchmarkSnapshots.percentile)] : null,
+            compositeScore !== null ? ["Composite", `${compositeScore.toFixed(1)}/100`] : null,
+          ].filter((tile): tile is string[] => tile !== null);
 
           return (
             <article key={submission.id} className="athlemetry-card p-5 md:p-6">
@@ -135,51 +161,70 @@ export default async function SubmissionsPage({
                     <p className="text-sm font-bold uppercase tracking-[0.18em] text-teal-800">
                       {submission.drillDefinition.sport}
                     </p>
-                    <span className="athlemetry-chip px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-slate-700">
-                      {submission.processingStatus}
+                    <span className="athlemetry-chip px-3 py-1 text-xs text-slate-700">
+                      {status.label}
                     </span>
                   </div>
                   <p className="mt-2 text-xl font-semibold tracking-tight text-slate-950">{submission.drillDefinition.name}</p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-600">
                     {submission.submittedAt.toISOString().slice(0, 19).replace("T", " ")} • {submission.location}
                   </p>
                 </div>
-                <form action={`/api/submissions/${submission.id}/retry`} method="post">
-                  <button
-                    className="athlemetry-button athlemetry-button-secondary px-3 py-2 text-xs"
-                    type="submit"
-                  >
-                    Retry processing
-                  </button>
-                </form>
               </div>
 
-              <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-                {[
-                  ["Sprint", isReleased("sprintTime") ? formatSeconds(submission.metricResult?.sprintTime) : "Research only"],
-                  ["Accel", isReleased("accelerationTiming") ? formatSeconds(submission.metricResult?.accelerationTiming) : "Research only"],
-                  ["COD", isReleased("changeOfDirectionMeasurement") ? formatSeconds(submission.metricResult?.changeOfDirectionMeasurement) : "Research only"],
-                  ["Shot", isReleased("shotTiming") ? formatSeconds(submission.metricResult?.shotTiming) : "Research only"],
-                  ["Percentile", primaryReleased && submission.benchmarkSnapshots ? formatPercent(submission.benchmarkSnapshots.percentile) : "Unavailable"],
-                  ["Composite", compositeScore !== null ? `${compositeScore.toFixed(1)}/100` : "-"],
-                ].map(([label, value]) => (
-                  <div key={label as string} className="athlemetry-panel-item">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{label}</p>
-                    <p className="mt-1 text-base font-semibold text-slate-950">{value}</p>
-                  </div>
-                ))}
-              </div>
-
-              {!primaryReleased && submission.processingStatus === "COMPLETED" ? (
-                <div className="mt-5 rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-                  {captureAssessment && captureAssessment.status !== "VERIFIED"
-                    ? `This recording did not clear per-submission protocol checks (${captureAssessment.reasons.join(", ")}). Customer metrics, coaching claims, progress comparisons, and rankings remain hidden.`
-                    : "Analysis completed in research-only mode. Customer metrics, mechanics claims, progress comparisons, and rankings remain hidden until this exact protocol, capture, and metric pass their validation gates."}
+              {primaryReleased && metricTiles.length > 0 ? (
+                <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  {metricTiles.map(([label, value]) => (
+                    <div key={label} className="athlemetry-panel-item">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-600">{label}</p>
+                      <p className="mt-1 text-base font-semibold text-slate-950">{value}</p>
+                    </div>
+                  ))}
                 </div>
               ) : null}
 
-              {showDevStandIn && readDevStandInReport(submission.metadata) ? (
-                <DevStandInPanel report={readDevStandInReport(submission.metadata)!} />
+              {inProgressMessage ? (
+                <div className="mt-5 flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 sm:flex-row sm:items-center sm:justify-between">
+                  <p>{inProgressMessage}</p>
+                  {canRetryProcessing(submission.processingStatus) ? (
+                    <form action={`/api/submissions/${submission.id}/retry`} method="post">
+                      <button className="athlemetry-button athlemetry-button-secondary min-h-[44px] px-4 py-2 text-sm" type="submit">
+                        Retry processing
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {withheld ? (
+                <section className="mt-5 rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 md:p-5" aria-labelledby={`withheld-${submission.id}`}>
+                  <h2 id={`withheld-${submission.id}`} className="text-lg font-semibold tracking-tight text-amber-950">{withheld.heading}</h2>
+                  <p className="mt-2">{withheld.summary}</p>
+                  {withheld.reasons.length > 0 ? (
+                    <ul className="mt-4 space-y-3">
+                      {withheld.reasons.map((reason) => (
+                        <li key={reason.code ?? "generic"}>
+                          <p className="font-semibold">{reason.problem}</p>
+                          <p>{reason.fix}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <Link href={rerecordHref(submission.drillDefinition.slug)} className="athlemetry-button athlemetry-button-primary min-h-[44px]">
+                      {withheld.kind === "not-analysable" ? "Re-record with these tips" : "Record another clip"}
+                    </Link>
+                    <Link href={`/protocols#${submission.drillDefinition.slug}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-800 underline underline-offset-4">
+                      View the drill protocol
+                    </Link>
+                  </div>
+                  {withheld.technicalCodes.length > 0 ? (
+                    <details className="mt-4">
+                      <summary className="cursor-pointer py-3 text-sm font-semibold text-amber-950">Technical details</summary>
+                      <p className="mt-1 break-words font-mono text-xs">{withheld.technicalCodes.join(", ")}</p>
+                    </details>
+                  ) : null}
+                </section>
               ) : null}
 
               {analysisSummary && primaryReleased ? (
@@ -208,6 +253,8 @@ export default async function SubmissionsPage({
                 </div>
               ) : null}
 
+              {devStandInReport ? <DevStandInPanel report={devStandInReport} /> : null}
+
               {submission.reviewedKeyMoments.length > 0 ? (
                 <section className="mt-5 rounded-[22px] border border-teal-100 bg-teal-50/60 p-4 md:p-5" aria-labelledby={`key-moments-${submission.id}`}>
                   <h2 id={`key-moments-${submission.id}`} className="text-xs font-bold uppercase tracking-[0.18em] text-teal-800">Reviewed key moments</h2>
@@ -232,7 +279,7 @@ export default async function SubmissionsPage({
               ) : null}
 
               <details className="mt-5 rounded-[22px] border border-slate-200 bg-slate-50/90 p-4">
-                <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.18em] text-slate-700">
+                <summary className="cursor-pointer py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-700">
                   Report this submission
                 </summary>
                 <div className="mt-3">
@@ -248,7 +295,18 @@ export default async function SubmissionsPage({
                   />
                 </div>
               </details>
-              {submission.athleteId === user.id ? <SubmissionSharingForm submissionId={submission.id} /> : null}
+              {submission.athleteId === user.id ? (
+                primaryReleased ? (
+                  <SubmissionSharingForm submissionId={submission.id} />
+                ) : (
+                  <details className="mt-5">
+                    <summary className="cursor-pointer py-3 text-sm font-semibold text-slate-800">
+                      Sharing options
+                    </summary>
+                    <SubmissionSharingForm submissionId={submission.id} />
+                  </details>
+                )
+              ) : null}
             </article>
           );
         })}

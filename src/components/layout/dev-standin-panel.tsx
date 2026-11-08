@@ -3,18 +3,18 @@ import type { DevStandInReport } from "@/lib/dev-standin";
 /**
  * Developer-only panel for the stand-in analyzer. Always labelled as an
  * unvalidated opinion; rendered only when the stand-in is enabled outside
- * production (see the caller).
+ * production (see the caller). Collapsed by default and placed below the
+ * athlete-facing result by the caller.
  */
 export function DevStandInPanel({ report }: { report: DevStandInReport }) {
   return (
-    <div
-      role="note"
+    <details
       aria-label="Dev stand-in analysis, not validated"
       className="mt-5 rounded-[24px] border-2 border-dashed border-violet-400 bg-violet-50 p-4 text-sm leading-6 text-violet-950"
     >
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-800">
+      <summary className="cursor-pointer py-3 text-xs font-bold uppercase tracking-[0.18em] text-violet-800">
         Dev stand-in · experimental · not validated
-      </p>
+      </summary>
       <p className="mt-1">{report.notice}</p>
       <dl className="mt-3 grid gap-3 md:grid-cols-3">
         <div>
@@ -45,6 +45,6 @@ export function DevStandInPanel({ report }: { report: DevStandInReport }) {
           </div>
         ) : null,
       )}
-    </div>
+    </details>
   );
 }

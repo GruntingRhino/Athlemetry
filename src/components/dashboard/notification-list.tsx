@@ -27,8 +27,8 @@ export function NotificationList({ initialNotifications }: { initialNotification
           <article key={notification.id} className="athlemetry-panel-item flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div><h3 className="font-semibold text-slate-900">{notification.title}</h3><p className="mt-1 text-sm text-slate-600">{notification.body}</p></div>
             <div className="flex shrink-0 items-center gap-3">
-              {notification.actionHref ? <Link className="text-sm font-semibold text-teal-800" href={notification.actionHref}>Open</Link> : null}
-              <button type="button" className="text-sm text-slate-500" onClick={() => dismiss(notification.id)}>Dismiss</button>
+              {notification.actionHref ? <Link className="inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-800" href={notification.actionHref}>Open</Link> : null}
+              <button type="button" className="min-h-[44px] text-sm text-slate-600" onClick={() => dismiss(notification.id)}>Dismiss</button>
             </div>
           </article>
         ))}
