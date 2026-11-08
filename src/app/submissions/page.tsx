@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ReportForm } from "@/components/forms/report-form";
 import { SubmissionSharingForm } from "@/components/forms/submission-sharing-form";
 import { SubmissionVideoReview } from "@/components/forms/submission-video-review";
+import { LocalTime } from "@/app/submissions/local-time";
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { DevStandInPanel } from "@/components/layout/dev-standin-panel";
 import { requireUser } from "@/lib/authz";
@@ -18,6 +19,7 @@ import {
   getInProgressMessage,
   getSubmissionStatus,
   rerecordHref,
+  shouldShowVideoReview,
 } from "@/lib/result-presentation";
 import { normalizeSport } from "@/lib/drills";
 import { SPORT_LABELS } from "@/lib/constants";
@@ -25,6 +27,8 @@ import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
 import { getMetricPresentation } from "@/lib/metric-presentation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Submissions" };
 
 type AnalysisSummary = {
   primaryLabel?: string;
@@ -167,7 +171,7 @@ export default async function SubmissionsPage({
                   </div>
                   <p className="mt-2 text-xl font-semibold tracking-tight text-slate-950">{submission.drillDefinition.name}</p>
                   <p className="mt-1 text-sm text-slate-600">
-                    {submission.submittedAt.toISOString().slice(0, 19).replace("T", " ")} • {submission.location}
+                    <LocalTime iso={submission.submittedAt.toISOString()} label="Submitted" /> • {submission.location}
                   </p>
                 </div>
               </div>
@@ -200,15 +204,23 @@ export default async function SubmissionsPage({
                 <section className="mt-5 rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 md:p-5" aria-labelledby={`withheld-${submission.id}`}>
                   <h2 id={`withheld-${submission.id}`} className="text-lg font-semibold tracking-tight text-amber-950">{withheld.heading}</h2>
                   <p className="mt-2">{withheld.summary}</p>
-                  {withheld.reasons.length > 0 ? (
-                    <ul className="mt-4 space-y-3">
-                      {withheld.reasons.map((reason) => (
-                        <li key={reason.code ?? "generic"}>
-                          <p className="font-semibold">{reason.problem}</p>
-                          <p>{reason.fix}</p>
-                        </li>
-                      ))}
-                    </ul>
+                  {withheld.primaryReason ? (
+                    <div className="mt-4">
+                      <p className="text-base font-semibold">{withheld.primaryReason.problem}</p>
+                      <p className="mt-1">{withheld.primaryReason.fix}</p>
+                    </div>
+                  ) : null}
+                  {withheld.otherReasons.length > 0 ? (
+                    <div className="mt-4">
+                      <p className="text-sm font-semibold">Also check</p>
+                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                        {withheld.otherReasons.map((reason) => (
+                          <li key={reason.code ?? "generic"}>
+                            {reason.problem} {reason.fix}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ) : null}
                   <div className="mt-5 flex flex-wrap items-center gap-3">
                     <Link href={rerecordHref(submission.drillDefinition.slug)} className="athlemetry-button athlemetry-button-primary min-h-[44px]">
@@ -270,7 +282,8 @@ export default async function SubmissionsPage({
                 </section>
               ) : null}
 
-              {submission.storageProvider && submission.storageKey && submission.videoExpiresAt && submission.videoExpiresAt > new Date() && !submission.videoDeletedAt ? (
+              {shouldShowVideoReview({ processingStatus: submission.processingStatus, keyMomentCount: submission.reviewedKeyMoments.length })
+                && submission.storageProvider && submission.storageKey && submission.videoExpiresAt && submission.videoExpiresAt > new Date() && !submission.videoDeletedAt ? (
                 <SubmissionVideoReview
                   submissionId={submission.id}
                   frameRate={submission.frameRate}

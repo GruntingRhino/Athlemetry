@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import {
   COMPETITION_LEVEL_LABELS,
   COMPETITION_LEVEL_OPTIONS,
-  getDefaultPositionForSport,
   getPositionOptionsForSport,
   ROLE_LABELS,
   SELF_REGISTRATION_ROLE_OPTIONS,
@@ -21,13 +20,16 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [role, setRole] = useState<(typeof SELF_REGISTRATION_ROLE_OPTIONS)[number]>("ATHLETE");
-  const [age, setAge] = useState(14);
+  const [age, setAge] = useState("");
   const [primarySport, setPrimarySport] = useState<SportOption>("soccer");
-  const [position, setPosition] = useState(getDefaultPositionForSport("soccer"));
+  const [position, setPosition] = useState("");
   const [optionalOpen, setOptionalOpen] = useState(initialReferralCode.length > 0);
 
   const isAthlete = role === "ATHLETE";
-  const requiresParentEmail = useMemo(() => isAthlete && age < 18, [age, isAthlete]);
+  const requiresParentEmail = useMemo(
+    () => isAthlete && age.trim() !== "" && Number(age) < 18,
+    [age, isAthlete],
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -137,7 +139,7 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
               min={6}
               max={80}
               value={age}
-              onChange={(event) => setAge(Number(event.target.value))}
+              onChange={(event) => setAge(event.target.value)}
               required
             />
           </label>
@@ -150,7 +152,7 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
               onChange={(event) => {
                 const nextSport = event.target.value as SportOption;
                 setPrimarySport(nextSport);
-                setPosition(getDefaultPositionForSport(nextSport));
+                setPosition("");
               }}
             >
               {SPORT_OPTIONS.map((sport) => (
@@ -164,8 +166,10 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
               className="athlemetry-control min-h-11"
               name="position"
               value={position}
-              onChange={(event) => setPosition(event.target.value as typeof position)}
+              onChange={(event) => setPosition(event.target.value)}
+              required
             >
+              <option value="">Select a position</option>
               {getPositionOptionsForSport(primarySport).map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -235,10 +239,10 @@ export function RegisterForm({ initialReferralCode = "" }: { initialReferralCode
       </details>
 
       <label className="athlemetry-check">
-        <input type="checkbox" name="shareInBenchmarks" defaultChecked /> Share data in cohort benchmarking
+        <input type="checkbox" name="shareInBenchmarks" /> Share data in cohort benchmarking
       </label>
       <label className="athlemetry-check">
-        <input type="checkbox" name="anonymizeForBenchmark" defaultChecked /> Anonymize benchmark identities
+        <input type="checkbox" name="anonymizeForBenchmark" /> Anonymize benchmark identities
       </label>
       <p className="text-sm leading-6 text-slate-600">
         By creating an account, you can review the product’s{" "}

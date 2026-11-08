@@ -6,7 +6,8 @@ import { describeCaptureReasons, type CaptureReasonAdvice } from "@/lib/capture-
  * `primaryReleased` with the existing release logic; nothing here releases,
  * softens, or hides a fact about why a clip was withheld.
  */
-export const WITHHELD_LABEL = "Held for research";
+export const WITHHELD_LABEL = "Not shown yet";
+export const COULDNT_MEASURE_LABEL = "Couldn't measure";
 
 export type SubmissionStatusKey =
   | "result-ready"
@@ -27,7 +28,7 @@ export function getSubmissionStatus(input: {
     case "COMPLETED":
       if (input.primaryReleased) return { key: "result-ready", label: "Result ready" };
       if (input.captureStatus === "VERIFIED") return { key: "held-for-research", label: WITHHELD_LABEL };
-      return { key: "not-analysable", label: "Not analysable" };
+      return { key: "not-analysable", label: COULDNT_MEASURE_LABEL };
     case "PROCESSING":
       return { key: "processing", label: "Processing" };
     case "QUEUED":
@@ -46,6 +47,9 @@ export type WithheldResult = {
   heading: string;
   summary: string;
   reasons: CaptureReasonAdvice[];
+  /** The first reason, shown as the lead; the rest are `otherReasons`. Null when there are no reasons. */
+  primaryReason: CaptureReasonAdvice | null;
+  otherReasons: CaptureReasonAdvice[];
   /** Raw codes for the collapsed "Technical details" disclosure only. */
   technicalCodes: string[];
 };
@@ -62,20 +66,37 @@ export function describeWithheldResult(input: {
   if (input.assessment?.status === "VERIFIED") {
     return {
       kind: "held-for-research",
-      heading: "Results for this drill aren't released yet",
-      summary: `This clip met the capture requirements, but ${input.drillName} results haven't passed Athlemetry's published validation checks yet. Until they do, no number, ranking or coaching is shown for this clip.`,
+      heading: "We can't show a result for this drill yet",
+      summary: `This clip met the capture requirements, but we can't yet confirm that ${input.drillName} measurements are accurate enough to show. Until we can, no number, ranking or coaching is shown for this clip.`,
       reasons: [],
+      primaryReason: null,
+      otherReasons: [],
       technicalCodes: [],
     };
   }
 
+  const reasons = describeCaptureReasons(input.assessment, input.drillSlug);
   return {
     kind: "not-analysable",
     heading: "We couldn't measure this clip",
     summary: "Athlemetry only reports a measurement when a recording meets the drill's capture requirements. This one didn't, so no number, ranking or coaching is shown for it.",
-    reasons: describeCaptureReasons(input.assessment, input.drillSlug),
+    reasons,
+    primaryReason: reasons[0] ?? null,
+    otherReasons: reasons.slice(1),
     technicalCodes: input.assessment?.reasons ?? [],
   };
+}
+
+/**
+ * The private video player and its "administrator-reviewed observations" copy
+ * only make sense once analysis has settled and there is review content to
+ * show. Access to the footage itself is decided elsewhere and is unchanged.
+ */
+export function shouldShowVideoReview(input: { processingStatus: string; keyMomentCount: number }): boolean {
+  // Retained footage stays watchable by its owner once analysis has settled
+  // (the retention choice exists for this); only hide the player while a clip
+  // is still in flight. keyMomentCount is intentionally not required.
+  return !["QUEUED", "PROCESSING", "RETRYING"].includes(input.processingStatus);
 }
 
 /** The retry route only accepts FAILED submissions. */
@@ -90,11 +111,11 @@ export function rerecordHref(drillSlug: string) {
 export function getInProgressMessage(processingStatus: string): string | null {
   switch (processingStatus) {
     case "QUEUED":
-      return "This clip is waiting to be analysed.";
+      return "Uploaded and waiting to be analyzed. Refresh this page later to see the result.";
     case "PROCESSING":
-      return "This clip is being analysed now.";
+      return "Being analyzed now. Refresh this page later to see the result.";
     case "RETRYING":
-      return "Analysis hit a temporary problem and will retry automatically.";
+      return "Analysis hit a temporary problem and will retry automatically. Refresh this page later to see the result.";
     case "FAILED":
       return "Analysis failed before a result could be produced. Use Retry processing to try again.";
     default:
@@ -115,9 +136,9 @@ export function describeNoResultsState(input: { submissionCount: number; complet
     const noun = input.completedCount === 1 ? "clip was" : "clips were";
     return {
       heading,
-      body: `${input.completedCount} ${noun} analysed but ${input.completedCount === 1 ? "is" : "are"} ${WITHHELD_LABEL.toLowerCase()} or couldn't be measured, so no numbers, progress or rankings are shown. Open a clip to see why and how to re-record it.`,
+      body: `${input.completedCount} ${noun} analyzed, but we couldn't measure ${input.completedCount === 1 ? "it" : "them"} or can't yet confirm the measurement is accurate enough to show, so no numbers, progress or rankings appear. Open a clip to see why and how to re-record it.`,
       showSubmissionsLink: true,
     };
   }
-  return { heading, body: "Your clips are still being analysed. Results appear here once a clip has been measured and its measurement has been validated.", showSubmissionsLink: true };
+  return { heading, body: "Your clips are still being analyzed. Results appear here once a clip has been measured and its measurement has been validated.", showSubmissionsLink: true };
 }

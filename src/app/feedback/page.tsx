@@ -5,6 +5,8 @@ import { readFeedbackHistoryForOwner } from "@/lib/feedback-history";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Feedback history" };
+
 export default async function FeedbackHistoryPage() {
   const user = await requireUser();
   const reports = await readFeedbackHistoryForOwner(user.id);

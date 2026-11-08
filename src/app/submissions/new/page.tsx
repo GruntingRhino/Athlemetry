@@ -1,3 +1,4 @@
+import { getBeforeYouFilmItems } from "@/app/submissions/new/before-you-film";
 import { UploadForm } from "@/components/forms/upload-form";
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { requireUser } from "@/lib/authz";
@@ -5,6 +6,8 @@ import { getAvailableDrills } from "@/lib/drills";
 import { getMonthlySubmissionLimit } from "@/lib/submission-usage";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Upload a drill" };
 
 type NewSubmissionSearchParams = { sport?: string; drill?: string };
 
@@ -22,6 +25,7 @@ export default async function NewSubmissionPage({
     slug: drill.slug,
     sport: drill.sport,
     guidelines: drill.guidelines,
+    beforeYouFilm: getBeforeYouFilmItems(drill.slug),
   }));
 
   return (

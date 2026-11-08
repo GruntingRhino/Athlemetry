@@ -5,6 +5,15 @@ import { describe, expect, it } from "vitest";
 import {
   applyDraft,
   createInitialValues,
+  describeUploadProgress,
+  distanceToPostedFeet,
+  getDistanceLabel,
+  getDistanceUnit,
+  isDetailField,
+  listUploadErrors,
+  parseDistanceInput,
+  QUEUED_CONFIRMATION,
+  validateUploadValues,
   getDrillsForSport,
   getOptionalFieldsForDrill,
   getSportsWithDrills,
@@ -13,7 +22,10 @@ import {
   toDatetimeLocalValue,
   type FlowDrill,
 } from "@/app/submissions/new/upload-flow";
+import { getBeforeYouFilmItems } from "@/app/submissions/new/before-you-film";
 import { STANDARD_DRILLS } from "@/lib/constants";
+import { getDrillCaptureProfile } from "@/lib/drill-capture";
+import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
 
 const drills: FlowDrill[] = STANDARD_DRILLS.map((drill) => ({
   id: `id-${drill.slug}`,
@@ -86,10 +98,10 @@ describe("initial values and recording date", () => {
     expect(values.recordingDate).toBe("");
   });
 
-  it("uses the drill's capture defaults", () => {
+  it("pre-selects no optional answer, even for a chosen drill", () => {
     const values = createInitialValues(drills, { sport: "baseball", drillId: "id-baseball-pitch-command" });
-    expect(values.cameraAngle).toBe("behind-catcher");
-    expect(values.distanceFeet).toBe(60.5);
+    expect(values.drillId).toBe("id-baseball-pitch-command");
+    expect(values).toMatchObject({ cameraAngle: "", athleteHandedness: "", clipQuality: "", distance: "", baseballLeague: "" });
   });
 
   it("formats local time for datetime-local inputs", () => {
@@ -129,7 +141,7 @@ describe("draft persistence", () => {
         clipQuality: "legendary",
         baseballLeague: "made-up",
         reviewRetentionDays: "9999",
-        distanceFeet: -5,
+        distance: "-5; drop table",
       }),
       drills,
     );
@@ -139,11 +151,11 @@ describe("draft persistence", () => {
     expect(parsed?.recordingDate).toBe("");
     expect(parsed?.location).toBe("");
     expect(parsed?.notes).toBe("");
-    expect(parsed?.cameraAngle).not.toBe("<script>");
-    expect(parsed?.clipQuality).toBe("good");
-    expect(parsed?.baseballLeague).toBe("regulation-60-5");
+    expect(parsed?.cameraAngle).toBe("");
+    expect(parsed?.clipQuality).toBe("");
+    expect(parsed?.baseballLeague).toBe("");
     expect(parsed?.reviewRetentionDays).toBe("0");
-    expect(parsed?.distanceFeet).toBeGreaterThan(0);
+    expect(parsed?.distance).toBe("");
   });
 
   it("restores the stored selection when the URL gives none", () => {
@@ -164,7 +176,7 @@ describe("draft persistence", () => {
     expect(merged.drillId).toBe("id-sprint-20m");
     expect(merged.location).toBe("Cage 2");
     expect(merged.frameRate).toBe("");
-    expect(merged.distanceFeet).toBe(fromUrl.distanceFeet);
+    expect(merged.distance).toBe(fromUrl.distance);
 
     const sameDrillDraft = { ...fromUrl, frameRate: "60" };
     expect(applyDraft(fromUrl, sameDrillDraft).frameRate).toBe("60");
@@ -186,7 +198,6 @@ describe("upload form source contract", () => {
       "cameraAngle",
       "athleteHandedness",
       "clipQuality",
-      "measurementDistanceFeet",
       "baseballLeague",
       "notes",
       "reviewRetentionDays",
@@ -195,6 +206,20 @@ describe("upload form source contract", () => {
       expect(source).toContain(`name="${name}"`);
     }
     expect(source).toContain('formData.set("drillType", selectedDrill.slug)');
+    // Posted in feet (converted from the unit shown) and only when the user typed a distance.
+    expect(source).toContain('formData.set("measurementDistanceFeet"');
+  });
+
+  it("lets the form validate itself and keeps untouched fields from blocking submit", () => {
+    expect(source).toContain("noValidate");
+    expect(source).not.toMatch(/\srequired=\{/);
+    expect(source).not.toMatch(/^\s+required\s*$/m);
+    expect(source).not.toMatch(/type="range"|step=/);
+  });
+
+  it("does not use a colored side border or pre-selected defaults", () => {
+    expect(source).not.toMatch(/border-[lr]-[2-9]/);
+    expect(source).not.toMatch(/defaultValue|defaultChecked/);
   });
 
   it("does not invite unverifiable numbers in the notes placeholder", () => {
@@ -204,7 +229,8 @@ describe("upload form source contract", () => {
 
   it("explains what happens after submit without overpromising", () => {
     expect(source).toContain("What happens next: we upload your clip, analyze it, and show you a result here.");
-    expect(source).toContain("Some drills are still in research mode");
+    expect(source).toContain("we can&apos;t yet confirm a measurement is accurate enough to show");
+    expect(source).not.toMatch(/Submission queued|research mode|release gate/i);
   });
 
   it("puts the file picker and camera before the optional details", () => {
@@ -215,5 +241,126 @@ describe("upload form source contract", () => {
   it("guards sessionStorage access", () => {
     expect(source).toMatch(/try \{[\s\S]*sessionStorage\.getItem/);
     expect(source).toMatch(/try \{[\s\S]*sessionStorage\.setItem/);
+  });
+});
+
+
+describe("measurement distance", () => {
+  it("shows metres exactly for the drills whose lane is a whole number of metres", () => {
+    for (const drill of STANDARD_DRILLS) {
+      const feet = getDrillCaptureProfile({ slug: drill.slug, sport: drill.sport }).measurementDistanceFeet;
+      const metres = feet * 0.3048;
+      const isWholeMetres = Math.abs(metres - Math.round(metres)) < 0.05;
+      expect(getDistanceUnit(drill), drill.slug).toBe(isWholeMetres ? "m" : "ft");
+    }
+    expect(getDistanceUnit({ slug: "sprint-20m" })).toBe("m");
+    expect(getDistanceUnit({ slug: "basketball-free-throw" })).toBe("ft");
+    expect(getDistanceUnit(undefined)).toBe("ft");
+  });
+
+  it("converts metres to the feet the API field expects and leaves feet alone", () => {
+    expect(distanceToPostedFeet("20", "m")).toBe(65.62);
+    expect(distanceToPostedFeet("5,5", "m")).toBe(18.04);
+    expect(distanceToPostedFeet("15", "ft")).toBe(15);
+    expect(distanceToPostedFeet(" 60.5 ", "ft")).toBe(60.5);
+  });
+
+  it("posts nothing for blank, non-numeric, zero, or negative input", () => {
+    for (const raw of ["", "   ", "abc", "0", "-3", "1e999", "1.2.3"]) {
+      expect(parseDistanceInput(raw), raw).toBeNull();
+      expect(distanceToPostedFeet(raw, "ft"), raw).toBeNull();
+    }
+  });
+
+  it("labels the field in the unit shown", () => {
+    expect(getDistanceLabel({ slug: "sprint-20m", sport: "soccer" })).toBe("Sprint distance (metres)");
+    expect(getDistanceLabel({ slug: "basketball-free-throw", sport: "basketball" })).toBe("Free-throw line distance (feet)");
+  });
+});
+
+describe("validateUploadValues", () => {
+  const complete = {
+    ...createInitialValues(drills, { sport: "soccer", drillId: "id-sprint-20m" }),
+    recordingDate: "2026-11-08T09:30",
+    location: "North field",
+  };
+  const ok = { hasVideo: true, unit: "m" as const };
+
+  it("accepts an untouched form once the essentials are filled (nothing optional can block)", () => {
+    expect(validateUploadValues(complete, ok)).toEqual({});
+  });
+
+  it("asks for the sport first, then the drill, before anything else", () => {
+    const none = createInitialValues(drills, { sport: null, drillId: "" });
+    expect(validateUploadValues(none, ok)).toEqual({ sport: "Choose a sport." });
+    const noDrill = createInitialValues(drills, { sport: "soccer", drillId: "" });
+    expect(validateUploadValues(noDrill, ok)).toEqual({ drillId: "Choose a drill." });
+  });
+
+  it("flags each missing essential with its own message, in page order", () => {
+    const errors = validateUploadValues({ ...complete, recordingDate: "", location: " x " }, { hasVideo: false, unit: "m" });
+    expect(listUploadErrors(errors).map((item) => item.key)).toEqual(["video", "recordingDate", "location"]);
+    expect(Object.values(errors).every((message) => message.length > 10)).toBe(true);
+    expect(validateUploadValues({ ...complete, recordingDate: "not a date" }, ok).recordingDate).toBeTruthy();
+  });
+
+  it("mirrors the server's rules for optional numbers, but only when something was typed", () => {
+    const errors = validateUploadValues(
+      { ...complete, frameRate: "9", repetitionHint: "1.5", startFrame: "-1", finishFrame: "x", distance: "abc" },
+      ok,
+    );
+    expect(Object.keys(errors).sort()).toEqual(["distance", "finishFrame", "frameRate", "repetitionHint", "startFrame"]);
+    expect(validateUploadValues({ ...complete, frameRate: "240", repetitionHint: "0", startFrame: "0", finishFrame: "1" }, ok)).toEqual({});
+    expect(validateUploadValues({ ...complete, startFrame: "10", finishFrame: "10" }, ok).finishFrame).toMatch(/after the start frame/);
+    expect(validateUploadValues({ ...complete, startFrame: "10", finishFrame: "11" }, ok)).toEqual({});
+  });
+
+  it("rejects a distance the API would (over 200 ft), after converting the unit", () => {
+    expect(validateUploadValues({ ...complete, distance: "61" }, { hasVideo: true, unit: "m" }).distance).toMatch(/too large/);
+    expect(validateUploadValues({ ...complete, distance: "60" }, { hasVideo: true, unit: "m" })).toEqual({});
+    expect(validateUploadValues({ ...complete, distance: "201" }, { hasVideo: true, unit: "ft" }).distance).toMatch(/too large/);
+  });
+
+  it("knows which fields live inside Optional details, so a failed submit only opens it when needed", () => {
+    for (const key of ["frameRate", "repetitionHint", "startFrame", "finishFrame", "distance"] as const) expect(isDetailField(key)).toBe(true);
+    for (const key of ["sport", "drillId", "video", "recordingDate", "location"] as const) expect(isDetailField(key)).toBe(false);
+    const essentialsOnly = validateUploadValues({ ...complete, location: "" }, ok);
+    expect(Object.keys(essentialsOnly).some((key) => isDetailField(key as never))).toBe(false);
+  });
+});
+
+describe("progress and confirmation wording", () => {
+  it("labels progress with a percent and announces only phases", () => {
+    expect(describeUploadProgress(42)).toEqual({ visible: "Uploading your clip: 42%", announcement: "Uploading your clip." });
+    expect(describeUploadProgress(100).visible).toMatch(/finished/);
+    expect(describeUploadProgress(-5).visible).toContain("0%");
+  });
+
+  it("confirms the upload without a raw id or a made-up timeframe", () => {
+    const text = `${QUEUED_CONFIRMATION.heading} ${QUEUED_CONFIRMATION.body}`;
+    expect(text).toContain("your clip is uploaded");
+    expect(text).toContain("You can close this page");
+    expect(text).toContain("under Submissions");
+    expect(text).not.toMatch(/queued:|minutes|\bID\b/i);
+  });
+});
+
+describe("getBeforeYouFilmItems", () => {
+  it("states the protocol's real frame rate, views, and what must stay in frame", () => {
+    for (const drill of STANDARD_DRILLS) {
+      const protocol = DRILL_PROTOCOLS[drill.slug as keyof typeof DRILL_PROTOCOLS];
+      const items = getBeforeYouFilmItems(drill.slug);
+      expect(items.length, drill.slug).toBeGreaterThanOrEqual(2);
+      expect(items.length).toBeLessThanOrEqual(3);
+      expect(items[0], drill.slug).toContain(`${protocol.camera.minimumFps} fps`);
+      expect(items.join(" ")).toContain(protocol.camera.referenceInFrame);
+    }
+    expect(getBeforeYouFilmItems("baseball-pitch-velocity")[0]).toContain("120 fps");
+    expect(getBeforeYouFilmItems("sprint-20m")[0]).toContain("60 fps");
+    expect(getBeforeYouFilmItems("basketball-free-throw")[1]).toBe("Film from diagonal view.");
+  });
+
+  it("invents nothing for a drill without a protocol", () => {
+    expect(getBeforeYouFilmItems("no-such-drill")).toEqual([]);
   });
 });

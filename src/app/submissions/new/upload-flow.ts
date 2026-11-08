@@ -17,6 +17,8 @@ export type FlowDrill = {
   slug: string;
   sport: string;
   guidelines?: string;
+  /** Pre-recording checklist from the drill's capture protocol (computed on the server). */
+  beforeYouFilm?: string[];
 };
 
 export const CAMERA_ANGLE_OPTIONS = [
@@ -28,14 +30,12 @@ export const CAMERA_ANGLE_OPTIONS = [
   ["behind-catcher", "Behind catcher / center field"],
   ["front-on", "Front-on"],
   ["overhead", "Overhead"],
-  ["unknown", "Not sure"],
 ] as const;
 
 export const HANDEDNESS_OPTIONS = [
   ["right", "Right"],
   ["left", "Left"],
   ["switch", "Switch"],
-  ["unknown", "Not sure"],
 ] as const;
 
 export const CLIP_QUALITY_OPTIONS = [
@@ -45,7 +45,11 @@ export const CLIP_QUALITY_OPTIONS = [
   ["poor", "Poor / blurry"],
 ] as const;
 
-export const DEFAULT_BASEBALL_LEAGUE = "regulation-60-5";
+/**
+ * Optional selects start on an explicit empty "Not sure" option that posts
+ * nothing: a pre-selected answer would read as the athlete's own claim.
+ */
+export const NOT_SURE_LABEL = "Not sure";
 
 export function isSportOption(value: unknown): value is SportOption {
   return typeof value === "string" && (SPORT_OPTIONS as readonly string[]).includes(value);
@@ -115,21 +119,15 @@ export type UploadValues = {
   cameraAngle: string;
   athleteHandedness: string;
   clipQuality: string;
-  distanceFeet: number;
+  /** What the user typed, in the drill's distance unit; blank when untouched. */
+  distance: string;
   baseballLeague: string;
   notes: string;
   reviewRetentionDays: string;
 };
 
-/** The per-drill defaults that change when the drill changes. */
-export function getDrillDefaults(drill: { slug: string; sport: string } | undefined) {
-  const profile = getDrillCaptureProfile(drill);
-  return { cameraAngle: profile.cameraAngle, distanceFeet: profile.measurementDistanceFeet };
-}
-
 export function createInitialValues(drills: FlowDrill[], selection: InitialSelection): UploadValues {
   const drill = drills.find((candidate) => candidate.id === selection.drillId);
-  const defaults = getDrillDefaults(drill);
   return {
     sport: selection.sport,
     drillId: drill ? drill.id : "",
@@ -139,11 +137,11 @@ export function createInitialValues(drills: FlowDrill[], selection: InitialSelec
     startFrame: "",
     finishFrame: "",
     repetitionHint: "",
-    cameraAngle: defaults.cameraAngle,
-    athleteHandedness: "unknown",
-    clipQuality: "good",
-    distanceFeet: defaults.distanceFeet,
-    baseballLeague: DEFAULT_BASEBALL_LEAGUE,
+    cameraAngle: "",
+    athleteHandedness: "",
+    clipQuality: "",
+    distance: "",
+    baseballLeague: "",
     notes: "",
     reviewRetentionDays: "0",
   };
@@ -155,9 +153,10 @@ export function toDatetimeLocalValue(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export const UPLOAD_DRAFT_STORAGE_KEY = "athlemetry.upload-draft.v1";
+export const UPLOAD_DRAFT_STORAGE_KEY = "athlemetry.upload-draft.v2";
 
 const DATETIME_LOCAL_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+const DISTANCE_INPUT_PATTERN = /^[0-9]*[.,]?[0-9]*$/;
 
 function pickString(source: Record<string, unknown>, key: string, maxLength: number): string {
   const value = source[key];
@@ -191,9 +190,7 @@ export function parseUploadDraft(raw: string | null, drills: FlowDrill[]): Uploa
   const base = createInitialValues(drills, { sport, drillId: drillMatchesSport && drill ? drill.id : "" });
 
   const recordingDate = pickString(source, "recordingDate", 16);
-  const distance = typeof source.distanceFeet === "number" && Number.isFinite(source.distanceFeet) && source.distanceFeet > 0 && source.distanceFeet <= 200
-    ? source.distanceFeet
-    : base.distanceFeet;
+  const distance = pickString(source, "distance", 8);
 
   return {
     ...base,
@@ -206,7 +203,7 @@ export function parseUploadDraft(raw: string | null, drills: FlowDrill[]): Uploa
     cameraAngle: pickOption(source, "cameraAngle", CAMERA_ANGLE_OPTIONS.map(([value]) => value), base.cameraAngle),
     athleteHandedness: pickOption(source, "athleteHandedness", HANDEDNESS_OPTIONS.map(([value]) => value), base.athleteHandedness),
     clipQuality: pickOption(source, "clipQuality", CLIP_QUALITY_OPTIONS.map(([value]) => value), base.clipQuality),
-    distanceFeet: distance,
+    distance: DISTANCE_INPUT_PATTERN.test(distance) ? distance : "",
     baseballLeague: pickOption(source, "baseballLeague", BASEBALL_LEAGUE_OPTIONS.map((league) => league.key), base.baseballLeague),
     notes: pickString(source, "notes", 500),
     reviewRetentionDays: pickOption(source, "reviewRetentionDays", VALID_REVIEW_DAYS.map(String), base.reviewRetentionDays),
@@ -237,3 +234,180 @@ export function applyDraft(
     notes: draft.notes,
   };
 }
+
+/* ---------------------------------------------------------------------------
+ * Optional measurement distance
+ *
+ * The field starts empty. The posted field is named `measurementDistanceFeet`,
+ * so a value typed in metres is converted to feet before it is sent. A typed
+ * distance is the athlete's own statement, never metric evidence.
+ * ------------------------------------------------------------------------ */
+
+export type DistanceUnit = "m" | "ft";
+
+const METERS_PER_FOOT = 0.3048;
+const MAX_DISTANCE_FEET = 200;
+
+/** Drills whose protocol lane is defined in whole metres (their reference length converts to a round metre figure). */
+const METRIC_DISTANCE_DRILLS: ReadonlySet<string> = new Set([
+  "sprint-20m",
+  "passing-accuracy",
+  "first-touch-control",
+  "shooting-mechanics",
+  "movement-efficiency",
+  "baseball-throwing-mechanics",
+]);
+
+export function getDistanceUnit(drill: { slug: string } | undefined): DistanceUnit {
+  return drill && METRIC_DISTANCE_DRILLS.has(drill.slug) ? "m" : "ft";
+}
+
+/** The capture profile's label, with its hard-coded "(ft)" swapped for the unit shown. */
+export function getDistanceLabel(drill: { slug: string; sport: string } | undefined): string {
+  const unit = getDistanceUnit(drill);
+  const base = getDrillCaptureProfile(drill).distanceLabel.replace(/\s*\(ft\)\s*$/, "");
+  return `${base} (${unit === "m" ? "metres" : "feet"})`;
+}
+
+/** Parse what the user typed. Null for blank, non-numeric, or non-positive input. */
+export function parseDistanceInput(raw: string): number | null {
+  const text = raw.trim().replace(",", ".");
+  if (text === "") return null;
+  const value = Number(text);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+/** The value to post as `measurementDistanceFeet`, or null when nothing valid was typed. */
+export function distanceToPostedFeet(raw: string, unit: DistanceUnit): number | null {
+  const value = parseDistanceInput(raw);
+  if (value === null) return null;
+  const feet = unit === "m" ? value / METERS_PER_FOOT : value;
+  return Math.round(feet * 100) / 100;
+}
+
+/* ---------------------------------------------------------------------------
+ * Client-side validation of the required essentials
+ *
+ * The server stays the authority. This only makes failures visible and
+ * associated with their field. Untouched optional fields never block a submit.
+ * ------------------------------------------------------------------------ */
+
+export type UploadFieldKey =
+  | "sport"
+  | "drillId"
+  | "video"
+  | "recordingDate"
+  | "location"
+  | "frameRate"
+  | "repetitionHint"
+  | "startFrame"
+  | "finishFrame"
+  | "distance";
+
+export type UploadErrors = Partial<Record<UploadFieldKey, string>>;
+
+/** DOM order, which is also the order errors are listed and focused in. */
+export const UPLOAD_FIELD_ORDER: readonly UploadFieldKey[] = [
+  "sport",
+  "drillId",
+  "video",
+  "recordingDate",
+  "location",
+  "frameRate",
+  "repetitionHint",
+  "startFrame",
+  "finishFrame",
+  "distance",
+];
+
+const DETAIL_FIELDS: ReadonlySet<UploadFieldKey> = new Set(["frameRate", "repetitionHint", "startFrame", "finishFrame", "distance"]);
+
+/** True for fields inside the collapsed "Optional details" section. */
+export function isDetailField(key: UploadFieldKey) {
+  return DETAIL_FIELDS.has(key);
+}
+
+function isBlank(value: string) {
+  return value.trim() === "";
+}
+
+function isWholeNumber(value: string, min: number, max = Number.MAX_SAFE_INTEGER) {
+  const text = value.trim();
+  if (!/^\d+$/.test(text)) return false;
+  const number = Number(text);
+  return number >= min && number <= max;
+}
+
+/**
+ * Validate the form. Sport and drill are checked first and alone, because the
+ * rest of the form is not shown until they are chosen. The optional numeric
+ * fields mirror the server rules but only complain when something was typed.
+ */
+export function validateUploadValues(
+  values: UploadValues,
+  context: { hasVideo: boolean; unit: DistanceUnit },
+): UploadErrors {
+  if (!values.sport) return { sport: "Choose a sport." };
+  if (!values.drillId) return { drillId: "Choose a drill." };
+
+  const errors: UploadErrors = {};
+
+  if (!context.hasVideo) errors.video = "Add a video file or record one with your camera.";
+
+  if (isBlank(values.recordingDate) || Number.isNaN(new Date(values.recordingDate).getTime())) {
+    errors.recordingDate = "Enter the date and time of the recording.";
+  }
+  if (values.location.trim().length < 2) {
+    errors.location = "Enter where you recorded this, for example field, cage, or gym.";
+  }
+
+  if (!isBlank(values.frameRate)) {
+    const fps = Number(values.frameRate.trim());
+    if (!Number.isFinite(fps) || fps < 10 || fps > 240) {
+      errors.frameRate = "Enter a frame rate between 10 and 240, or leave it blank.";
+    }
+  }
+  if (!isBlank(values.repetitionHint) && !isWholeNumber(values.repetitionHint, 0, 500)) {
+    errors.repetitionHint = "Enter a whole number from 0 to 500, or leave it blank.";
+  }
+  if (!isBlank(values.startFrame) && !isWholeNumber(values.startFrame, 0)) {
+    errors.startFrame = "Enter a whole number, or leave it blank.";
+  }
+  if (!isBlank(values.finishFrame)) {
+    if (!isWholeNumber(values.finishFrame, 1)) {
+      errors.finishFrame = "Enter a whole number above 0, or leave it blank.";
+    } else if (!errors.startFrame && !isBlank(values.startFrame) && Number(values.finishFrame) <= Number(values.startFrame)) {
+      errors.finishFrame = "The finish frame must be after the start frame.";
+    }
+  }
+  if (!isBlank(values.distance)) {
+    const feet = distanceToPostedFeet(values.distance, context.unit);
+    if (feet === null) errors.distance = "Enter a distance greater than 0, or leave it blank.";
+    else if (feet > MAX_DISTANCE_FEET) errors.distance = "That distance is too large. Check the unit, or leave it blank.";
+  }
+
+  return errors;
+}
+
+export function listUploadErrors(errors: UploadErrors): Array<{ key: UploadFieldKey; message: string }> {
+  return UPLOAD_FIELD_ORDER.flatMap((key) => {
+    const message = errors[key];
+    return message ? [{ key, message }] : [];
+  });
+}
+
+/* ---------------------------------------------------------------------------
+ * Upload progress and confirmation wording
+ * ------------------------------------------------------------------------ */
+
+export function describeUploadProgress(progress: number): { visible: string; announcement: string } {
+  const percent = Math.max(0, Math.min(100, Math.round(progress)));
+  return percent >= 100
+    ? { visible: "Upload finished. Saving your clip.", announcement: "Upload finished. Saving your clip." }
+    : { visible: `Uploading your clip: ${percent}%`, announcement: "Uploading your clip." };
+}
+
+export const QUEUED_CONFIRMATION = {
+  heading: "Got it — your clip is uploaded.",
+  body: "We're checking it now. You can close this page; the result will appear under Submissions.",
+} as const;

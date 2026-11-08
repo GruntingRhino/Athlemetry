@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   canRetryProcessing,
+  COULDNT_MEASURE_LABEL,
   describeNoResultsState,
   describeWithheldResult,
   getInProgressMessage,
   getSubmissionStatus,
   rerecordHref,
+  shouldShowVideoReview,
   WITHHELD_LABEL,
 } from "@/lib/result-presentation";
 
@@ -14,16 +16,21 @@ describe("getSubmissionStatus", () => {
   it("uses one vocabulary for every processing and capture state", () => {
     const cases: Array<[Parameters<typeof getSubmissionStatus>[0], string]> = [
       [{ processingStatus: "COMPLETED", captureStatus: "VERIFIED", primaryReleased: true }, "Result ready"],
-      [{ processingStatus: "COMPLETED", captureStatus: "REJECTED", primaryReleased: false }, "Not analysable"],
-      [{ processingStatus: "COMPLETED", captureStatus: "UNVERIFIED", primaryReleased: false }, "Not analysable"],
-      [{ processingStatus: "COMPLETED", captureStatus: null, primaryReleased: false }, "Not analysable"],
-      [{ processingStatus: "COMPLETED", captureStatus: "VERIFIED", primaryReleased: false }, "Held for research"],
+      [{ processingStatus: "COMPLETED", captureStatus: "REJECTED", primaryReleased: false }, "Couldn't measure"],
+      [{ processingStatus: "COMPLETED", captureStatus: "UNVERIFIED", primaryReleased: false }, "Couldn't measure"],
+      [{ processingStatus: "COMPLETED", captureStatus: null, primaryReleased: false }, "Couldn't measure"],
+      [{ processingStatus: "COMPLETED", captureStatus: "VERIFIED", primaryReleased: false }, "Not shown yet"],
       [{ processingStatus: "PROCESSING", captureStatus: null, primaryReleased: false }, "Processing"],
       [{ processingStatus: "QUEUED", captureStatus: null, primaryReleased: false }, "Queued"],
       [{ processingStatus: "RETRYING", captureStatus: null, primaryReleased: false }, "Retrying"],
       [{ processingStatus: "FAILED", captureStatus: null, primaryReleased: false }, "Failed"],
     ];
     for (const [input, label] of cases) expect(getSubmissionStatus(input).label).toBe(label);
+  });
+
+  it("uses the shared plain-language labels", () => {
+    expect(COULDNT_MEASURE_LABEL).toBe("Couldn't measure");
+    expect(WITHHELD_LABEL).toBe("Not shown yet");
   });
 
   it("never labels a COMPLETED-but-withheld clip as complete or ready", () => {
@@ -87,10 +94,30 @@ describe("describeWithheldResult", () => {
       assessment: { status: "VERIFIED", reasons: [], observedFps: 60, requiredFps: 60 },
     });
     expect(result?.kind).toBe("held-for-research");
-    expect(result?.heading).toBe("Results for this drill aren't released yet");
+    expect(result?.heading).toBe("We can't show a result for this drill yet");
     expect(result?.reasons).toEqual([]);
+    expect(result?.primaryReason).toBeNull();
     expect(result?.summary).toContain("20m Sprint");
-    expect(result?.summary).toMatch(/validation/);
+    expect(result?.summary).toMatch(/can't yet confirm .* accurate enough to show/);
+    expect(result?.summary).not.toMatch(/validation|gate|research/i);
+  });
+
+  it("leads with the first reason and lists the rest separately", () => {
+    const result = describeWithheldResult({
+      ...base,
+      processingStatus: "COMPLETED",
+      primaryReleased: false,
+      assessment: {
+        status: "REJECTED",
+        reasons: ["frame-rate-below-protocol-minimum", "camera-angle-unverified", "athlete-identity-unverified"],
+        observedFps: 30,
+        requiredFps: 60,
+      },
+    });
+    expect(result?.primaryReason).toBe(result?.reasons[0]);
+    expect(result?.primaryReason?.code).toBe("frame-rate-below-protocol-minimum");
+    expect(result?.otherReasons.map((reason) => reason.code)).toEqual(["camera-angle-unverified", "athlete-identity-unverified"]);
+    expect(result?.technicalCodes).toHaveLength(3);
   });
 });
 
@@ -106,11 +133,39 @@ describe("retry and links", () => {
   });
 
   it("gives a message for in-progress states only", () => {
-    expect(getInProgressMessage("QUEUED")).toMatch(/waiting/i);
+    expect(getInProgressMessage("QUEUED")).toMatch(/waiting to be analyzed/i);
     expect(getInProgressMessage("PROCESSING")).toBeTruthy();
     expect(getInProgressMessage("RETRYING")).toMatch(/automatically/i);
     expect(getInProgressMessage("FAILED")).toMatch(/Retry processing/);
     expect(getInProgressMessage("COMPLETED")).toBeNull();
+  });
+});
+
+describe("shouldShowVideoReview", () => {
+  it("never shows the reviewed-observations player while analysis is in flight", () => {
+    for (const processingStatus of ["QUEUED", "PROCESSING", "RETRYING"]) {
+      expect(shouldShowVideoReview({ processingStatus, keyMomentCount: 3 })).toBe(false);
+    }
+  });
+
+  it("keeps retained footage watchable once analysis has settled, with or without reviewed moments", () => {
+    expect(shouldShowVideoReview({ processingStatus: "COMPLETED", keyMomentCount: 0 })).toBe(true);
+    expect(shouldShowVideoReview({ processingStatus: "COMPLETED", keyMomentCount: 2 })).toBe(true);
+    expect(shouldShowVideoReview({ processingStatus: "FAILED", keyMomentCount: 0 })).toBe(true);
+  });
+});
+
+describe("athlete-facing wording", () => {
+  it("uses US spelling and no gate jargon", () => {
+    const text = [
+      ...["QUEUED", "PROCESSING", "RETRYING", "FAILED"].map(getInProgressMessage),
+      ...[
+        describeNoResultsState({ submissionCount: 0, completedCount: 0 }),
+        describeNoResultsState({ submissionCount: 3, completedCount: 2 }),
+        describeNoResultsState({ submissionCount: 1, completedCount: 0 }),
+      ].map((state) => state.body),
+    ].join(" ");
+    expect(text).not.toMatch(/analys(e|ed|able)|held for research|release gate|validation gate/i);
   });
 });
 
@@ -125,12 +180,12 @@ describe("describeNoResultsState", () => {
   it("explains that completed clips were held, and points to why", () => {
     const state = describeNoResultsState({ submissionCount: 3, completedCount: 2 });
     expect(state.body).toContain("2 clips");
-    expect(state.body).toContain(WITHHELD_LABEL.toLowerCase());
+    expect(state.body).toContain("accurate enough to show");
     expect(state.showSubmissionsLink).toBe(true);
   });
 
   it("says clips are still being analysed when none have completed", () => {
     const state = describeNoResultsState({ submissionCount: 1, completedCount: 0 });
-    expect(state.body).toMatch(/still being analysed/);
+    expect(state.body).toMatch(/still being analyzed/);
   });
 });
