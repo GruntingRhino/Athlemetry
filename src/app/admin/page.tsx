@@ -14,6 +14,8 @@ import { getWorkerHealth } from "@/lib/processing/worker-heartbeat";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Admin console" };
+
 export default async function AdminPage() {
   const admin = await requireRole(["ADMIN"]);
   const [data, drills, validationRecords, queueSnapshot, workerHealth] = await Promise.all([

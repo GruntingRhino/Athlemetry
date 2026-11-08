@@ -33,3 +33,12 @@ export const SPORT_SETTINGS_LINKS = [
   { href: "/privacy-notice", label: "Privacy Notice" },
   { href: "/terms", label: "Terms of Use" },
 ] as const;
+
+/** Settings links visible to a role: teams for COACH/ADMIN, team invitations for ATHLETE only. */
+export function getSettingsLinks(role?: string | null) {
+  return SPORT_SETTINGS_LINKS.filter((link) => {
+    if (link.href === "/teams") return role === "COACH" || role === "ADMIN";
+    if (link.href === "/team-invitations") return role === "ATHLETE";
+    return true;
+  });
+}

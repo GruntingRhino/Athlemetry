@@ -7,6 +7,8 @@ import { readSharedSubmissionForRecipient } from "@/lib/submission-sharing";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Shared with you" };
+
 export default async function SharedAccessPage({
   searchParams,
 }: {

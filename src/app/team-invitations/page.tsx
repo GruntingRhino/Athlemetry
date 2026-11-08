@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Team invitations" };
+
 export default async function TeamInvitationsPage() {
   const user = await requireRole(["ATHLETE"]);
   const invitations = await prisma.$transaction(async (transaction) => {

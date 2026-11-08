@@ -8,6 +8,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Reports" };
+
 export default async function AthleteReportsPage() {
   const user = await requireUser();
   await requirePaidFeatureAccess(user);
@@ -33,7 +35,11 @@ export default async function AthleteReportsPage() {
         <div className="athlemetry-kicker">Evidence-backed results</div>
         <h1 className="mt-4 athlemetry-section-heading">Athlete reports</h1>
         <p className="athlemetry-section-lead">Only independently released metrics are included. Historical reports update when validation evidence is approved or withdrawn.</p>
-        <ReportExportButton />
+        {reports.length > 0 ? (
+          <ReportExportButton />
+        ) : (
+          <p className="mt-4 text-sm text-slate-700">CSV export becomes available once a report has been released.</p>
+        )}
       </section>
       {reports.length === 0 ? (
         <section className="athlemetry-card p-6 text-sm text-slate-600">No customer-facing report is available because no completed metric has cleared its validation gate.</section>

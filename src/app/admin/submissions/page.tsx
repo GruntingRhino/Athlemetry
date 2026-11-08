@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Submissions monitor" };
+
 export default async function AdminSubmissionsPage() {
   await requireRole(["ADMIN"]);
 

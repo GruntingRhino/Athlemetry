@@ -9,6 +9,8 @@ import { SPORT_LABELS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Benchmarking" };
+
 export default async function BenchmarkingPage({
   searchParams,
 }: {

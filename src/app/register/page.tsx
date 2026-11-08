@@ -1,5 +1,7 @@
 import { RegisterForm } from "@/components/forms/register-form";
 
+export const metadata = { title: "Create account" };
+
 export default async function RegisterPage({
   searchParams,
 }: {

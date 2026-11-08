@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/authz";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Consent" };
+
 export default async function ConsentPage() {
   await requireRole(["PARENT", "ADMIN"]);
 

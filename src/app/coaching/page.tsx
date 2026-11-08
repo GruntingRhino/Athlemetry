@@ -11,6 +11,8 @@ function stringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+export const metadata = { title: "Coaching plans" };
+
 export default async function CoachingPlansPage() {
   const user = await requireUser();
   await requirePaidFeatureAccess(user);

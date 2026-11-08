@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Profile" };
+
 export default async function ProfilePage() {
   const user = await requireUser();
   const profile = await prisma.user.findUnique({

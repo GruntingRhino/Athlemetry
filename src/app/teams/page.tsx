@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Teams" };
+
 export default async function TeamsPage() {
   const user = await requireRole(["COACH", "ADMIN"]);
   const teams = await prisma.team.findMany({

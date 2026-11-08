@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { LoginForm } from "@/components/forms/login-form";
 
+export const metadata = { title: "Sign in" };
+
 export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">

@@ -7,6 +7,8 @@ import { readPrivacyConsentHistoryForOwner } from "@/lib/privacy-consent-history
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Privacy" };
+
 export default async function PrivacyPage() {
   const user = await requireUser();
 

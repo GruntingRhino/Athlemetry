@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { PasswordResetConfirmForm } from "@/components/forms/password-reset-confirm-form";
 
+export const metadata = { title: "Choose a new password" };
+
 export default async function ResetPasswordPage({
   searchParams,
 }: {

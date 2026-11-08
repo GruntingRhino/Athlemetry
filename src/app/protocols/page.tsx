@@ -1,6 +1,8 @@
 import { SPORT_LABELS } from "@/lib/constants";
 import { DRILL_PROTOCOLS } from "@/lib/drill-protocols";
 
+export const metadata = { title: "Drill protocols" };
+
 export default function DrillProtocolsPage() {
   const protocols = Object.entries(DRILL_PROTOCOLS);
 

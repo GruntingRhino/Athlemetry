@@ -8,6 +8,8 @@ import { getMonthlySubmissionQuotaSummary, getSubmissionUsageMonthStart } from "
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Membership" };
+
 export default async function BillingPage({
   searchParams,
 }: {

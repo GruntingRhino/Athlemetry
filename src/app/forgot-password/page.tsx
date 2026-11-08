@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { PasswordResetRequestForm } from "@/components/forms/password-reset-request-form";
 
+export const metadata = { title: "Reset your password" };
+
 export default function ForgotPasswordPage() {
   return (
     <div className="mx-auto max-w-md">

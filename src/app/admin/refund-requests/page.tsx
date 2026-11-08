@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Refund requests" };
+
 export default async function AdminRefundRequestsPage() {
   await requireRole(["ADMIN"]);
   const requests = await prisma.refundRequest.findMany({ include: { requester: { select: { email: true } }, billingAccount: { select: { stripeCustomerId: true } } }, orderBy: { createdAt: "desc" }, take: 100 });

@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/authz";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Team athletes" };
+
 export default async function TeamRosterPage({ params }: { params: Promise<{ teamId: string }> }) {
   await requireRole(["COACH", "ADMIN"]);
   const { teamId } = await params;
