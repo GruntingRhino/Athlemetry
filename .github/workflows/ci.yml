@@ -23,6 +23,7 @@ jobs:
       # Install the CLI explicitly; ubuntu-latest does not guarantee it.
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npm run lint
+      - run: npx tsc --noEmit
       - run: npm test
       # NextAuth validates its secret while statically prerendering pages. CI
       # does not need a database or an authentication secret, so use
@@ -37,3 +38,65 @@ jobs:
       - run: npm run test:a11y
       - run: docker build --target web -t athlemetry-web:ci .
       - run: docker build --target worker -t athlemetry-worker:ci .
+
+  # Python CV unit tests. Versions mirror the worker image (Debian bookworm
+  # Python 3.11) and the pins in vision_core/requirements.txt. torch/ultralytics
+  # are deliberately not installed: these tests exercise gates and evaluators,
+  # not model inference. Real-model/real-footage coverage is tracked in SPEC S8-08.
+  cv-python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned test dependencies
+        run: |
+          grep -E '^(numpy|opencv-contrib-python-headless)==' vision_core/requirements.txt > "$RUNNER_TEMP/cv-pins.txt"
+          python -m pip install --upgrade pip
+          python -m pip install -r "$RUNNER_TEMP/cv-pins.txt" pytest
+      - run: python -m pytest vision_core/tests -q
+
+  # Replays every checked-in migration on a real PostgreSQL 16 and checks that
+  # seeding is idempotent. Throwaway CI-only credentials; nothing real.
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: athlemetry
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d athlemetry"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/athlemetry?schema=public
+      DIRECT_URL: postgresql://ci:ci@127.0.0.1:5432/athlemetry?schema=public
+      PSQL_URL: postgresql://ci:ci@127.0.0.1:5432/athlemetry
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npx prisma migrate status
+      - name: Seed twice and require identical row counts
+        run: |
+          count() { psql "$PSQL_URL" -Atc "select (select count(*) from \"DrillDefinition\") || '/' || (select count(*) from \"PositionTaxonomy\") || '/' || (select count(*) from \"User\")"; }
+          npm run prisma:seed
+          first="$(count)"
+          npm run prisma:seed
+          second="$(count)"
+          echo "after first seed: $first; after second seed: $second"
+          test "$first" = "$second"
+          test "${first%%/*}" -gt 0
