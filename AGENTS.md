@@ -70,6 +70,7 @@ Administrator seeding is opt-in through `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSW
 /api/auth/register               New user registration
 /api/submissions                 List / create drill submissions
 /api/submissions/[id]/retry      Retry failed submission
+/api/submissions/[id]/status     Owner/admin processing status only (live clip tracker)
 /api/processing/run              Trigger processing queue
 /api/processing/status/[id]      Poll processing status
 /api/privacy/export              GDPR data export request
