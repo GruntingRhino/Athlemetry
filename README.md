@@ -21,7 +21,7 @@ Production-oriented Next.js web app for structured soccer drill uploads, metric 
 ## Local Setup
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 22 (see `.nvmrc`; CI and the Docker images use 22)
 - npm 10+
 - PostgreSQL 15+ (local) or Neon project
 
@@ -64,9 +64,9 @@ Optional S3-compatible provider:
 The AWS SDK hoists `x-amz-meta-sha256` into the signed URL. Browser uploads must send the signed `Content-Type` but must not add a second `x-amz-meta-sha256` request header. Configure bucket lifecycle expiry for abandoned presigned objects in addition to application-driven deletion.
 
 Configure the local computer-vision worker:
-- Install `baseball_tracker/requirements.txt` in a Python environment.
-- `VISION_PYTHON=./baseball_tracker/.venv/bin/python`
-- `VISION_PERSON_MODEL=./baseball_tracker/yolov8n.pt`
+- Create a Python environment at `./.venv` and install `vision_core/requirements.txt`.
+- `VISION_PYTHON=./.venv/bin/python`
+- `VISION_PERSON_MODEL=./yolov8n.pt`
 - `VISION_POSE_MODEL=./yolov8n-pose.pt`
 - `VISION_TIMEOUT_MS=120000`
 - `WORKER_BATCH_SIZE=10` (bounded to 1–100)

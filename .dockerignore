@@ -10,7 +10,7 @@ test-media
 *.pt
 *.onnx
 *.task
-baseball_tracker/.venv
+.venv
 __pycache__
 *.pyc
 npm-debug.log*
