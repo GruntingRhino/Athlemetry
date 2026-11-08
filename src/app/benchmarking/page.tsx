@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { requireUser } from "@/lib/authz";
 import { requirePaidFeatureAccess } from "@/lib/billing-access";
@@ -52,8 +54,7 @@ export default async function BenchmarkingPage({
       <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
         <div className="max-w-3xl">
-          <div className="athlemetry-kicker">{sport ? `${SPORT_LABELS[sport]} benchmarking` : "Position-based benchmarking"}</div>
-          <h1 className="mt-4 athlemetry-section-heading">
+          <h1 className="athlemetry-section-heading">
             {sport ? `${SPORT_LABELS[sport]} cohort comparisons` : "Position-based benchmarking"}
           </h1>
           <p className="athlemetry-section-lead">
@@ -85,8 +86,16 @@ export default async function BenchmarkingPage({
             </article>
           ))
         ) : (
-          <article className="athlemetry-card p-5 text-sm text-slate-600">
-            No independently validated benchmark snapshots are available yet. Rankings remain disabled until the exact metric and drill protocol pass corpus, error, confidence-calibration, and independent-review gates.
+          <article className="athlemetry-card p-5 md:p-6">
+            <p className="max-w-3xl text-sm leading-6 text-slate-700">
+              No benchmark yet. Rankings stay off until a drill&apos;s measurement has passed independent validation, so there is nothing to compare for you right now.
+            </p>
+            <Link
+              href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"}
+              className="athlemetry-button athlemetry-button-primary mt-4 min-h-11"
+            >
+              Record your next clip
+            </Link>
           </article>
         )}
       </section>

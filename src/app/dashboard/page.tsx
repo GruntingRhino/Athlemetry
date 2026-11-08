@@ -3,7 +3,6 @@ import Link from "next/link";
 import { FrequencyChart } from "@/components/dashboard/frequency-chart";
 import { NotificationList } from "@/components/dashboard/notification-list";
 import { PerformanceChart } from "@/components/dashboard/performance-chart";
-import { BackToSports } from "@/components/layout/back-to-sports";
 import { getAthleteDashboardData } from "@/lib/dashboard";
 import { requireUser } from "@/lib/authz";
 import { formatPercent } from "@/lib/utils";
@@ -16,6 +15,8 @@ import { prisma } from "@/lib/prisma";
 import { getOrCreateReferralCode, getReferralAttributionSummary } from "@/lib/referrals";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage({
   searchParams,
@@ -77,7 +78,6 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -85,7 +85,7 @@ export default async function DashboardPage({
               {sport ? `${SPORT_LABELS[sport]} dashboard` : "Your dashboard"}
             </h1>
             <p className="athlemetry-section-lead">
-              Only validated results appear here. Clips that couldn&apos;t be measured are explained on the submissions page.
+              Only results that have passed validation appear here. Clips we couldn&apos;t measure, or whose measurement isn&apos;t shown yet, are explained on the submissions page.
             </p>
           </div>
           <Link href={sport ? `/submissions/new?sport=${sport}` : "/submissions/new"} className="athlemetry-button athlemetry-button-primary">
@@ -106,6 +106,11 @@ export default async function DashboardPage({
                 <div>
                   <span className={step.complete ? "text-slate-600" : "font-medium text-slate-900"}>{step.label}</span>
                   {step.detail ? <p className="mt-1 text-sm text-slate-600">{step.detail}</p> : null}
+                  {step.key === "result" && !step.complete ? (
+                    <p className="mt-1 text-sm text-slate-600">
+                      Results appear only after a metric passes validation. Until then, we&apos;ll tell you why a clip was held back.
+                    </p>
+                  ) : null}
                 </div>
                 {step.complete ? (
                   <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-teal-800">
@@ -144,7 +149,7 @@ export default async function DashboardPage({
       {hasReleasedResults ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {[
-            ["Validated drills", data.releasedSubmissionCount],
+            ["Results ready", data.releasedSubmissionCount],
             ["Current percentile", typeof currentPercentile === "number" ? formatPercent(currentPercentile) : "Unavailable"],
             ["Average score", typeof data.averageScore === "number" ? `${data.averageScore.toFixed(1)}/100` : "Unavailable"],
             ["Metric variability", typeof data.metricVariability === "number" ? data.metricVariability.toFixed(4) : "Unavailable"],
@@ -175,7 +180,7 @@ export default async function DashboardPage({
 
       {hasReleasedResults && data.researchOnlyCount > 0 ? (
         <section className="rounded-[24px] border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
-          {data.researchOnlyCount} completed {data.researchOnlyCount === 1 ? "clip is" : "clips are"} held for research or couldn&apos;t be measured, so {data.researchOnlyCount === 1 ? "it isn't" : "they aren't"} counted here. Open the clip on the submissions page to see why.
+          {data.researchOnlyCount} completed {data.researchOnlyCount === 1 ? "clip is" : "clips are"} marked &quot;Couldn&apos;t measure&quot; or &quot;Not shown yet&quot;, so {data.researchOnlyCount === 1 ? "it isn't" : "they aren't"} counted here. &quot;Not shown yet&quot; means we can&apos;t yet confirm the measurement is accurate enough to show. Open the clip on the submissions page to see why.
         </section>
       ) : null}
 
@@ -188,7 +193,7 @@ export default async function DashboardPage({
               <p className="text-sm text-slate-600">
                 {data.trendDrillName && data.trendMetricName
                   ? `${data.trendDrillName} · ${data.trendMetricName.replace(/([A-Z])/g, " $1").trim()} progression. Different drill units are never combined into one trend.`
-                  : "A trend appears after comparable released results exist for the same drill metric."}
+                  : "A trend appears after you have comparable results for the same drill metric."}
               </p>
             </div>
           </div>

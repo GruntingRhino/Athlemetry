@@ -169,7 +169,7 @@ textarea::placeholder {
 
 .athlemetry-stat-label {
   color: var(--muted-soft);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;

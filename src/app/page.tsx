@@ -27,13 +27,6 @@ const sports = [
   },
 ] as const;
 
-const sportActions = [
-  { key: "uploads", label: "Uploads" },
-  { key: "submissions", label: "Submissions" },
-  { key: "dashboard", label: "Dashboard" },
-  { key: "benchmarking", label: "Benchmarking" },
-] as const;
-
 export default function Home() {
   return (
     <div className="space-y-8 lg:space-y-10">
@@ -44,9 +37,9 @@ export default function Home() {
               Analyze a drill from a phone video.
             </h1>
             <p className="mt-6 max-w-2xl text-base md:text-lg athlemetry-body">
-              Upload a phone video of a drill. Athlemetry checks the recording against that drill&apos;s capture
-              requirements, then reports a result only for metrics that have passed its validation checks. If a
-              result can&apos;t be reported, it tells you why.
+              Upload a phone video of a drill. Athlemetry checks it against the drill&apos;s capture requirements and
+              reports a result only for metrics that have passed validation. If it can&apos;t report one, it tells
+              you why.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/submissions/new" className="athlemetry-button athlemetry-button-primary">
@@ -63,7 +56,7 @@ export default function Home() {
                 ["Results only when validated", "A metric is reported only after it has passed validation checks. Otherwise you see why it was held back."],
                 ["Soccer, basketball, and baseball", "Each sport has its own drills, uploads, and submission history."],
               ].map(([title, body]) => (
-                <article key={title} className="border-l-2 border-teal-700 pl-4">
+                <article key={title} className="border-t border-slate-200 pt-4">
                   <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-700">{body}</p>
                 </article>
@@ -121,17 +114,12 @@ export default function Home() {
             <div className="p-6 md:p-7">
               <h2 className="text-xl font-bold tracking-tight text-slate-950">{sport.label}</h2>
               <p className="mt-3 text-sm leading-6 text-slate-700">{sport.description}</p>
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                {sportActions.map((action) => (
-                  <Link
-                    key={action.key}
-                    href={buildSportHref(action.key, sport.id)}
-                    className="flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900"
-                  >
-                    {action.label}
-                  </Link>
-                ))}
-              </div>
+              <Link
+                href={`${buildSportHref("drills", sport.id)}#${sport.id}`}
+                className="athlemetry-button athlemetry-button-secondary mt-5 min-h-11"
+              >
+                Browse {sport.label.toLowerCase()} drills
+              </Link>
             </div>
           </article>
         ))}

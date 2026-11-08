@@ -6,6 +6,8 @@ import { getAvailableDrills, groupDrillsBySport } from "@/lib/drills";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Drills" };
+
 export default async function DrillsPage() {
   const drills = await getAvailableDrills();
   const groups = groupDrillsBySport(drills);
@@ -22,7 +24,7 @@ export default async function DrillsPage() {
             </p>
           </div>
           <Link href="/submissions/new" className="athlemetry-button athlemetry-button-primary">
-            Upload a video
+            Start an upload
           </Link>
         </div>
       </section>
@@ -41,7 +43,7 @@ export default async function DrillsPage() {
                   <h3 className="break-words text-lg font-semibold text-slate-950">{drill.name}</h3>
                   <p className="mt-2">
                     <span className="athlemetry-chip max-w-full border-teal-200 bg-white px-3 py-1 text-xs font-semibold text-teal-900">
-                      Metric: {getMetricLabel(drill.metricPrimaryKey)}
+                      Reported when validated: {getMetricLabel(drill.metricPrimaryKey)}
                     </span>
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700">{drill.description}</p>
@@ -49,11 +51,11 @@ export default async function DrillsPage() {
                     <p className="font-semibold text-slate-950">Recording guidance</p>
                     <p className="mt-1 break-words leading-6">{drill.guidelines}</p>
                   </div>
-                  <div className="mt-auto flex flex-wrap gap-3 pt-5">
-                    <Link href={`/submissions/new?drill=${encodeURIComponent(drill.slug)}`} className="athlemetry-button athlemetry-button-primary">
+                  <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-5">
+                    <Link href={`/submissions/new?drill=${encodeURIComponent(drill.slug)}`} className="athlemetry-button athlemetry-button-secondary min-h-11">
                       Upload for this drill
                     </Link>
-                    <Link href={`/protocols#${drill.slug}`} className="athlemetry-button athlemetry-button-secondary">
+                    <Link href={`/protocols#${drill.slug}`} className="inline-flex min-h-11 items-center text-sm font-semibold text-teal-800 underline underline-offset-4">
                       View capture protocol
                     </Link>
                   </div>

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { CoachingPlanActions } from "@/components/forms/coaching-plan-actions";
 import { requireUser } from "@/lib/authz";
@@ -45,13 +47,17 @@ export default async function CoachingPlansPage() {
     <div className="space-y-6 lg:space-y-8">
       <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Validated guidance</div>
-        <h1 className="mt-4 athlemetry-section-heading">Coaching plans</h1>
-        <p className="athlemetry-section-lead">Plans appear only after both the underlying drill metric and the recommendation model clear independent ground-truth and expert-review release gates.</p>
+        <h1 className="athlemetry-section-heading">Coaching plans</h1>
+        <p className="athlemetry-section-lead">Plans appear only after both the drill measurement and the recommendation model have passed independent validation and expert review.</p>
       </section>
 
       {plans.length === 0 ? (
-        <section className="athlemetry-card p-6 text-sm text-slate-600">No validated coaching plan is available yet. Athlemetry withholds recommendations until a protocol-compliant result is available and the recommendation model has passed separate expert validation.</section>
+        <section className="athlemetry-card p-6">
+          <p className="max-w-3xl text-sm leading-6 text-slate-700">
+            No coaching plan yet. Athlemetry holds back recommendations until you have a result that passed validation and the recommendation model has passed separate expert review.
+          </p>
+          <Link href="/submissions" className="athlemetry-button athlemetry-button-primary mt-4 min-h-11">See your clips</Link>
+        </section>
       ) : (
         <section className="grid gap-5 xl:grid-cols-2">
           {plans.map((plan) => (

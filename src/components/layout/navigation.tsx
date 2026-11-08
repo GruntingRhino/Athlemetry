@@ -7,9 +7,9 @@ import { NavDisclosure } from "@/components/layout/nav-disclosure";
 import { SportNav, type NavSection } from "@/components/layout/nav-links";
 import { APP_NAME, SPORT_LABELS, SPORT_OPTIONS } from "@/lib/constants";
 import { authOptions } from "@/lib/auth";
-import { buildSportHref, getSettingsLinks, SPORT_SECTION_LABELS, type SportSectionKey } from "@/lib/sport-navigation";
+import { buildSportHref, getSectionPath, getSettingsGroups, SPORT_SECTION_LABELS, type SportSectionKey } from "@/lib/sport-navigation";
 
-const SECTION_ORDER: ReadonlyArray<SportSectionKey> = ["dashboard", "uploads", "submissions", "benchmarking"];
+const SECTION_ORDER: ReadonlyArray<SportSectionKey> = ["dashboard", "drills", "uploads", "submissions"];
 
 const menuLink =
   "flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950";
@@ -49,10 +49,19 @@ function AccountLinks({ user }: { user: SessionUser }) {
           Admin console
         </Link>
       ) : null}
-      {getSettingsLinks(user.role).map((link) => (
-        <Link key={link.href} href={link.href} className={menuLink}>
-          {link.label}
-        </Link>
+      {getSettingsGroups(user.role).map((group) => (
+        <nav key={group.heading} aria-label={group.heading} className="pt-1">
+          <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-600">{group.heading}</p>
+          <ul className="space-y-0.5">
+            {group.links.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className={menuLink}>
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       ))}
       <div className="border-t border-slate-200 pt-2">
         <LogoutButton />
@@ -69,7 +78,11 @@ export async function Navigation() {
   const sections: NavSection[] = SECTION_ORDER.map((key) => ({
     key,
     label: SPORT_SECTION_LABELS[key],
-    hrefs: Object.fromEntries(SPORT_OPTIONS.map((sport) => [sport, buildSportHref(key, sport)])),
+    href: getSectionPath(key),
+    // The drill list is one page grouped by sport, so a sport-scoped link also jumps to that group.
+    hrefs: Object.fromEntries(
+      SPORT_OPTIONS.map((sport) => [sport, `${buildSportHref(key, sport)}${key === "drills" ? `#${sport}` : ""}`]),
+    ),
   }));
 
   const brand = (

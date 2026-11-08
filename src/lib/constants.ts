@@ -217,6 +217,15 @@ export const STANDARD_DRILLS = [
   },
 ] as const;
 
+/**
+ * The drill's single canonical display name (same source the drill library uses).
+ * Unknown slugs fall back to a readable form of the slug, never a made-up name.
+ */
+export function getDrillName(slug: string): string {
+  const drill = STANDARD_DRILLS.find((candidate) => candidate.slug === slug);
+  return drill ? drill.name : slug.replaceAll("-", " ");
+}
+
 export const ROLE_OPTIONS = ["ATHLETE", "PARENT", "COACH", "ADMIN"] as const;
 export const SELF_REGISTRATION_ROLE_OPTIONS = ["ATHLETE", "PARENT", "COACH"] as const;
 

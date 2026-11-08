@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BackToSports } from "@/components/layout/back-to-sports";
 import { ReportExportButton } from "@/components/forms/report-export-button";
 import { requireUser } from "@/lib/authz";
@@ -32,9 +34,8 @@ export default async function AthleteReportsPage() {
     <div className="space-y-6 lg:space-y-8">
       <BackToSports />
       <section className="athlemetry-card p-6 md:p-8 lg:p-10">
-        <div className="athlemetry-kicker">Evidence-backed results</div>
-        <h1 className="mt-4 athlemetry-section-heading">Athlete reports</h1>
-        <p className="athlemetry-section-lead">Only independently released metrics are included. Historical reports update when validation evidence is approved or withdrawn.</p>
+        <h1 className="athlemetry-section-heading">Athlete reports</h1>
+        <p className="athlemetry-section-lead">Reports include only measurements that have passed validation. They update if validation evidence is later approved or withdrawn.</p>
         {reports.length > 0 ? (
           <ReportExportButton />
         ) : (
@@ -42,7 +43,12 @@ export default async function AthleteReportsPage() {
         )}
       </section>
       {reports.length === 0 ? (
-        <section className="athlemetry-card p-6 text-sm text-slate-600">No customer-facing report is available because no completed metric has cleared its validation gate.</section>
+        <section className="athlemetry-card p-6">
+          <p className="max-w-3xl text-sm leading-6 text-slate-700">
+            No report yet. A report is created only when a clip&apos;s measurement has passed validation, and none of your clips has reached that point. Your clips page explains why each one was held back.
+          </p>
+          <Link href="/submissions" className="athlemetry-button athlemetry-button-primary mt-4 min-h-11">See your clips</Link>
+        </section>
       ) : (
         <section className="space-y-5">
           {reports.map(({ submission, values }) => (
